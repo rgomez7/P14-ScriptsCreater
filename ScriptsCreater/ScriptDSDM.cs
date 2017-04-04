@@ -627,15 +627,8 @@ namespace ScriptsCreater
                         if (!j[0].Contains("#"))
                         {
                             if (i == csv.Length)
-                                {
-                                    file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                                    file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
-                                }
-                                else
-                                {
-                                    file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                                    file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
-                                }
+                                file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                                file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
                             }
                     }
                     file.WriteLine("        END");
@@ -761,16 +754,8 @@ namespace ScriptsCreater
                     i++;
                     if (!j[0].Contains("#"))
                     {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                            file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
-                        }
-                        else
-                        {
-                            file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                            file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
-                        }
+                        file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                        file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
                     }
                 }
                 file.WriteLine("");
@@ -932,13 +917,16 @@ namespace ScriptsCreater
                 file.WriteLine("            ALTER INDEX IX_tbn1_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_" + tab + " REBUILD;");
                 file.WriteLine("        END");
                 file.WriteLine("");
-                file.WriteLine("--Insertar registros de incrementalidad en tabla ct_procesado");
-                file.WriteLine("        UPDATE dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
-                file.WriteLine("        SET ct_stg  = @ct_stg_final,");
-                file.WriteLine("            ct_norm = @ct_norm_final,");
-                file.WriteLine("            ct_dmr = @ct_dmr_final");
-                file.WriteLine("        WHERE procedimiento = @objeto; ");
-                file.WriteLine("");
+                if (incremental == true)
+                {
+                    file.WriteLine("--Insertar registros de incrementalidad en tabla ct_procesado");
+                    file.WriteLine("        UPDATE dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
+                    file.WriteLine("        SET ct_stg  = @ct_stg_final,");
+                    file.WriteLine("            ct_norm = @ct_norm_final,");
+                    file.WriteLine("            ct_dmr = @ct_dmr_final");
+                    file.WriteLine("        WHERE procedimiento = @objeto; ");
+                    file.WriteLine("");
+                }
                 file.WriteLine("        ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " WITH CHECK CHECK CONSTRAINT ALL");
                 file.WriteLine("");
                 #endregion "ModificacionesTablasSP"
