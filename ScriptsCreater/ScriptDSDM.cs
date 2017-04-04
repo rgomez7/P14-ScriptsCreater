@@ -461,7 +461,7 @@ namespace ScriptsCreater
                     
                     file.WriteLine("    IF @es_carga_completa = 0");
                     file.WriteLine("    BEGIN");
-                    file.WriteLine("------BLOQUE INCREMENTAL------");
+                    file.WriteLine("--------BLOQUE INCREMENTAL--------");
                     file.WriteLine("");
 
                     //SP Creamos la insert de carga de datos
@@ -639,7 +639,7 @@ namespace ScriptsCreater
                             }
                     }
                     file.WriteLine("        END");
-                    file.WriteLine("------BLOQUE FULL------");
+                    file.WriteLine("--------BLOQUE FULL--------");
                     file.WriteLine("        ELSE");
                     file.WriteLine("        BEGIN");
                     file.WriteLine("");
@@ -778,7 +778,7 @@ namespace ScriptsCreater
                 if (incremental == true)
                 {
                     file.WriteLine("           END");
-                    file.WriteLine("------FIN BLOQUES------");
+                    file.WriteLine("--------FIN BLOQUES--------");
                     file.WriteLine("");
                 }
                 #region "ModificacionesTablasSP"
