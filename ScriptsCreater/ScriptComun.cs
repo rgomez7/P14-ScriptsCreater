@@ -281,18 +281,31 @@ namespace ScriptsCreater
             return "OK";
         }
 
-        public string regTablas(StreamWriter file, string bd, string schema, string tab, string clave, string campos, string campospk, string[] csv)
+        public string regTablas(StreamWriter file, string bd, string schema, string tab, string clave, string campos, string campospk, string[] csv, Boolean claveAuto, string tiposcript)
         {
             //Formato string[] CSV a pasar (nombreCampo;valorCampo;# [para campos Clave])
 
             int i = 0;
 
             file.WriteLine("--Create Table");
-            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + tab + "')");
-            file.WriteLine("CREATE TABLE " + bd + "." + schema + ".tbn1_" + tab + "(");
-            if (clave != "")
+            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "')");
+            file.WriteLine("CREATE TABLE " + bd + "." + schema + "." + tab + "(");
+            if (tiposcript == "historificacion")
             {
-                file.WriteLine("    " + clave + " int IDENTITY(1,1),");
+                if (claveAuto == true)
+                {
+                    file.WriteLine("       " + clave + " int,");
+                }
+                file.WriteLine("       ctct_fec_procesado datetime,");
+                file.WriteLine("       ctct_tipo_operacion varchar(15)");
+
+            }
+            else
+            {
+                if (clave != "")
+                {
+                    file.WriteLine("    " + clave + " int IDENTITY(1,1),");
+                }
             }
             i = 0;
             foreach (string d in csv)
@@ -324,13 +337,13 @@ namespace ScriptsCreater
             file.WriteLine("BEGIN");
             file.WriteLine("    SET @cursor = CURSOR FOR");
             file.WriteLine("    SELECT constraint_name FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS");
-            file.WriteLine("    WHERE table_schema = 'dbo'");
-            file.WriteLine("    AND table_name = 'tbn1_" + tab + "'");
+            file.WriteLine("    WHERE table_schema = '" + schema + "'");
+            file.WriteLine("    AND table_name = '" + tab + "'");
             file.WriteLine("    OPEN @cursor");
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @constraint");
             file.WriteLine("    WHILE @@FETCH_STATUS = 0");
             file.WriteLine("    BEGIN");
-            file.WriteLine("        SET @sqlcmd = 'ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " DROP CONSTRAINT ' + @constraint");
+            file.WriteLine("        SET @sqlcmd = 'ALTER TABLE " + bd + "." + schema + "." + tab + " DROP CONSTRAINT ' + @constraint");
             file.WriteLine("        EXEC (@sqlcmd)");
             file.WriteLine("        FETCH NEXT FROM @cursor INTO @constraint");
             file.WriteLine("    END");
@@ -351,7 +364,7 @@ namespace ScriptsCreater
             file.WriteLine("BEGIN");
             file.WriteLine("    SET @cursor = CURSOR FOR");
             file.WriteLine("    SELECT name FROM " + bd + "." + schema + ".SYSINDEXES");
-            file.WriteLine("    WHERE id = OBJECT_ID('tbn1_" + tab + "')");
+            file.WriteLine("    WHERE id = OBJECT_ID('" + tab + "')");
             file.WriteLine("    AND indid > 1 AND indid < 255 ");
             file.WriteLine("    AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");
             file.WriteLine("    ORDER BY indid DESC");
@@ -359,7 +372,7 @@ namespace ScriptsCreater
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @ncindex");
             file.WriteLine("    WHILE @@FETCH_STATUS = 0");
             file.WriteLine("    BEGIN");
-            file.WriteLine("        SET @sqlcmd = 'DROP INDEX ' + @ncindex + ' ON " + bd + "." + schema + ".tbn1_" + tab + "'");
+            file.WriteLine("        SET @sqlcmd = 'DROP INDEX ' + @ncindex + ' ON " + bd + "." + schema + "." + tab + "'");
             file.WriteLine("        EXEC (@sqlcmd)");
             file.WriteLine("        FETCH NEXT FROM @cursor INTO @ncindex");
             file.WriteLine("    END");
@@ -377,10 +390,25 @@ namespace ScriptsCreater
                 i++;
                 if (!j[0].Contains("#"))
                 {
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ADD " + j[0].ToString() + " " + j[1].ToString());
+                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString());
                     file.WriteLine("GO");
                 }
+            }
+            if (tiposcript == "historificacion")
+            {
+                if (claveAuto == true)
+                {
+                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave + "')");
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave + " int");
+                    file.WriteLine("GO");
+                }
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado')");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_fec_procesado datetime");
+                file.WriteLine("GO");
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_tipo_operacion')");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_tipo_operacion varchar(15)");
+                file.WriteLine("GO");
             }
             file.WriteLine("");
 
@@ -392,14 +420,28 @@ namespace ScriptsCreater
             file.WriteLine("BEGIN");
             file.WriteLine("    SET @cursor = CURSOR FOR");
             file.WriteLine("    SELECT column_name FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS");
-            file.WriteLine("    WHERE table_schema = 'dbo'");
-            file.WriteLine("    AND table_name = 'tbn1_" + tab + "'");
-            file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ")");
+            file.WriteLine("    WHERE table_schema = '" + schema + "'");
+            file.WriteLine("    AND table_name = '" + tab + "'");
+            if (tiposcript == "historificacion")
+            {
+                if (claveAuto == true)
+                {
+                    file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ",'ctct_fec_procesado','ctct_tipo_operacion')");
+                }
+                else
+                {
+                    file.WriteLine("    AND column_name NOT IN (" + campos + ",'ctct_fec_procesado','ctct_tipo_operacion')");
+                }
+            }
+            else
+            {
+                file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ")");
+            }
             file.WriteLine("    OPEN @cursor");
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @column");
             file.WriteLine("    WHILE @@FETCH_STATUS = 0");
             file.WriteLine("    BEGIN");
-            file.WriteLine("        SET @sqlcmd = 'ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " DROP COLUMN ' + @column");
+            file.WriteLine("        SET @sqlcmd = 'ALTER TABLE " + bd + "." + schema + "." + tab + " DROP COLUMN ' + @column");
             file.WriteLine("        EXEC (@sqlcmd)");
             file.WriteLine("        FETCH NEXT FROM @cursor INTO @column");
             file.WriteLine("    END");
@@ -419,34 +461,55 @@ namespace ScriptsCreater
                 {
                     if (j[2].ToString() == "#")
                     {
-                        file.WriteLine("ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                        file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                     }
                     else
                     {
-                        file.WriteLine("ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NULL");
+                        file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NULL");
                     }
                     file.WriteLine("GO");
                 }
+            }
+            if (tiposcript == "historificacion")
+            {
+                if (claveAuto == true)
+                {
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + clave + " int NULL");
+                    file.WriteLine("GO");
+                }
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_fec_procesado datetime NULL");
+                file.WriteLine("GO");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_tipo_operacion varchar(15) NULL");
+                file.WriteLine("GO");
             }
             file.WriteLine("");
 
             //Añadimos PK siempre que pasemos valor en el parametro "campospk"
             if (campospk != "")
-            { 
+            {
                 file.WriteLine("--Add PK if not exists");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG = '" + bd + "' AND TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'tbn1_" + tab + "' AND CONSTRAINT_NAME = 'PK_tbn1_" + tab + "' AND CONSTRAINT_TYPE = 'PRIMARY KEY')");
-                file.WriteLine("    ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ADD CONSTRAINT PK_tbn1_" + tab + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("t_", "") + ")");
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG = '" + bd + "' AND TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = '" + tab + "' AND CONSTRAINT_NAME = 'PK_" + tab + "' AND CONSTRAINT_TYPE = 'PRIMARY KEY')");
+                if (tiposcript == "historificacion")
+                {
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("t_", "") + ",ctct_fec_procesado)");
+                }
+                else
+                {
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("t_", "") + ")");
+                }
                 file.WriteLine("GO");
                 file.WriteLine("");
             }
             //Añadimos Index
             file.WriteLine("--Create indexes if not exist");
-            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + "." + schema + ".SYSINDEXES WHERE name = 'IX_tbn1_" + tab + "_cluster') ");
-            file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_tbn1_" + tab + "_cluster ON " + bd + "." + schema + ".tbn1_" + tab + " (" + clave + ")");
+            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + "." + schema + ".SYSINDEXES WHERE name = 'IX_" + tab + "_cluster') ");
+            file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_" + tab + "_cluster ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
             file.WriteLine("");
-            file.WriteLine("--Add FKs if necessary");
-            file.WriteLine("");
-
+            if (tiposcript == "ds")
+            { 
+                file.WriteLine("--Add FKs if necessary");
+                file.WriteLine("");
+            }
 
 
             return "OK";

@@ -117,7 +117,7 @@ namespace ScriptsCreater
                 sc.borrarFK(file, bd, schema, tab);
 
                 //Create Table
-                sc.regTablas(file, bd, schema, tab, clave, campos, campospk, csv2);
+                sc.regTablas(file, bd, schema, "tbn1_" + tab, clave, campos, campospk, csv2, false, "ds");
 
                 //Activamos CT
                 string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");

@@ -67,8 +67,9 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 file.WriteLine("--Generado versión vb " + a.version);
                 file.WriteLine("");
+
                 //Create Table
-                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "mae_" + tab, "id_mae_" + tab, campos, clave, csv);
+                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, clave, csv, false, "maestro");
            
                 file.WriteLine("");
                 //Cambiamos a otra BBDD y empezamos la nueva tarea
