@@ -11,9 +11,11 @@ namespace ScriptsCreater
     class ScriptHist
     {
         Acciones a = new Acciones();
+        ScriptComun sc = new ScriptComun();
 
         public string hist(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean claveAuto)
         {
+            string nombrearchivoexec = "";
             int i = 0;
             string bd = "";
             string tab = "";
@@ -90,6 +92,7 @@ namespace ScriptsCreater
             }
 
             nombrearchivo = "Script TL " + tipobd + "_" + cabtab + tab + "_tracelog_TL.sql";
+            nombrearchivoexec = "Exec TL " + tipobd + "_" + cabtab + tab + "_tracelog_TL.sql";
             //nombrearchivo = nombrearchivo.Replace("xxx", tipobd);
             string fichero = ruta + nombrearchivo;
             dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
@@ -98,7 +101,11 @@ namespace ScriptsCreater
             try
             {
                 StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+                StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
+                file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                file_exec.WriteLine("GO");
+                a.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
@@ -295,24 +302,15 @@ namespace ScriptsCreater
                 file.WriteLine("    DROP PROCEDURE " + schema + ".spn1_cargar_tracelog_" + tipobd + "_" + tab);
                 file.WriteLine("GO");
                 file.WriteLine("");
-                file.WriteLine("CREATE PROCEDURE stg.spn1_cargar_tracelog_" + tipobd + "_" + tab + "(@p_id_carga int) AS");
+                file.WriteLine("CREATE PROCEDURE " + schema + ".spn1_cargar_tracelog_" + tipobd + "_" + tab + "(@p_id_carga int) AS");
                 file.WriteLine("BEGIN");
                 file.WriteLine("");
-                
-                //SP Cabecera
-                string[] cab2 = a.cabeceraLogSP("dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, true);
 
-                foreach (string l1 in cab2)
-                {
-                    file.WriteLine(l1);
-                }
+                //SP Cabecera
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, false);
 
                 //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
-                string[] sp_inc = a.regSP_Incremental();
-                    foreach (string l1 in sp_inc)
-                {
-                    file.WriteLine(l1);
-                }
+                string sp_inc = sc.regSP_Incremental(file);
 
                 //SP Etiquetas            
                 file.WriteLine("---Inicio Bloque común para Incremental y Full");
@@ -430,18 +428,14 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Pie
-                string[] pie = a.pieLogSP("maestro");
-
-                foreach (string l1 in pie)
-                {
-                    file.WriteLine(l1);
-                }
+                string pie = sc.pieLogSP(file, "historificacion");
 
                 file.WriteLine("GO");
                 file.WriteLine("");
 #endregion "Stored Procedure"
 
                 file.Close();
+                file_exec.Close();
             }
             catch (Exception ex)
             {

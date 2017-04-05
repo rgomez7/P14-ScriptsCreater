@@ -12,88 +12,11 @@ namespace ScriptsCreater
     class ScriptMaestros
     {
         Acciones a = new Acciones();
-
-        //NO se Utiliza
-        public string ScMaestroQuery(string archivo, string[] csv, string ruta, ref string nombrearchivo)
-        {
-
-            int i = 0;
-            string tab = "";
-
-            foreach (string d in csv)
-            {
-                string[] j = d.Split(new Char[] { ';' });
-                if (j[0].ToString() == "#nombre")
-                {
-                    tab = j[1].ToString();
-                    break;
-                }
-            }
-
-            string fichero = ruta + nombrearchivo;
-            //Escribimos en el fichero
-            try
-            {
-                StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
-
-
-                file.WriteLine("PRINT '" + archivo + "'");
-                file.WriteLine("GO");
-                file.WriteLine("");
-                file.WriteLine("--Generado versión vb " + a.version);
-                file.WriteLine("");
-                file.WriteLine("USE dbn1_stg_dhyf");
-                file.WriteLine("GO");
-                file.WriteLine("");
-                file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_stg_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA='dbo' AND ROUTINE_NAME='fnn1_query_carga_" + tab + "' AND ROUTINE_TYPE='FUNCTION')");
-                file.WriteLine("DROP FUNCTION dbo.fnn1_query_carga_" + tab + ");");
-                file.WriteLine("GO");
-                file.WriteLine("");
-                file.WriteLine("CREATE FUNCTION fnn1_query_carga_" + tab + "() RETURNS TABLE AS RETURN");
-                file.WriteLine("");
-                file.WriteLine("------------Query------------");
-                file.WriteLine("");
-                file.WriteLine("SELECT");
-
-                //Montamos los campos del Select
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("    CAST(NULL AS " + j[1].ToString() + ") AS " + j[0].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("    CAST(NULL AS " + j[1].ToString() + ") AS " + j[0].ToString() + ",");
-                        }
-                    }
-                }
-
-                //Borramos la coma del ultimo registro y Montamos los últimos niveles
-                file.WriteLine("--FROM table t");
-                file.WriteLine("WHERE 1 = 0");
-                file.WriteLine("");
-                file.WriteLine("GO");
-                file.WriteLine("");
-
-                file.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo);
-                return "NO";
-            }
-
-            return "OK";
-
-        }
+        ScriptComun sc = new ScriptComun();
 
         public string ScMaestro(string archivo, string[] csv, string ruta, ref string nombrearchivo)
         {
+            string nombrearchivoexec = "";
             int i = 0;
             string tab = "";
             string clave = "";
@@ -110,7 +33,7 @@ namespace ScriptsCreater
                 }
                 else if (!j[0].Contains("#"))
                 {
-                    campos = campos + j[0] + ",";
+                    campos = campos + "'" + j[0] + "',";
                     if (j[2] == "#")
                     {
                         clave = clave + j[0] + ",";
@@ -124,6 +47,8 @@ namespace ScriptsCreater
 
             string[] lineas = new string[0];
             string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
+            nombrearchivo = "Script maestro_" + tab + ".sql"; 
+            nombrearchivoexec = "Exec maestro_" + tab + ".sql";
             DataTable valorquery = a.valorQuery(lineas, csv, "maestro", false);
 
             string fichero = ruta + nombrearchivo;
@@ -131,51 +56,20 @@ namespace ScriptsCreater
             try
             {
                 StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+                StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
-                file.WriteLine("PRINT 'Script maestro_" + archivo + "'");
+                file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                file_exec.WriteLine("GO");
+                a.generar_file_exec(file_exec, "dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_maestro_" + tab);
+
+                file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
                 file.WriteLine("");
                 file.WriteLine("--Generado versión vb " + a.version);
                 file.WriteLine("");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM dbn1_dmr_dhyf.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_mae_" + tab + "')");
-                file.WriteLine("CREATE TABLE dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "(");
-                file.WriteLine("    id_mae_" + tab + " int IDENTITY(1,1),");
-                //Montamos los campos del Select
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (!j[0].Contains("#"))
-                    {
-                        file.WriteLine("    " + j[0].ToString() + " " + j[1].ToString() + ",");
-                    }
-                }
-                file.WriteLine("    origen varchar(10)");
-                file.WriteLine("    CONSTRAINT PK_tbn1_mae_" + tab + " PRIMARY KEY CLUSTERED (id_mae_" + tab + ")");
-                file.WriteLine(") WITH (DATA_COMPRESSION=PAGE)");
-                file.WriteLine("GO");
-                file.WriteLine("");
-                file.WriteLine("--Se modifica el tipo de columnas si existen-- ");
-                file.WriteLine("IF NOT EXISTS(SELECT 1 FROM dbn1_dmr_dhyf.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'tbn1_mae_" + tab + "' AND COLUMN_NAME = 'id_mae_" + tab + "')");
-                file.WriteLine("ALTER TABLE dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " ADD id_mae_" + tab + " int");
-                file.WriteLine("GO");
-                file.WriteLine("");
-                //Montamos la modificación de tipos de datos de las columnas
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (!j[0].Contains("#"))
-                    {
-                        file.WriteLine("IF NOT EXISTS(SELECT 1 FROM dbn1_dmr_dhyf.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'tbn1_mae_" + tab + "' AND COLUMN_NAME = '" + j[0].ToString() + "')");
-                        file.WriteLine("ALTER TABLE dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " ADD " + j[0].ToString() + " " + j[1].ToString());
-                        file.WriteLine("GO");
-                        file.WriteLine("");
-                    }
-                }
-                file.WriteLine("--Se genera la Key--");
-                file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_dmr_dhyf.sys.indexes WHERE name = 'IX_tbn1_mae_" + tab + "_unique')");
-                file.WriteLine("DROP INDEX IX_tbn1_mae_" + tab + "_unique ON dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "");
-                file.WriteLine("CREATE UNIQUE NONCLUSTERED INDEX IX_tbn1_mae_" + tab + "_unique ON dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " (" + clave + ") INCLUDE (id_mae_" + tab + ")");
-                file.WriteLine("");
+                //Create Table
+                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "mae_" + tab, "id_mae_" + tab, campos, clave, csv);
+           
                 file.WriteLine("");
                 //Cambiamos a otra BBDD y empezamos la nueva tarea
                 file.WriteLine("USE dbn1_stg_dhyf");
@@ -183,7 +77,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 file.WriteLine("--Se crea el SP--");
                 file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_stg_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA='dbo' AND ROUTINE_NAME='spn1_cargar_maestro_" + tab + "' AND ROUTINE_TYPE='PROCEDURE')");
-                file.WriteLine("DROP PROCEDURE dbo.spn1_cargar_maestro_" + tab + ";");
+                file.WriteLine("DROP PROCEDURE dbo.spn1_cargar_maestro_" + tab + ");");
                 file.WriteLine("GO");
                 file.WriteLine("");
                 //Generamos el SP
@@ -191,12 +85,7 @@ namespace ScriptsCreater
                 file.WriteLine("BEGIN");
 
                 //SP Cabecera
-                string[] cab = a.cabeceraLogSP("dbn1_stg_dhyf", "dbo","spn1_cargar_maestro_" + tab, false);
-
-                foreach (string l1 in cab)
-                {
-                    file.WriteLine(l1);
-                }
+                string cab = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo","spn1_cargar_maestro_" + tab, false);
 
                 //SP Cuerpo
                 //SP Añadimos registro valor -1
@@ -249,7 +138,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Insert en object temporal
-                file.WriteLine("        INSERT INTO #tmp_mae_" + tab + " (rr_mode,id_mae_" + tab + "," + tclave + "," + campos + ")");
+                file.WriteLine("        INSERT INTO #tmp_mae_" + tab + " (rr_mode,id_mae_" + tab + "," + tclave + "," + campos.Replace("'", "") + ")");
                 file.WriteLine("        SELECT");
                 file.WriteLine("            rr_mode=");
                 file.WriteLine("                CASE");
@@ -421,7 +310,7 @@ namespace ScriptsCreater
                 file.WriteLine("            ALTER INDEX IX_tbn1_mae_" + tab + "_unique ON dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " DISABLE");
                 file.WriteLine("        END");
                 file.WriteLine("");
-                file.WriteLine("        INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "(" + campos + ",origen)");
+                file.WriteLine("        INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "(" + campos.Replace("'", "") + ",origen)");
                 file.WriteLine("        SELECT");
                 i = 0;
                 foreach (string d in csv)
@@ -457,18 +346,14 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Pie
-                string[] pie = a.pieLogSP("maestro");
-
-                foreach (string l1 in pie)
-                {
-                    file.WriteLine(l1);
-                }
+                string pie = sc.pieLogSP(file, "maestro");
 
                 file.WriteLine("GO");
                 file.WriteLine("");
 
 
                 file.Close();
+                file_exec.Close();
             }
             catch (Exception ex)
             {

@@ -12,6 +12,7 @@ namespace ScriptsCreater
     class ScriptDSDM
     {
         Acciones a = new Acciones();
+        ScriptComun sc = new ScriptComun();
 
         //Table
         public string table(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean incremental)
@@ -24,6 +25,7 @@ namespace ScriptsCreater
         //DataStore
         public string ds(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean incremental)
         {
+            string nombrearchivoexec = "";
             string fichero;
             string tab = "";
             string bd = "";
@@ -32,6 +34,7 @@ namespace ScriptsCreater
             string campospk = "";
             string camposfilter = "";
             string schema = "dbo";
+            string[] csv2 = new string[0];
 
             int i = 0;
             DataRow[] dr;
@@ -56,6 +59,8 @@ namespace ScriptsCreater
                     {
                         camposfilter = camposfilter + j[0] + ",";
                     }
+                    Array.Resize(ref csv2, csv2.Length + 1);
+                    csv2[csv2.Length-1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString();
                 }
             }
             campos = campos.Substring(0, campos.Length - 1);
@@ -76,6 +81,7 @@ namespace ScriptsCreater
 
             //Generamos nombre fichero y obtenemos lineas, renombrando fichero actual
             nombrearchivo = "Script normalizado_" + tab + ".sql";
+            nombrearchivoexec = "Exec normalizado_" + tab + ".sql";
             string[] lineas = new string[0];
             string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
             DataTable valorquery = a.valorQuery(lineas, csv, "ds", incremental);
@@ -85,9 +91,13 @@ namespace ScriptsCreater
             try
             {
                 StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+                StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
+                
+                file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                file_exec.WriteLine("GO");
+                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab);
 
-
-                file.WriteLine("PRINT 'Script normalizado_" + tab + ".sql'");
+                file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
                 file.WriteLine("");
                 file.WriteLine("--Generado versión vb " + a.version);
@@ -101,217 +111,17 @@ namespace ScriptsCreater
                 file.WriteLine("/*--Begin table create/prepare -> tbn1_" + tab);
                 file.WriteLine("");
                 //Desactivamos CT
-                string[] ctd = a.changetracking("tbn1_" + tab, bd, "dbo", "des");
-                foreach (string lin in ctd)
-                {
-                    file.WriteLine(lin);
-                }
+                string ctd = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "des");
 
                 //Drop FKs
-                file.WriteLine("--Drop FKs");
-                file.WriteLine("DECLARE @fk_name nvarchar(150)");
-                file.WriteLine("DECLARE @t_name nvarchar(150)");
-                file.WriteLine("DECLARE @cursor CURSOR");
-                file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
-                file.WriteLine("BEGIN");
-                file.WriteLine("    SET @cursor = CURSOR FOR");
-                file.WriteLine("        SELECT  obj.name AS fk_name,");
-                file.WriteLine("        --sch.name AS [schema_name],");
-                file.WriteLine("        tab1.name AS table_name");
-                file.WriteLine("        --col1.name AS [column],");
-                file.WriteLine("        --tab2.name AS [referenced_table],");
-                file.WriteLine("        --col2.name AS [referenced_column]");
-                file.WriteLine("        FROM " + bd + ".sys.foreign_key_columns fkc");
-                file.WriteLine("            INNER JOIN " + bd + ".sys.objects obj");
-                file.WriteLine("                ON obj.object_id = fkc.constraint_object_id");
-                file.WriteLine("            INNER JOIN " + bd + ".sys.tables tab1");
-                file.WriteLine("                ON tab1.object_id = fkc.parent_object_id");
-                file.WriteLine("            INNER JOIN " + bd + ".sys.schemas sch");
-                file.WriteLine("                ON tab1.schema_id = sch.schema_id");
-                file.WriteLine("            INNER JOIN " + bd + ".sys.columns col1");
-                file.WriteLine("                ON col1.column_id = parent_column_id AND col1.object_id = tab1.object_id");
-                file.WriteLine("            INNER JOIN " + bd + ".sys.tables tab2");
-                file.WriteLine("                ON tab2.object_id = fkc.referenced_object_id");
-                file.WriteLine("            INNER JOIN " + bd + ".sys.columns col2");
-                file.WriteLine("                ON col2.column_id = referenced_column_id AND col2.object_id = tab2.object_id");
-                file.WriteLine("        WHERE tab2.name = 'tbn1_" + tab + "'");
-                file.WriteLine("    OPEN @cursor");
-                file.WriteLine("    FETCH NEXT FROM @cursor INTO @fk_name, @t_name");
-                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
-                file.WriteLine("    BEGIN");
-                file.WriteLine("        SET @sqlcmd = 'ALTER TABLE " + bd + "." + schema + ".' + @t_name + ' DROP CONSTRAINT ' + @fk_name");
-                file.WriteLine("        EXEC (@sqlcmd)");
-                file.WriteLine("        FETCH NEXT FROM @cursor INTO @fk_name, @t_name");
-                file.WriteLine("    END");
-                file.WriteLine("END");
-                file.WriteLine("CLOSE @cursor");
-                file.WriteLine("DEALLOCATE @cursor");
-                file.WriteLine("GO");
-                file.WriteLine("");
+                sc.borrarFK(file, bd, schema, tab);
 
                 //Create Table
-                file.WriteLine("--Create Table");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + tab + "')");
-                file.WriteLine("CREATE TABLE " + bd + "." + schema + ".tbn1_" + tab + "(");
-                if (clave != "")
-                {
-                    file.WriteLine("    " + clave + " int IDENTITY(1,1),");
-                }
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("    " + j[0].ToString() + " " + j[1].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + ",");
-                        }
-                    }
-                }
-                file.WriteLine(")");
-                file.WriteLine("WITH (DATA_COMPRESSION=PAGE)");
-                file.WriteLine("GO");
-                file.WriteLine("");
-
-                //Borramos Constraint
-                file.WriteLine("--Drop all Constraints");
-                file.WriteLine("DECLARE @constraint nvarchar(128)");
-                file.WriteLine("DECLARE @cursor CURSOR");
-                file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
-                file.WriteLine("BEGIN");
-                file.WriteLine("    SET @cursor = CURSOR FOR");
-                file.WriteLine("    SELECT constraint_name FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS");
-                file.WriteLine("    WHERE table_schema = 'dbo'");
-                file.WriteLine("    AND table_name = 'tbn1_" + tab + "'");
-                file.WriteLine("    OPEN @cursor");
-                file.WriteLine("    FETCH NEXT FROM @cursor INTO @constraint");
-                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
-                file.WriteLine("    BEGIN");
-                file.WriteLine("        SET @sqlcmd = 'ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " DROP CONSTRAINT ' + @constraint");
-                file.WriteLine("        EXEC (@sqlcmd)");
-                file.WriteLine("        FETCH NEXT FROM @cursor INTO @constraint");
-                file.WriteLine("    END");
-                file.WriteLine("END");
-                file.WriteLine("CLOSE @cursor");
-                file.WriteLine("DEALLOCATE @cursor");
-                file.WriteLine("GO");
-                file.WriteLine("--Drop all non-clustered index");
-                file.WriteLine("");
-
-                //Borramos Indices
-                file.WriteLine("--Borramos Indices");
-                file.WriteLine("USE " + bd);
-                file.WriteLine("GO");
-                file.WriteLine("DECLARE @ncindex nvarchar(128)");
-                file.WriteLine("DECLARE @cursor CURSOR");
-                file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
-                file.WriteLine("BEGIN");
-                file.WriteLine("    SET @cursor = CURSOR FOR");
-                file.WriteLine("    SELECT name FROM " + bd + "." + schema + ".SYSINDEXES");
-                file.WriteLine("    WHERE id = OBJECT_ID('tbn1_" + tab + "')");
-                file.WriteLine("    AND indid > 1 AND indid < 255 ");
-                file.WriteLine("    AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");
-                file.WriteLine("    ORDER BY indid DESC");
-                file.WriteLine("    OPEN @cursor");
-                file.WriteLine("    FETCH NEXT FROM @cursor INTO @ncindex");
-                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
-                file.WriteLine("    BEGIN");
-                file.WriteLine("        SET @sqlcmd = 'DROP INDEX ' + @ncindex + ' ON " + bd + "." + schema + ".tbn1_" + tab + "'");
-                file.WriteLine("        EXEC (@sqlcmd)");
-                file.WriteLine("        FETCH NEXT FROM @cursor INTO @ncindex");
-                file.WriteLine("    END");
-                file.WriteLine("END");
-                file.WriteLine("CLOSE @cursor");
-                file.WriteLine("DEALLOCATE @cursor");
-                file.WriteLine("GO");
-                file.WriteLine("");
-
-                //Añadimos columnas si no existen
-                file.WriteLine("--Add all Columns (if not exist)");
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
-                        file.WriteLine("ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ADD " + j[0].ToString() + " " + j[1].ToString());
-                        file.WriteLine("GO");
-                    }
-                }
-                file.WriteLine("");
-
-                //Borramos columnas que no existan el CSV
-                file.WriteLine("--Drop not used columns");
-                file.WriteLine("DECLARE @column nvarchar(128)");
-                file.WriteLine("DECLARE @cursor CURSOR");
-                file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
-                file.WriteLine("BEGIN");
-                file.WriteLine("    SET @cursor = CURSOR FOR");
-                file.WriteLine("    SELECT column_name FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS");
-                file.WriteLine("    WHERE table_schema = 'dbo'");
-                file.WriteLine("    AND table_name = 'tbn1_" + tab + "'");
-                file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ")");
-                file.WriteLine("    OPEN @cursor");
-                file.WriteLine("    FETCH NEXT FROM @cursor INTO @column");
-                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
-                file.WriteLine("    BEGIN");
-                file.WriteLine("        SET @sqlcmd = 'ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " DROP COLUMN ' + @column");
-                file.WriteLine("        EXEC (@sqlcmd)");
-                file.WriteLine("        FETCH NEXT FROM @cursor INTO @column");
-                file.WriteLine("    END");
-                file.WriteLine("END");
-                file.WriteLine("CLOSE @cursor");
-                file.WriteLine("DEALLOCATE @cursor");
-                file.WriteLine("GO");
-                file.WriteLine("");
-
-                //Adjuntamos tipos de Campos
-                file.WriteLine("--Adjust column types");
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (j[4].ToString() == "#")
-                        {
-                            file.WriteLine("ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
-                        }
-                        else
-                        {
-                            file.WriteLine("ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NULL");
-                        }
-                        file.WriteLine("GO");
-                    }
-                }
-                file.WriteLine("");
-
-                //Añadimos PK e Index
-                file.WriteLine("--Add PK if not exists");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG = '" + bd + "' AND TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'tbn1_" + tab + "' AND CONSTRAINT_NAME = 'PK_tbn1_" + tab + "' AND CONSTRAINT_TYPE = 'PRIMARY KEY')");
-                file.WriteLine("    ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " ADD CONSTRAINT PK_tbn1_" + tab + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("t_", "") + ")");
-                file.WriteLine("GO");
-                file.WriteLine("");
-                file.WriteLine("--Create indexes if not exist");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + "." + schema + ".SYSINDEXES WHERE name = 'IX_tbn1_" + tab + "_cluster') ");
-                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_tbn1_" + tab + "_cluster ON " + bd + "." + schema + ".tbn1_" + tab + " (" + clave + ")");
-                file.WriteLine("");
-                file.WriteLine("--Add FKs if necessary");
-                file.WriteLine("");
+                sc.regTablas(file, bd, schema, tab, clave, campos, campospk, csv2);
 
                 //Activamos CT
-                string[] cta = a.changetracking("tbn1_" + tab, bd, "dbo", "act");
-                foreach (string lin in cta)
-                {
-                    file.WriteLine(lin);
-                }
+                string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");
+
                 file.WriteLine("--End table create/prepare -> tbn1_" + tab + "*/");
                 file.WriteLine("");
                 file.WriteLine("");
@@ -332,21 +142,12 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 
                 //SP Cabecera
-                string[] cab2 = a.cabeceraLogSP("dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental);
-
-                foreach (string l1 in cab2)
-                {
-                    file.WriteLine(l1);
-                }
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental);
 
                 if (incremental == true)
                 {
                     //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
-                    string[] sp_inc = a.regSP_Incremental();
-                    foreach (string l1 in sp_inc)
-                    {
-                        file.WriteLine(l1);
-                    }
+                    string sp_inc = sc.regSP_Incremental(file);
                 }
 
                 //SP Creamos Object Temporal
@@ -452,7 +253,7 @@ namespace ScriptsCreater
                     file.WriteLine("");
 
                     dr = null;
-                    dr = valorquery.Select("codScript=1", "orden ASC");
+                    dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
                     foreach (DataRow l2 in dr)
                     {
                         file.WriteLine(l2.ItemArray[0].ToString());
@@ -466,7 +267,7 @@ namespace ScriptsCreater
 
                     //SP Creamos la insert de carga de datos
                     dr = null;
-                    dr = valorquery.Select("codScript=2", "orden ASC");
+                    dr = valorquery.Select("codScript=2", "codScript ASC, orden ASC");
                     foreach (DataRow l2 in dr)
                     {
                         file.WriteLine(l2.ItemArray[0].ToString());
@@ -499,7 +300,7 @@ namespace ScriptsCreater
                     file.WriteLine("");
                     //
                     dr = null;
-                    dr = valorquery.Select("codScript=3", "orden ASC");
+                    dr = valorquery.Select("codScript=3", "codScript ASC, orden ASC");
                     foreach (DataRow l2 in dr)
                     {
                         file.WriteLine(l2.ItemArray[0].ToString());
@@ -638,7 +439,7 @@ namespace ScriptsCreater
                     file.WriteLine("");
 
                     dr = null;
-                    dr = valorquery.Select("codScript=4", "orden ASC");
+                    dr = valorquery.Select("codScript=4", "codScript ASC, orden ASC");
                     foreach (DataRow l2 in dr)
                     {
                         file.WriteLine(l2.ItemArray[0].ToString());
@@ -648,7 +449,7 @@ namespace ScriptsCreater
                 {
                     //SP Creamos la insert de carga de datos
                     dr = null;
-                    dr = valorquery.Select("codScript=1", "orden ASC");
+                    dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
                     foreach (DataRow l2 in dr)
                     {
                         file.WriteLine(l2.ItemArray[0].ToString());
@@ -932,18 +733,14 @@ namespace ScriptsCreater
                 #endregion "ModificacionesTablasSP"
 
                 //SP Pie
-                string[] pie = a.pieLogSP("maestro");
-
-                foreach (string l1 in pie)
-                {
-                    file.WriteLine(l1);
-                }
+                string pie = sc.pieLogSP(file, "ds");
 
                 file.WriteLine("GO");
                 file.WriteLine("");
                 #endregion "SP"
 
                 file.Close();
+                file_exec.Close();
             }
             catch (Exception ex)
             {
@@ -979,23 +776,11 @@ namespace ScriptsCreater
 
 
                 //SP Cabecera
-                string[] cab2 = a.cabeceraLogSP("dbn1_stg_dhyf", "dbo", "spn1_" + archivo, false);
-
-                foreach (string l1 in cab2)
-                {
-                    file.WriteLine(l1);
-                }
-
-
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_" + archivo, false);
 
 
                 //SP Pie
-                string[] pie = a.pieLogSP("maestro");
-
-                foreach (string l1 in pie)
-                {
-                    file.WriteLine(l1);
-                }
+                string pie = sc.pieLogSP(file, "dm");
 
                 file.WriteLine("GO");
                 file.WriteLine("");

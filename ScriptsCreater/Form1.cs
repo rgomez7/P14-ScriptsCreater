@@ -45,11 +45,11 @@ namespace ScriptsCreater
                     archivoruta = openFileDialog1.FileName;
                     archivo = openFileDialog1.SafeFileName;
                     txFile.Text = archivo;
-                    rutaorigen = archivoruta.Replace(archivo, "");
+                rutaorigen = archivoruta.Replace(archivo, "");
                     ruta = archivoruta.Replace(archivo, "");
-                    if (ruta.ToLower().Contains("csv"))
+                if (ruta.ToLower().Contains("csv"))
                     {
-                        ruta = ruta.Replace("csv\\","");
+                    ruta = ruta.Replace("csv\\", "");
                     }
                     txSalida.Text = ruta;
 

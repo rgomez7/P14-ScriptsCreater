@@ -12,10 +12,11 @@ namespace ScriptsCreater
     class ScriptIntegridad
     {
         Acciones a = new Acciones();
+        ScriptComun sc = new ScriptComun();
 
         public string ScIntegridad(string archivo, string[] csv, string ruta, ref string nombrearchivo)
         {
-
+            string nombrearchivoexec = "";
             int i = 0;
             string bdinteg = "";
             string tipobdinteg = "";
@@ -65,15 +66,21 @@ namespace ScriptsCreater
             }
 
             string[] lineas = new string[0];
+            nombrearchivo = "Script integridad_" + tipobdinteg + "_" + tabinteg + ".sql";
+            nombrearchivoexec = "Exec integridad_" + tipobdinteg + "_" + tabinteg + ".sql";
             string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
-            string fichero = ruta + nombrearchivo;
+
             //Escribimos en el fichero
             try
             {
-                StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+                StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
+                StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
+                file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                file_exec.WriteLine("GO");
+                a.generar_file_exec(file_exec, bdinteg + ".dbo." + tabinteg, "dbn1_stg_dhyf", "dbo", "spn1_integridad_" + tipobdinteg + "_" + tabinteg);
 
-                file.WriteLine("PRINT 'Script integridad_" + tipobdinteg + "_" + tabinteg + "'");
+                file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
                 file.WriteLine("");
                 file.WriteLine("--Generado versión vb " + a.version);
@@ -92,12 +99,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Cabecera
-                string[] cab2 = a.cabeceraLogSP("dbn1_stg_dhyf", "dbo", "spn1_integridad_" + tipobdinteg + "_" + tabinteg, false);
-
-                foreach (string l1 in cab2)
-                {
-                    file.WriteLine(l1);
-                }
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_integridad_" + tipobdinteg + "_" + tabinteg, false);
 
                 //SP Insertamos el valor -1 si no existe
                 //Solo tenemos en cuenta si tiene un campo
@@ -116,7 +118,7 @@ namespace ScriptsCreater
                 
                 //SP Acciones
                 file.WriteLine("--Generamos Query");
-                file.WriteLine("; WITH");
+                file.WriteLine("); WITH");
                 file.WriteLine(" query AS(");
                 file.WriteLine("     SELECT " + camposinteg + ", " + columnasinteg);
                 file.WriteLine("");
@@ -156,19 +158,15 @@ namespace ScriptsCreater
                     file.WriteLine("            SET @rc = @@ROWCOUNT");
                     file.WriteLine("");
                 }
-                
-                //SP Pie
-                string[] pie = a.pieLogSP("maestro");
 
-                foreach (string l1 in pie)
-                {
-                    file.WriteLine(l1);
-                }
+                //SP Pie
+                string pie = sc.pieLogSP(file, "integridad");
 
                 file.WriteLine("GO");
                 file.WriteLine("");
 
                 file.Close();
+                file_exec.Close();
             }
             catch (Exception ex)
             {
