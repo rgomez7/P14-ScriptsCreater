@@ -145,7 +145,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Cabecera
-                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, false);
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, true);
 
                 //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
                 string sp_inc = sc.regSP_Incremental(file);

@@ -753,18 +753,67 @@ namespace ScriptsCreater
         }
 
         //DataMarts
-        public string dm(string archivo, string[] csv, string ruta, ref string nombrearchivo)
+        public string dm(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean incremental)
         {
+            string nombrearchivoexec = "";
+            string fichero;
+            string prefijo_tab = "";
+            string tab = "";
+            string tabDM = "";
+            string tabFact = "";
+            string bd = "";
+            string clave = "";
+            string campos = "";
+            string[] csv2 = new string[0];
 
+            int i = 0;
 
-            string fichero = ruta + nombrearchivo;
+            foreach (string d in csv)
+            {
+                string[] j = d.Split(new Char[] { ';' });
+                if (j[0].ToLower().Contains("#nombre"))
+                {
+                    tab = j[1].ToString();
+                    bd = j[2].ToString();
+                    clave = j[3].ToString();
+                }
+                else if (j[0].ToLower().Contains("#prefijo"))
+                {
+                    prefijo_tab = j[1].ToString();
+                }
+                else if (!j[0].Contains("#"))
+                {
+                    if (!tabDM.Contains(j[5].ToString()))
+                    {
+                        tabDM = tabDM + j[5].ToString() + ";";
+                    }
+                    if (j[5].ToString().ToLower() == "f" || j[5].ToString().ToLower().Contains("fact"))
+                    {
+                        tabFact = j[5].ToString();
+                    }
+                }
+            }
+            tabDM = tabDM.Substring(0, tabDM.Length - 1);
+            tabDM = tabDM.ToLower().Replace(";" + tabFact, "");
+
+            //Generamos nombre fichero y obtenemos lineas, renombrando fichero actual
+            nombrearchivo = "Script dimensional_" + prefijo_tab + "_dm.sql";
+            nombrearchivoexec = "Exec dimensional_" + prefijo_tab + "_dm.sql";
+            string[] lineas = new string[0];
+            string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
+
+            fichero = ruta + nombrearchivo;
             //Escribimos en el fichero
             try
             {
                 StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+                StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
+                file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                file_exec.WriteLine("GO");
+                //a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab);
 
-                file.WriteLine("PRINT '" + archivo + "'");
+                file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
                 file.WriteLine("");
                 file.WriteLine("--Generado versión vb " + a.version);
@@ -772,21 +821,41 @@ namespace ScriptsCreater
                 file.WriteLine("SET QUOTED_IDENTIFIER ON;");
                 file.WriteLine("GO");
                 file.WriteLine("");
-                file.WriteLine("USE dbn1_stg_dhyf");
-                file.WriteLine("GO");
 
+                //Create Table DM
+                string[] tD = tabDM.Split(new Char[] { ';' });
+                foreach (string tabDim in tD)
+                {
+                    //Obtenemos los campos de la tabla dimensional
+                    foreach (string d in csv)
+                    {
+                        string[] j = d.Split(new Char[] { ';' });
+                        if (!j[0].Contains("#") && j[5].ToString() == tabDim)
+                        {
+                            campos = campos + "'" + j[0] + "',";
+                            Array.Resize(ref csv2, csv2.Length + 1);
+                            csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString();
+                        }
+                    }
+                    campos = campos.Substring(0, campos.Length - 1);
 
-                //SP Cabecera
-                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_" + archivo, false);
+                    //realizamos llamada a funciones para carga automatica
+                    file.WriteLine("--------------------------------------");
+                    file.WriteLine("--Begin table create/prepare -> tbn1_" + prefijo_tab + "_dim_" + tabDim);
+                    file.WriteLine("");
 
+                    sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_" + prefijo_tab + "_dim_" + tabDim, "id_dim_" + tD, campos, "", csv2, false, "dm");
 
-                //SP Pie
-                string pie = sc.pieLogSP(file, "dm");
+                    file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_dim_" + tabDim);
+                    file.WriteLine("--------------------------------------");
+                    file.WriteLine("");
+                }
 
                 file.WriteLine("GO");
                 file.WriteLine("");
 
                 file.Close();
+                file_exec.Close();
             }
             catch (Exception ex)
             {
