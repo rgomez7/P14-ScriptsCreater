@@ -169,31 +169,59 @@ namespace ScriptsCreater
             return "OK";
         }
 
-        public string changetracking(StreamWriter file, string tab, string bd, string sch, string act_des)
+        public string changetracking(StreamWriter file, string tab, string bd, string sch, string act_des, Boolean comentado)
         {
-            //Desactivar CT
-            if (act_des == "des")
+            if (comentado == true)
             {
-                file.WriteLine("--Drop CT");
-                file.WriteLine("IF EXISTS (");
+                //Desactivar CT
+                if (act_des == "des")
+                {
+                    file.WriteLine("----Drop CT");
+                    file.WriteLine("--IF EXISTS (");
+                }
+                else
+                {
+                    file.WriteLine("----Add CT");
+                    file.WriteLine("--IF NOT EXISTS (");
+                }
+                file.WriteLine("--    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
+                file.WriteLine("--    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
+                file.WriteLine("--    WHERE obj.name = '" + tab + "' )");
+                if (act_des == "des")
+                {
+                    file.WriteLine("--ALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
+                }
+                else
+                {
+                    file.WriteLine("--ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
+                }
             }
             else
             {
-                file.WriteLine("--Add CT");
-                file.WriteLine("IF NOT EXISTS (");
+                //Desactivar CT
+                if (act_des == "des")
+                {
+                    file.WriteLine("--Drop CT");
+                    file.WriteLine("IF EXISTS (");
+                }
+                else
+                {
+                    file.WriteLine("--Add CT");
+                    file.WriteLine("IF NOT EXISTS (");
+                }
+                file.WriteLine("    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
+                file.WriteLine("    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
+                file.WriteLine("    WHERE obj.name = '" + tab + "' )");
+                if (act_des == "des")
+                {
+                    file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
+                }
+                else
+                {
+                    file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
+                }
             }
-            file.WriteLine("    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
-            file.WriteLine("    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
-            file.WriteLine("    WHERE obj.name = '" + tab + "' )");
-            if (act_des == "des")
-            {
-                file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
-            }
-            else
-            {
-                file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
-            }
-            file.WriteLine("");
+                file.WriteLine("");
 
 
             return "OK";
@@ -481,6 +509,10 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("t_", "") + ",ctct_fec_procesado)");
                 }
+                else if (tiposcript == "dm")
+                {
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY CLUSTERED (" + campospk.Replace("t_", "") + ")");
+                }
                 else
                 {
                     file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("t_", "") + ")");
@@ -489,9 +521,33 @@ namespace ScriptsCreater
                 file.WriteLine("");
             }
             //Añadimos Index
-            file.WriteLine("--Create indexes if not exist");
-            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_cluster') ");
-            file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_" + tab + "_cluster ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
+            if (tiposcript == "dm")
+            {
+                file.WriteLine("--Create indexes if not exist");
+                i = 0;
+                foreach (string d in csv)
+                {
+                    string[] j = d.Split(new Char[] { ';' });
+                    i++;
+                    if (!j[0].Contains("#") && j[2].Contains("#"))
+                    {
+
+                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_" + i + "') ");
+                        file.WriteLine("    CREATE NONCLUSTERED INDEX IX_" + tab + "_" + 1 + " ON " + bd + "." + schema + "." + tab + "(" + j[0].ToString() + ")");
+                        file.WriteLine("");
+                        i++;
+                    }
+                }
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_unique') ");
+                file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campos.Replace("'","") + ") INCLUDE (" + clave + ")");
+                file.WriteLine("");
+            }
+            else
+            {
+                file.WriteLine("--Create indexes if not exist");
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_cluster') ");
+                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_" + tab + "_cluster ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
+            }
             file.WriteLine("");
             if (tiposcript == "ds")
             { 

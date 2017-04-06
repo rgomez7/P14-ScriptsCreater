@@ -112,7 +112,7 @@ namespace ScriptsCreater
                 file.WriteLine("--Begin table create/prepare -> tbn1_" + tab);
                 file.WriteLine("");
                 //Desactivamos CT
-                string ctd = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "des");
+                string ctd = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "des", false);
 
                 //Drop FKs
                 sc.borrarFK(file, bd, schema, tab);
@@ -121,7 +121,7 @@ namespace ScriptsCreater
                 sc.regTablas(file, bd, schema, "tbn1_" + tab, clave, campos, campospk, csv2, false, "ds");
 
                 //Activamos CT
-                string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");
+                string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act", false);
 
                 file.WriteLine("--End table create/prepare -> tbn1_" + tab );
                 file.WriteLine("--------------------------------------*/");
@@ -763,6 +763,7 @@ namespace ScriptsCreater
             string tabFact = "";
             string bd = "";
             string clave = "";
+            string claveDim = "";
             string campos = "";
             string[] csv2 = new string[0];
 
@@ -794,7 +795,7 @@ namespace ScriptsCreater
                 }
             }
             tabDM = tabDM.Substring(0, tabDM.Length - 1);
-            tabDM = tabDM.ToLower().Replace(";" + tabFact, "");
+            tabDM = tabDM.Replace(";" + tabFact, "");
 
             //Generamos nombre fichero y obtenemos lineas, renombrando fichero actual
             nombrearchivo = "Script dimensional_" + prefijo_tab + "_dm.sql";
@@ -827,29 +828,66 @@ namespace ScriptsCreater
                 foreach (string tabDim in tD)
                 {
                     //Obtenemos los campos de la tabla dimensional
+                    Array.Resize(ref csv2, 0);
+                    campos = "";
                     foreach (string d in csv)
                     {
+                        claveDim = claveDim + "id_dim_" + tabDim;
                         string[] j = d.Split(new Char[] { ';' });
                         if (!j[0].Contains("#") && j[5].ToString() == tabDim)
                         {
                             campos = campos + "'" + j[0] + "',";
                             Array.Resize(ref csv2, csv2.Length + 1);
-                            csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString();
+                            csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[2].ToString();
                         }
                     }
                     campos = campos.Substring(0, campos.Length - 1);
+                    claveDim = claveDim.Substring(0, claveDim.Length - 1);
 
                     //realizamos llamada a funciones para carga automatica
                     file.WriteLine("--------------------------------------");
                     file.WriteLine("--Begin table create/prepare -> tbn1_" + prefijo_tab + "_dim_" + tabDim);
                     file.WriteLine("");
 
-                    sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_" + prefijo_tab + "_dim_" + tabDim, "id_dim_" + tD, campos, "", csv2, false, "dm");
+                    //Desactivamos CT
+                    string ctdf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "des", false);
+
+                    //Drop FKs
+                    sc.borrarFK(file, bd, "dbo", prefijo_tab + "_dim_" + tabDim);
+
+                    sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_" + prefijo_tab + "_dim_" + tabDim, "id_dim_" + tabDim, campos, "id_dim_" + tabDim, csv2, false, "dm");
+
+                    //Activamos CT
+                    string ctpf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "act", true);
+
 
                     file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_dim_" + tabDim);
                     file.WriteLine("--------------------------------------");
                     file.WriteLine("");
                 }
+
+                //Creamos Table Fact
+                #region Tabla_Fact
+                file.WriteLine("--------------------------------------");
+                file.WriteLine("--Begin table create/prepare -> tbn1_" + prefijo_tab + "_fact");
+                file.WriteLine("");
+
+                //Desactivamos CT
+                string ctd = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "des", false);
+
+                //Drop FKs
+                sc.borrarFK(file, bd, "dbo", prefijo_tab + "_fact");
+
+                //Cargar tabla
+                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_" + prefijo_tab + "_fact", "id", campos, claveDim, csv2, false, "dm");
+
+                //Activamos CT
+                string ctp = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "act", true);
+                #endregion Tabla_Fact
+
+                file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_fact");
+                file.WriteLine("--------------------------------------");
+                file.WriteLine("");
 
                 file.WriteLine("GO");
                 file.WriteLine("");
