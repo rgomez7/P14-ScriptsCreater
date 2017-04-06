@@ -119,11 +119,16 @@ namespace ScriptsCreater
                 file.WriteLine("GO");
                 file.WriteLine("");
 
+                //Create Table
+                file.WriteLine("--------------------------------------");
                 file.WriteLine("--Begin table create/prepare -> " + cabtab + tab + "_tracelog");
                 file.WriteLine("");
 
-                //Create Table
-                sc.regTablas(file, bd, schema, cabtab + tab + "_tracelog", clave + "_tracelog", campos, campospk, csv2, claveAuto, "historificacion");
+                sc.regTablas(file, "dbn1_hist_dhyf", schema, cabtab + tab + "_tracelog", clave + "_tracelog", campos, campospk, csv2, claveAuto, "historificacion");
+
+                file.WriteLine("--End table create/prepare -> " + cabtab + tab + "_tracelog");
+                file.WriteLine("--------------------------------------");
+                file.WriteLine("");
 
                 #region "Stored Procedure"
                 //SP Creamos SP

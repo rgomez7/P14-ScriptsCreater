@@ -286,26 +286,21 @@ namespace ScriptsCreater
             //Formato string[] CSV a pasar (nombreCampo;valorCampo;# [para campos Clave])
 
             int i = 0;
-
             file.WriteLine("--Create Table");
             file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "')");
             file.WriteLine("CREATE TABLE " + bd + "." + schema + "." + tab + "(");
+            if (clave != "")
+            {
+                file.WriteLine("    " + clave + " int IDENTITY(1,1),");
+            }
             if (tiposcript == "historificacion")
             {
                 if (claveAuto == true)
                 {
-                    file.WriteLine("       " + clave + " int,");
+                    file.WriteLine("       " + clave.Replace("_tracelog","") + " int,");
                 }
                 file.WriteLine("       ctct_fec_procesado datetime,");
-                file.WriteLine("       ctct_tipo_operacion varchar(15)");
-
-            }
-            else
-            {
-                if (clave != "")
-                {
-                    file.WriteLine("    " + clave + " int IDENTITY(1,1),");
-                }
+                file.WriteLine("       ctct_tipo_operacion varchar(15)"); 
             }
             i = 0;
             foreach (string d in csv)
@@ -363,7 +358,7 @@ namespace ScriptsCreater
             file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
             file.WriteLine("BEGIN");
             file.WriteLine("    SET @cursor = CURSOR FOR");
-            file.WriteLine("    SELECT name FROM " + bd + "." + schema + ".SYSINDEXES");
+            file.WriteLine("    SELECT name FROM " + bd + ".dbo.SYSINDEXES");
             file.WriteLine("    WHERE id = OBJECT_ID('" + tab + "')");
             file.WriteLine("    AND indid > 1 AND indid < 255 ");
             file.WriteLine("    AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");
@@ -399,8 +394,8 @@ namespace ScriptsCreater
             {
                 if (claveAuto == true)
                 {
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave + "')");
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave + " int");
+                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog","") + "')");
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int");
                     file.WriteLine("GO");
                 }
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado')");
@@ -424,14 +419,7 @@ namespace ScriptsCreater
             file.WriteLine("    AND table_name = '" + tab + "'");
             if (tiposcript == "historificacion")
             {
-                if (claveAuto == true)
-                {
-                    file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ",'ctct_fec_procesado','ctct_tipo_operacion')");
-                }
-                else
-                {
-                    file.WriteLine("    AND column_name NOT IN (" + campos + ",'ctct_fec_procesado','ctct_tipo_operacion')");
-                }
+                file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ",'ctct_fec_procesado','ctct_tipo_operacion')");
             }
             else
             {
@@ -474,7 +462,7 @@ namespace ScriptsCreater
             {
                 if (claveAuto == true)
                 {
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + clave + " int NULL");
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + clave.Replace("_tracelog", "") + " int NULL");
                     file.WriteLine("GO");
                 }
                 file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_fec_procesado datetime NULL");
@@ -502,7 +490,7 @@ namespace ScriptsCreater
             }
             //Añadimos Index
             file.WriteLine("--Create indexes if not exist");
-            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + "." + schema + ".SYSINDEXES WHERE name = 'IX_" + tab + "_cluster') ");
+            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_cluster') ");
             file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_" + tab + "_cluster ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
             file.WriteLine("");
             if (tiposcript == "ds")
@@ -510,7 +498,6 @@ namespace ScriptsCreater
                 file.WriteLine("--Add FKs if necessary");
                 file.WriteLine("");
             }
-
 
             return "OK";
         }

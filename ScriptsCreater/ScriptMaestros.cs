@@ -69,9 +69,16 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //Create Table
-                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, clave, csv, false, "maestro");
-           
+                file.WriteLine("--------------------------------------");
+                file.WriteLine("--Begin table create/prepare -> tbn1_mae_" + tab);
                 file.WriteLine("");
+
+                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, clave, csv, false, "maestro");
+
+                file.WriteLine("--End table create/prepare -> tbn1_mae_" + tab);
+                file.WriteLine("--------------------------------------");
+                file.WriteLine("");
+
                 //Cambiamos a otra BBDD y empezamos la nueva tarea
                 file.WriteLine("USE dbn1_stg_dhyf");
                 file.WriteLine("GO");

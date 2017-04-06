@@ -108,7 +108,8 @@ namespace ScriptsCreater
 
                 #region "Tabla"
 
-                file.WriteLine("/*--Begin table create/prepare -> tbn1_" + tab);
+                file.WriteLine("/*--------------------------------------");
+                file.WriteLine("--Begin table create/prepare -> tbn1_" + tab);
                 file.WriteLine("");
                 //Desactivamos CT
                 string ctd = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "des");
@@ -122,8 +123,8 @@ namespace ScriptsCreater
                 //Activamos CT
                 string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");
 
-                file.WriteLine("--End table create/prepare -> tbn1_" + tab + "*/");
-                file.WriteLine("");
+                file.WriteLine("--End table create/prepare -> tbn1_" + tab );
+                file.WriteLine("--------------------------------------*/");
                 file.WriteLine("");
                 #endregion "Tabla"
 
