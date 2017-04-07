@@ -9,7 +9,7 @@ namespace ScriptsCreater
 {
     class ScriptComun
     {
-        public string cabeceraLogSP(StreamWriter file, string bd, string sch, string tab, Boolean incremental)
+        public string cabeceraLogSP(StreamWriter file, string bd, string sch, string tab, Boolean incremental, bool esHist)
         {
             file.WriteLine("--Inicio cabecera--");
             file.WriteLine("    SET NOCOUNT ON");
@@ -43,6 +43,12 @@ namespace ScriptsCreater
             {
                 file.WriteLine("                @idx_reclim int");
             }
+            // es historificación
+            if (esHist)
+            {
+                file.WriteLine("                @fec_procesado datetime;");
+            }
+
             file.WriteLine("");
             file.WriteLine("        --insertar en el log el comienzo de la ejecución de este SP");
             file.WriteLine("        EXEC dbn1_norm_dhyf.audit.spn1_insertar_log");
