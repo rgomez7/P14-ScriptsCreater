@@ -53,6 +53,7 @@
             this.gbAcciones = new System.Windows.Forms.GroupBox();
             this.cb_CreateTable = new System.Windows.Forms.CheckBox();
             this.cb_ChangeTrack = new System.Windows.Forms.CheckBox();
+            this.cb_IndexCS = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.gbDSDM.SuspendLayout();
             this.gbHist.SuspendLayout();
@@ -301,11 +302,12 @@
             // 
             // gbAcciones
             // 
+            this.gbAcciones.Controls.Add(this.cb_IndexCS);
             this.gbAcciones.Controls.Add(this.cb_ChangeTrack);
             this.gbAcciones.Controls.Add(this.cb_CreateTable);
             this.gbAcciones.Location = new System.Drawing.Point(512, 96);
             this.gbAcciones.Name = "gbAcciones";
-            this.gbAcciones.Size = new System.Drawing.Size(239, 86);
+            this.gbAcciones.Size = new System.Drawing.Size(239, 111);
             this.gbAcciones.TabIndex = 16;
             this.gbAcciones.TabStop = false;
             this.gbAcciones.Text = "Acciones Comunes";
@@ -334,6 +336,16 @@
             this.cb_ChangeTrack.TabIndex = 5;
             this.cb_ChangeTrack.Text = "Change Tracking Comentado";
             this.cb_ChangeTrack.UseVisualStyleBackColor = true;
+            // 
+            // cb_IndexCS
+            // 
+            this.cb_IndexCS.AutoSize = true;
+            this.cb_IndexCS.Location = new System.Drawing.Point(19, 81);
+            this.cb_IndexCS.Name = "cb_IndexCS";
+            this.cb_IndexCS.Size = new System.Drawing.Size(209, 21);
+            this.cb_IndexCS.TabIndex = 6;
+            this.cb_IndexCS.Text = "Generar Indice ColumnStore";
+            this.cb_IndexCS.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -394,6 +406,7 @@
         private System.Windows.Forms.GroupBox gbAcciones;
         private System.Windows.Forms.CheckBox cb_ChangeTrack;
         private System.Windows.Forms.CheckBox cb_CreateTable;
+        private System.Windows.Forms.CheckBox cb_IndexCS;
     }
 }
 

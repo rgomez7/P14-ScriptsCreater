@@ -786,7 +786,7 @@ namespace ScriptsCreater
         }
 
         //DataMarts
-        public string dm(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean incremental, Boolean CreateTable, Boolean ChangeTrack)
+        public string dm(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean incremental, Boolean CreateTable, Boolean ChangeTrack, Boolean IndexColumnStore)
         {
             string nombrearchivoexec = "";
             string fichero;
@@ -1666,9 +1666,28 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("    EXEC " + bdSP + ".dbo.spn1_cargar_" + prefijo_tab + "_dim_" + tabDim + " @p_id_carga");
                 }
+                if (IndexColumnStore == true)
+                {
+                    file.WriteLine("");
+                    //Desactivamos indice ColumnStore
+                    file.WriteLine("    --Borramos índice columnstore de la fact antes de cargarla");
+                    file.WriteLine("    IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name='IDX_CS_tbn1_" + prefijo_tab + "_fact' AND object_id = OBJECT_ID('" +  bd + "dbo.tbn1_" + prefijo_tab + "_fact'))");
+                    file.WriteLine("        DROP INDEX IDX_CS_tbn1_" + prefijo_tab + "_fact ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact");
+                    file.WriteLine("");
+                }
                 file.WriteLine("    EXEC " + bdSP + ".dbo.spn1_cargar_" + prefijo_tab + "_fact @p_id_carga");
                 file.WriteLine("");
-
+                if (IndexColumnStore == true)
+                {
+                    file.WriteLine("");
+                    //Activamos indice ColumnStore
+                    file.WriteLine("    --Creamos de nuevo el índice ColumnStore si no existe");
+                    file.WriteLine("    IF	EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + prefijo_tab + "_fact')");
+                    file.WriteLine("        AND NOT EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name='IDX_CS_tbn1_" + prefijo_tab + "_fact' AND object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'))");
+                    file.WriteLine("    CREATE NONCLUSTERED COLUMNSTORE INDEX IDX_CS_tbn1_" + prefijo_tab + "_fact ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact");
+                    file.WriteLine("        (id," + campos.Replace("'","") + ")");
+                    file.WriteLine("");
+                }
                 //WITH CHECK CHECK CONSTRAINT ALL
                 foreach (string tabDim in tD)
                 {
