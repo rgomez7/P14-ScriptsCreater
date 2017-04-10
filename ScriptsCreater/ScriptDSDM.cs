@@ -143,7 +143,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 
                 //SP Cabecera
-                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental);
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental, false);
 
                 if (incremental == true)
                 {

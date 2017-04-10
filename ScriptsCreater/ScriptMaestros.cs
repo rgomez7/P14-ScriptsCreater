@@ -93,7 +93,7 @@ namespace ScriptsCreater
                 file.WriteLine("BEGIN");
 
                 //SP Cabecera
-                string cab = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo","spn1_cargar_maestro_" + tab, false);
+                string cab = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo","spn1_cargar_maestro_" + tab, false, false);
 
                 //SP Cuerpo
                 //SP Añadimos registro valor -1

@@ -99,7 +99,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Cabecera
-                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_integridad_" + tipobdinteg + "_" + tabinteg, false);
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_integridad_" + tipobdinteg + "_" + tabinteg, false, false);
 
                 //SP Insertamos el valor -1 si no existe
                 //Solo tenemos en cuenta si tiene un campo

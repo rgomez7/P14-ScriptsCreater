@@ -145,11 +145,18 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Cabecera
-                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, true);
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, true, true);
 
                 //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
                 string sp_inc = sc.regSP_Incremental(file);
-
+                ////////
+                file.WriteLine("            select @es_carga_completa = es_carga_completa");
+                file.WriteLine("            from dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
+                file.WriteLine("            where objeto = @objeto;");
+                file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
+                file.WriteLine("           set @fec_procesado = getdate();");
+                file.WriteLine("");
+                //////
                 //SP Etiquetas            
                 file.WriteLine("---Inicio Bloque común para Incremental y Full");
                 file.WriteLine("");
