@@ -171,7 +171,10 @@ namespace ScriptsCreater
                 {
                     string linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked);
 
-                    MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (linegen == "OK")
+                    {
+                        MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 }
                 //Genera DS y DM
                 else if (rb_DSDM_All.Checked == true)
@@ -185,7 +188,10 @@ namespace ScriptsCreater
                     //linegen = dsdm.dm(archivo, csv, ruta, arcScript);
                     //fichero = fichero + "\n\r" + arcScript;
 
-                    MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (linegen == "OK")
+                    {
+                        MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 }
                 //Si no seleccionas ningúna Opción
                 else

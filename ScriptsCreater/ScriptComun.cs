@@ -23,7 +23,7 @@ namespace ScriptsCreater
             file.WriteLine("                @fecha_inicio datetime = GETDATE(),");
             file.WriteLine("                @num_registros int = NULL,");
             file.WriteLine("                @id int = NULL,");
-            file.WriteLine("                @rc int,");
+            file.WriteLine("                @rc int = 0,");
             file.WriteLine("                @count_all int,");
             file.WriteLine("                @count_ins int,");
             if (incremental == true)
@@ -511,7 +511,7 @@ namespace ScriptsCreater
                 }
                 else if (tiposcript == "dm")
                 {
-                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY CLUSTERED (" + campospk.Replace("t_", "") + ")");
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY CLUSTERED (" + clave + ")");
                 }
                 else
                 {
@@ -528,18 +528,16 @@ namespace ScriptsCreater
                 foreach (string d in csv)
                 {
                     string[] j = d.Split(new Char[] { ';' });
-                    i++;
                     if (!j[0].Contains("#") && j[2].Contains("#"))
                     {
-
-                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_" + i + "') ");
-                        file.WriteLine("    CREATE NONCLUSTERED INDEX IX_" + tab + "_" + 1 + " ON " + bd + "." + schema + "." + tab + "(" + j[0].ToString() + ")");
-                        file.WriteLine("");
                         i++;
+                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_" + i + "') ");
+                        file.WriteLine("    CREATE NONCLUSTERED INDEX IX_" + tab + "_" + i + " ON " + bd + "." + schema + "." + tab + "(" + j[0].ToString() + ")");
+                        file.WriteLine("");
                     }
                 }
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_unique') ");
-                file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campos.Replace("'","") + ") INCLUDE (" + clave + ")");
+                file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campospk.Replace("'","") + ") INCLUDE (" + clave + ")");
                 file.WriteLine("");
             }
             else
