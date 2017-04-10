@@ -50,9 +50,13 @@
             this.cb_ClaveAuto = new System.Windows.Forms.CheckBox();
             this.rb_Directorio = new System.Windows.Forms.RadioButton();
             this.rb_Archivo = new System.Windows.Forms.RadioButton();
+            this.gbAcciones = new System.Windows.Forms.GroupBox();
+            this.cb_CreateTable = new System.Windows.Forms.CheckBox();
+            this.cb_ChangeTrack = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.gbDSDM.SuspendLayout();
             this.gbHist.SuspendLayout();
+            this.gbAcciones.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnScript
@@ -295,11 +299,48 @@
             this.rb_Archivo.Text = "Archivo seleccionado";
             this.rb_Archivo.UseVisualStyleBackColor = true;
             // 
+            // gbAcciones
+            // 
+            this.gbAcciones.Controls.Add(this.cb_ChangeTrack);
+            this.gbAcciones.Controls.Add(this.cb_CreateTable);
+            this.gbAcciones.Location = new System.Drawing.Point(512, 96);
+            this.gbAcciones.Name = "gbAcciones";
+            this.gbAcciones.Size = new System.Drawing.Size(239, 86);
+            this.gbAcciones.TabIndex = 16;
+            this.gbAcciones.TabStop = false;
+            this.gbAcciones.Text = "Acciones Comunes";
+            this.gbAcciones.Visible = false;
+            // 
+            // cb_CreateTable
+            // 
+            this.cb_CreateTable.AutoSize = true;
+            this.cb_CreateTable.Checked = true;
+            this.cb_CreateTable.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_CreateTable.Location = new System.Drawing.Point(19, 26);
+            this.cb_CreateTable.Name = "cb_CreateTable";
+            this.cb_CreateTable.Size = new System.Drawing.Size(188, 21);
+            this.cb_CreateTable.TabIndex = 4;
+            this.cb_CreateTable.Text = "Create Table Comentado";
+            this.cb_CreateTable.UseVisualStyleBackColor = true;
+            // 
+            // cb_ChangeTrack
+            // 
+            this.cb_ChangeTrack.AutoSize = true;
+            this.cb_ChangeTrack.Checked = true;
+            this.cb_ChangeTrack.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_ChangeTrack.Location = new System.Drawing.Point(19, 53);
+            this.cb_ChangeTrack.Name = "cb_ChangeTrack";
+            this.cb_ChangeTrack.Size = new System.Drawing.Size(214, 21);
+            this.cb_ChangeTrack.TabIndex = 5;
+            this.cb_ChangeTrack.Text = "Change Tracking Comentado";
+            this.cb_ChangeTrack.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(891, 275);
+            this.Controls.Add(this.gbAcciones);
             this.Controls.Add(this.gbHist);
             this.Controls.Add(this.gbDSDM);
             this.Controls.Add(this.btRuta);
@@ -319,6 +360,8 @@
             this.gbDSDM.PerformLayout();
             this.gbHist.ResumeLayout(false);
             this.gbHist.PerformLayout();
+            this.gbAcciones.ResumeLayout(false);
+            this.gbAcciones.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -348,6 +391,9 @@
         private System.Windows.Forms.CheckBox cb_ClaveAuto;
         private System.Windows.Forms.RadioButton rb_Directorio;
         private System.Windows.Forms.RadioButton rb_Archivo;
+        private System.Windows.Forms.GroupBox gbAcciones;
+        private System.Windows.Forms.CheckBox cb_ChangeTrack;
+        private System.Windows.Forms.CheckBox cb_CreateTable;
     }
 }
 

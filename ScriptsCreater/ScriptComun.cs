@@ -82,7 +82,7 @@ namespace ScriptsCreater
         public string pieLogSP(StreamWriter file, string tipo)
         {
             file.WriteLine("--Inicio Pie--");
-            if (tipo == "dm")
+            if (tipo == "dmSP")
             {
                 file.WriteLine("");
                 file.WriteLine("            --el llamador de un DM no carga registros");
@@ -175,35 +175,8 @@ namespace ScriptsCreater
             return "OK";
         }
 
-        public string changetracking(StreamWriter file, string tab, string bd, string sch, string act_des, Boolean comentado)
+        public string changetracking(StreamWriter file, string tab, string bd, string sch, string act_des)
         {
-            if (comentado == true)
-            {
-                //Desactivar CT
-                if (act_des == "des")
-                {
-                    file.WriteLine("----Drop CT");
-                    file.WriteLine("--IF EXISTS (");
-                }
-                else
-                {
-                    file.WriteLine("----Add CT");
-                    file.WriteLine("--IF NOT EXISTS (");
-                }
-                file.WriteLine("--    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
-                file.WriteLine("--    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
-                file.WriteLine("--    WHERE obj.name = '" + tab + "' )");
-                if (act_des == "des")
-                {
-                    file.WriteLine("--ALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
-                }
-                else
-                {
-                    file.WriteLine("--ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
-                }
-            }
-            else
-            {
                 //Desactivar CT
                 if (act_des == "des")
                 {
@@ -226,9 +199,7 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
                 }
-            }
                 file.WriteLine("");
-
 
             return "OK";
         }
@@ -325,7 +296,7 @@ namespace ScriptsCreater
             file.WriteLine("CREATE TABLE " + bd + "." + schema + "." + tab + "(");
             if (clave != "")
             {
-                file.WriteLine("    " + clave + " int IDENTITY(1,1),");
+                file.WriteLine("        " + clave + " int IDENTITY(1,1),");
             }
             if (tiposcript == "historificacion")
             {
@@ -333,8 +304,8 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("       " + clave.Replace("_tracelog","") + " int,");
                 }
-                file.WriteLine("       ctct_fec_procesado datetime,");
-                file.WriteLine("       ctct_tipo_operacion varchar(15)"); 
+                file.WriteLine("        ctct_fec_procesado datetime,");
+                file.WriteLine("        ctct_tipo_operacion varchar(15)"); 
             }
             i = 0;
             foreach (string d in csv)
@@ -345,7 +316,7 @@ namespace ScriptsCreater
                 {
                     if (i == csv.Length)
                     {
-                        file.WriteLine("    " + j[0].ToString() + " " + j[1].ToString());
+                        file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString());
                     }
                     else
                     {
@@ -367,7 +338,7 @@ namespace ScriptsCreater
             file.WriteLine("    SET @cursor = CURSOR FOR");
             file.WriteLine("    SELECT constraint_name FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS");
             file.WriteLine("    WHERE table_schema = '" + schema + "'");
-            file.WriteLine("    AND table_name = '" + tab + "'");
+            file.WriteLine("        AND table_name = '" + tab + "'");
             file.WriteLine("    OPEN @cursor");
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @constraint");
             file.WriteLine("    WHILE @@FETCH_STATUS = 0");
@@ -380,11 +351,10 @@ namespace ScriptsCreater
             file.WriteLine("CLOSE @cursor");
             file.WriteLine("DEALLOCATE @cursor");
             file.WriteLine("GO");
-            file.WriteLine("--Drop all non-clustered index");
             file.WriteLine("");
 
             //Borramos Indices
-            file.WriteLine("--Borramos Indices");
+            file.WriteLine("--Drop all non-clustered index");
             file.WriteLine("USE " + bd);
             file.WriteLine("GO");
             file.WriteLine("DECLARE @ncindex nvarchar(128)");
@@ -392,10 +362,10 @@ namespace ScriptsCreater
             file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
             file.WriteLine("BEGIN");
             file.WriteLine("    SET @cursor = CURSOR FOR");
-            file.WriteLine("    SELECT name FROM " + bd + ".dbo.SYSINDEXES");
+            file.WriteLine("    SELECT name FROM " + bd + ".sys.INDEXES");
             file.WriteLine("    WHERE id = OBJECT_ID('" + tab + "')");
-            file.WriteLine("    AND indid > 1 AND indid < 255 ");
-            file.WriteLine("    AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");
+            file.WriteLine("        AND indid > 1 AND indid < 255 ");
+            file.WriteLine("        AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");
             file.WriteLine("    ORDER BY indid DESC");
             file.WriteLine("    OPEN @cursor");
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @ncindex");
@@ -450,14 +420,14 @@ namespace ScriptsCreater
             file.WriteLine("    SET @cursor = CURSOR FOR");
             file.WriteLine("    SELECT column_name FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS");
             file.WriteLine("    WHERE table_schema = '" + schema + "'");
-            file.WriteLine("    AND table_name = '" + tab + "'");
+            file.WriteLine("        AND table_name = '" + tab + "'");
             if (tiposcript == "historificacion")
             {
-                file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ",'ctct_fec_procesado','ctct_tipo_operacion')");
+                file.WriteLine("        AND column_name NOT IN ('" + clave + "'," + campos + ",'ctct_fec_procesado','ctct_tipo_operacion')");
             }
             else
             {
-                file.WriteLine("    AND column_name NOT IN ('" + clave + "'," + campos + ")");
+                file.WriteLine("        AND column_name NOT IN ('" + clave + "'," + campos + ")");
             }
             file.WriteLine("    OPEN @cursor");
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @column");
@@ -537,19 +507,19 @@ namespace ScriptsCreater
                     if (!j[0].Contains("#") && j[2].Contains("#"))
                     {
                         i++;
-                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_" + i + "') ");
+                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_" + i + "') ");
                         file.WriteLine("    CREATE NONCLUSTERED INDEX IX_" + tab + "_" + i + " ON " + bd + "." + schema + "." + tab + "(" + j[0].ToString() + ")");
                         file.WriteLine("");
                     }
                 }
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_unique') ");
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_unique') ");
                 file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campospk.Replace("'","") + ") INCLUDE (" + clave + ")");
                 file.WriteLine("");
             }
             else
             {
                 file.WriteLine("--Create indexes if not exist");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.SYSINDEXES WHERE name = 'IX_" + tab + "_cluster') ");
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_cluster') ");
                 file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_" + tab + "_cluster ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
             }
             file.WriteLine("");

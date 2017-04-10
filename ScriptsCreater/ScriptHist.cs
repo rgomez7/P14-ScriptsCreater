@@ -13,7 +13,7 @@ namespace ScriptsCreater
         Acciones a = new Acciones();
         ScriptComun sc = new ScriptComun();
 
-        public string hist(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean claveAuto)
+        public string hist(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean claveAuto, Boolean CreateTable, Boolean ChangeTrack)
         {
             string nombrearchivoexec = "";
             int i = 0;
@@ -119,15 +119,51 @@ namespace ScriptsCreater
                 file.WriteLine("GO");
                 file.WriteLine("");
 
+                //Activamos CT
+                if (ChangeTrack == false)
+                {
+                    file.WriteLine("--------------------------------------");
+                }
+                else
+                {
+                    file.WriteLine("/*--------------------------------------");
+                }
+                file.WriteLine("--Begin Add Change Tracking -> " + cabtab + tab);
+                string ctp = sc.changetracking(file, cabtab + tab, bd, "dbo", "act");
+                file.WriteLine("--Begin Add Change Tracking -> " + cabtab + tab);
+                if (ChangeTrack == false)
+                {
+                    file.WriteLine("--------------------------------------");
+                }
+                else
+                {
+                    file.WriteLine("--------------------------------------*/");
+                }
+                file.WriteLine("");
+
                 //Create Table
-                file.WriteLine("--------------------------------------");
+                if (CreateTable == false)
+                {
+                    file.WriteLine("--------------------------------------");
+                }
+                else
+                {
+                    file.WriteLine("/*--------------------------------------");
+                }
                 file.WriteLine("--Begin table create/prepare -> " + cabtab + tab + "_tracelog");
                 file.WriteLine("");
 
                 sc.regTablas(file, "dbn1_hist_dhyf", schema, cabtab + tab + "_tracelog", clave + "_tracelog", campos, campospk, csv2, claveAuto, "historificacion");
 
                 file.WriteLine("--End table create/prepare -> " + cabtab + tab + "_tracelog");
-                file.WriteLine("--------------------------------------");
+                if (CreateTable == false)
+                {
+                    file.WriteLine("--------------------------------------");
+                }
+                else
+                {
+                    file.WriteLine("--------------------------------------*/");
+                }
                 file.WriteLine("");
 
                 #region "Stored Procedure"

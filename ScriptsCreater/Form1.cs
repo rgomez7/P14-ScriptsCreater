@@ -76,18 +76,24 @@ namespace ScriptsCreater
                     rbMaestro.Checked = true;
                     gbDSDM.Visible = false;
                     gbHist.Visible = false;
+                    gbAcciones.Visible = true;
+                    cb_ChangeTrack.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("ds"))
                 {
                     rbDSDM.Checked = true;
                     gbDSDM.Visible = true;
                     gbHist.Visible = false;
+                    gbAcciones.Visible = true;
+                    cb_ChangeTrack.Visible = true;
                 }
                 else if (archivo.ToLower().Contains("int"))
                 {
                     rbIntegridad.Checked = true;
                     gbDSDM.Visible = false;
                     gbHist.Visible = false;
+                    gbAcciones.Visible = false;
+                    cb_ChangeTrack.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("his"))
                 {
@@ -95,6 +101,8 @@ namespace ScriptsCreater
                     gbDSDM.Visible = false;
                     gbHist.Visible = true;
                     rb_Archivo.Checked = true;
+                    gbAcciones.Visible = true;
+                    cb_ChangeTrack.Visible = true;
                 }
             }
         }
@@ -126,7 +134,7 @@ namespace ScriptsCreater
             //Opción maestro
             if (rbMaestro.Checked)
             {
-                string linegen = sm.ScMaestro(archivo, csv, ruta, ref arcScript);
+                string linegen = sm.ScMaestro(archivo, csv, ruta, ref arcScript, cb_CreateTable.Checked);
 
                 if (linegen == "OK")
                 {
@@ -149,7 +157,7 @@ namespace ScriptsCreater
                 //Genera tabla
                 if (rb_DSDM_T.Checked == true)
                 {
-                    string linegen = dsdm.table(archivo, csv, ruta, ref arcScript, cbIncremental.Checked);
+                    string linegen = dsdm.table(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
 
                     if (linegen == "OK")
                     {
@@ -159,7 +167,7 @@ namespace ScriptsCreater
                 //Genera DS
                 else if (rb_DSDM_DS.Checked == true)
                 {
-                    string linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked);
+                    string linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
 
                     if (linegen == "OK")
                     {
@@ -169,7 +177,7 @@ namespace ScriptsCreater
                 //Genera DM
                 else if (rb_DSDM_DM.Checked == true)
                 {
-                    string linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked);
+                    string linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
 
                     if (linegen == "OK")
                     {
@@ -181,12 +189,14 @@ namespace ScriptsCreater
                 {
                     string fichero = "";
                     string linegen = "OK";
-
-                    linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked);
+                    
+                    //DS
+                    linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
                     fichero = fichero + "\n\r" + arcScript;
 
-                    //linegen = dsdm.dm(archivo, csv, ruta, arcScript);
-                    //fichero = fichero + "\n\r" + arcScript;
+                    //DM
+                    linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                    fichero = fichero + "\n\r" + arcScript;
 
                     if (linegen == "OK")
                     {
@@ -207,7 +217,7 @@ namespace ScriptsCreater
                 //Para un archivo
                 if (rb_Archivo.Checked == true)
                 {
-                    linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked);
+                    linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
                     fichero = fichero + "\n\r" + arcScript;
                 }
                 //Para todos los archivos de la Carpeta
@@ -219,7 +229,7 @@ namespace ScriptsCreater
                     {
                         archivo = dir.Replace(rutaorigen,"");
 
-                        linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked);
+                        linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
                         fichero = fichero + "\n\r" + arcScript;
                     }
                 }
@@ -247,12 +257,16 @@ namespace ScriptsCreater
         {
             gbDSDM.Visible = false;
             gbHist.Visible = false;
+            gbAcciones.Visible = false;
+            cb_ChangeTrack.Visible = false;
         }
 
         private void rbMaestro_CheckedChanged(object sender, EventArgs e)
         {
             gbDSDM.Visible = false;
             gbHist.Visible = false;
+            gbAcciones.Visible = true;
+            cb_ChangeTrack.Visible = false;
         }
 
         private void rbHist_CheckedChanged(object sender, EventArgs e)
@@ -260,12 +274,16 @@ namespace ScriptsCreater
             gbDSDM.Visible = false;
             gbHist.Visible = true;
             rb_Archivo.Checked = true;
+            gbAcciones.Visible = true;
+            cb_ChangeTrack.Visible = true;
         }
 
         private void rbDSDM_CheckedChanged(object sender, EventArgs e)
         {
             gbDSDM.Visible = true;
             gbHist.Visible = false;
+            gbAcciones.Visible = true;
+            cb_ChangeTrack.Visible = true;
         }
 
         #endregion

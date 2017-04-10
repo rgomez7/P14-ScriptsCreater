@@ -14,7 +14,7 @@ namespace ScriptsCreater
         Acciones a = new Acciones();
         ScriptComun sc = new ScriptComun();
 
-        public string ScMaestro(string archivo, string[] csv, string ruta, ref string nombrearchivo)
+        public string ScMaestro(string archivo, string[] csv, string ruta, ref string nombrearchivo,Boolean CreateTable)
         {
             string nombrearchivoexec = "";
             int i = 0;
@@ -69,14 +69,30 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //Create Table
-                file.WriteLine("--------------------------------------");
+                if (CreateTable == false)
+                {
+                    file.WriteLine("--------------------------------------");
+                }
+                else
+                {
+                    file.WriteLine("/*--------------------------------------");
+                }
+                file.WriteLine("");
                 file.WriteLine("--Begin table create/prepare -> tbn1_mae_" + tab);
                 file.WriteLine("");
 
                 sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, clave, csv, false, "maestro");
 
+                if (CreateTable == false)
+                {
+                    file.WriteLine("--------------------------------------");
+                }
+                else
+                {
+                    file.WriteLine("--------------------------------------*/");
+                }
+
                 file.WriteLine("--End table create/prepare -> tbn1_mae_" + tab);
-                file.WriteLine("--------------------------------------");
                 file.WriteLine("");
 
                 //Cambiamos a otra BBDD y empezamos la nueva tarea
