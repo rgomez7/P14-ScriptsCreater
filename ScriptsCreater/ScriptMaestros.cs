@@ -356,7 +356,7 @@ namespace ScriptsCreater
                 file.WriteLine("            ,'MAESTRO' as origen");
                 file.WriteLine("            FROM #tmp_mae_" + tab + "");
                 file.WriteLine("            WHERE rr_mode='I';");
-                file.WriteLine("        SET @rc=@rc + @@ROWCOUNT;");
+                file.WriteLine("       SET @rc = @rc + @@ROWCOUNT;");
                 file.WriteLine("");
                 file.WriteLine("        IF @count_ins >= @idx_reclim");
                 file.WriteLine("        BEGIN");

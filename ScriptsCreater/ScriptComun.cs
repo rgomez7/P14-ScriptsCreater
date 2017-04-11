@@ -362,7 +362,7 @@ namespace ScriptsCreater
             file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
             file.WriteLine("BEGIN");
             file.WriteLine("    SET @cursor = CURSOR FOR");
-            file.WriteLine("    SELECT name FROM " + bd + ".sys.INDEXES");
+            file.WriteLine("    SELECT name FROM " + bd + ".dbo.SYSINDEXES");
             file.WriteLine("    WHERE id = OBJECT_ID('" + tab + "')");
             file.WriteLine("        AND indid > 1 AND indid < 255 ");
             file.WriteLine("        AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");

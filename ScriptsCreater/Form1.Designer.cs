@@ -51,9 +51,9 @@
             this.rb_Directorio = new System.Windows.Forms.RadioButton();
             this.rb_Archivo = new System.Windows.Forms.RadioButton();
             this.gbAcciones = new System.Windows.Forms.GroupBox();
-            this.cb_CreateTable = new System.Windows.Forms.CheckBox();
-            this.cb_ChangeTrack = new System.Windows.Forms.CheckBox();
             this.cb_IndexCS = new System.Windows.Forms.CheckBox();
+            this.cb_ChangeTrack = new System.Windows.Forms.CheckBox();
+            this.cb_CreateTable = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.gbDSDM.SuspendLayout();
             this.gbHist.SuspendLayout();
@@ -191,7 +191,7 @@
             this.gbDSDM.Controls.Add(this.rb_DSDM_DS);
             this.gbDSDM.Controls.Add(this.rb_DSDM_All);
             this.gbDSDM.Controls.Add(this.rb_DSDM_T);
-            this.gbDSDM.Location = new System.Drawing.Point(253, 96);
+            this.gbDSDM.Location = new System.Drawing.Point(252, 96);
             this.gbDSDM.Name = "gbDSDM";
             this.gbDSDM.Size = new System.Drawing.Size(221, 167);
             this.gbDSDM.TabIndex = 14;
@@ -219,6 +219,7 @@
             this.rb_DSDM_DM.TabStop = true;
             this.rb_DSDM_DM.Text = "DM";
             this.rb_DSDM_DM.UseVisualStyleBackColor = true;
+            this.rb_DSDM_DM.CheckedChanged += new System.EventHandler(this.rb_DSDM_DM_CheckedChanged);
             // 
             // rb_DSDM_DS
             // 
@@ -230,6 +231,7 @@
             this.rb_DSDM_DS.TabStop = true;
             this.rb_DSDM_DS.Text = "DS";
             this.rb_DSDM_DS.UseVisualStyleBackColor = true;
+            this.rb_DSDM_DS.CheckedChanged += new System.EventHandler(this.rb_DSDM_DS_CheckedChanged);
             // 
             // rb_DSDM_All
             // 
@@ -241,6 +243,7 @@
             this.rb_DSDM_All.TabStop = true;
             this.rb_DSDM_All.Text = "DS-DM";
             this.rb_DSDM_All.UseVisualStyleBackColor = true;
+            this.rb_DSDM_All.CheckedChanged += new System.EventHandler(this.rb_DSDM_All_CheckedChanged);
             // 
             // rb_DSDM_T
             // 
@@ -252,13 +255,14 @@
             this.rb_DSDM_T.TabStop = true;
             this.rb_DSDM_T.Text = "T";
             this.rb_DSDM_T.UseVisualStyleBackColor = true;
+            this.rb_DSDM_T.CheckedChanged += new System.EventHandler(this.rb_DSDM_T_CheckedChanged);
             // 
             // gbHist
             // 
             this.gbHist.Controls.Add(this.cb_ClaveAuto);
             this.gbHist.Controls.Add(this.rb_Directorio);
             this.gbHist.Controls.Add(this.rb_Archivo);
-            this.gbHist.Location = new System.Drawing.Point(249, 96);
+            this.gbHist.Location = new System.Drawing.Point(250, 96);
             this.gbHist.Name = "gbHist";
             this.gbHist.Size = new System.Drawing.Size(221, 167);
             this.gbHist.TabIndex = 15;
@@ -313,17 +317,15 @@
             this.gbAcciones.Text = "Acciones Comunes";
             this.gbAcciones.Visible = false;
             // 
-            // cb_CreateTable
+            // cb_IndexCS
             // 
-            this.cb_CreateTable.AutoSize = true;
-            this.cb_CreateTable.Checked = true;
-            this.cb_CreateTable.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_CreateTable.Location = new System.Drawing.Point(19, 26);
-            this.cb_CreateTable.Name = "cb_CreateTable";
-            this.cb_CreateTable.Size = new System.Drawing.Size(188, 21);
-            this.cb_CreateTable.TabIndex = 4;
-            this.cb_CreateTable.Text = "Create Table Comentado";
-            this.cb_CreateTable.UseVisualStyleBackColor = true;
+            this.cb_IndexCS.AutoSize = true;
+            this.cb_IndexCS.Location = new System.Drawing.Point(19, 81);
+            this.cb_IndexCS.Name = "cb_IndexCS";
+            this.cb_IndexCS.Size = new System.Drawing.Size(209, 21);
+            this.cb_IndexCS.TabIndex = 6;
+            this.cb_IndexCS.Text = "Generar Indice ColumnStore";
+            this.cb_IndexCS.UseVisualStyleBackColor = true;
             // 
             // cb_ChangeTrack
             // 
@@ -337,15 +339,17 @@
             this.cb_ChangeTrack.Text = "Change Tracking Comentado";
             this.cb_ChangeTrack.UseVisualStyleBackColor = true;
             // 
-            // cb_IndexCS
+            // cb_CreateTable
             // 
-            this.cb_IndexCS.AutoSize = true;
-            this.cb_IndexCS.Location = new System.Drawing.Point(19, 81);
-            this.cb_IndexCS.Name = "cb_IndexCS";
-            this.cb_IndexCS.Size = new System.Drawing.Size(209, 21);
-            this.cb_IndexCS.TabIndex = 6;
-            this.cb_IndexCS.Text = "Generar Indice ColumnStore";
-            this.cb_IndexCS.UseVisualStyleBackColor = true;
+            this.cb_CreateTable.AutoSize = true;
+            this.cb_CreateTable.Checked = true;
+            this.cb_CreateTable.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_CreateTable.Location = new System.Drawing.Point(19, 26);
+            this.cb_CreateTable.Name = "cb_CreateTable";
+            this.cb_CreateTable.Size = new System.Drawing.Size(188, 21);
+            this.cb_CreateTable.TabIndex = 4;
+            this.cb_CreateTable.Text = "Create Table Comentado";
+            this.cb_CreateTable.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 

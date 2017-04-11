@@ -87,7 +87,7 @@ namespace ScriptsCreater
                     gbHist.Visible = false;
                     gbAcciones.Visible = true;
                     cb_ChangeTrack.Visible = true;
-                    cb_IndexCS.Visible = true;
+                    cb_IndexCS.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("int"))
                 {
@@ -271,7 +271,7 @@ namespace ScriptsCreater
             gbHist.Visible = false;
             gbAcciones.Visible = true;
             cb_ChangeTrack.Visible = false;
-            cb_IndexCS.Visible = false; 
+            cb_IndexCS.Visible = false;
         }
 
         private void rbHist_CheckedChanged(object sender, EventArgs e)
@@ -290,11 +290,32 @@ namespace ScriptsCreater
             gbHist.Visible = false;
             gbAcciones.Visible = true;
             cb_ChangeTrack.Visible = true;
-            cb_IndexCS.Visible = true;
+            cb_IndexCS.Visible = false;
         }
+
+
+
 
         #endregion
 
+        private void rb_DSDM_T_CheckedChanged(object sender, EventArgs e)
+        {
+            cb_IndexCS.Visible = false;
+        }
 
+        private void rb_DSDM_DS_CheckedChanged(object sender, EventArgs e)
+        {
+            cb_IndexCS.Visible = false;
+        }
+
+        private void rb_DSDM_DM_CheckedChanged(object sender, EventArgs e)
+        {
+            cb_IndexCS.Visible = true;
+        }
+
+        private void rb_DSDM_All_CheckedChanged(object sender, EventArgs e)
+        {
+            cb_IndexCS.Visible = true;
+        }
     }
 }
