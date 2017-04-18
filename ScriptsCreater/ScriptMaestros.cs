@@ -46,10 +46,10 @@ namespace ScriptsCreater
             tclave = tclave.Substring(0, tclave.Length - 1);
 
             string[] lineas = new string[0];
-            string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
             nombrearchivo = "Script maestro_" + tab + ".sql"; 
             nombrearchivoexec = "Exec maestro_" + tab + ".sql";
-            DataTable valorquery = a.valorQuery(lineas, csv, "maestro", false);
+            string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
+            DataTable valorquery = a.valorQuery(lineas, csv, "maestro", false, "");
 
             string fichero = ruta + nombrearchivo;
             //Escribimos en el fichero
@@ -81,7 +81,7 @@ namespace ScriptsCreater
                 file.WriteLine("--Begin table create/prepare -> tbn1_mae_" + tab);
                 file.WriteLine("");
 
-                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, clave, csv, false, "maestro");
+                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, "", csv, false, "maestro");
 
                 if (CreateTable == false)
                 {
@@ -101,7 +101,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 file.WriteLine("--Se crea el SP--");
                 file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_stg_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA='dbo' AND ROUTINE_NAME='spn1_cargar_maestro_" + tab + "' AND ROUTINE_TYPE='PROCEDURE')");
-                file.WriteLine("DROP PROCEDURE dbo.spn1_cargar_maestro_" + tab + ");");
+                file.WriteLine("    DROP PROCEDURE dbo.spn1_cargar_maestro_" + tab + ";");
                 file.WriteLine("GO");
                 file.WriteLine("");
                 //Generamos el SP

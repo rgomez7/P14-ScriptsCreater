@@ -113,7 +113,7 @@ namespace ScriptsCreater
             return csvDataTable;
         }
 
-        public DataTable valorQuery(string[] fichero, string[] csv, string tipo, Boolean inc)
+        public DataTable valorQuery(string[] fichero, string[] csv, string tipo, Boolean inc, string tab)
         {
             DataTable dtfic = new DataTable();
             dtfic.Columns.Add("linSript", typeof(String));
@@ -136,6 +136,9 @@ namespace ScriptsCreater
             int lon = 0;
             int cods = 0;
             string etiqueta = "";
+            string lineaAnt = "";
+            int valorIni = 0;
+            string nombreTabTemp = "";
 
             //Leyendo de un script previo
             if (fichero.Length > 0)
@@ -155,6 +158,21 @@ namespace ScriptsCreater
                         cods++;
                         etiqueta = "--- Fin Bloque común para Incremental y Full";
                     }
+                    else if (lin.ToLower().Contains(";with") && lon == 0)
+                    {
+                        //En este caso, si encontramos la linea de with sin estar grabando registros, grabamos un nuevo registro 
+                        //puesto que es el comienzo de nuevo bloque en generador antiguo
+                        lon = 1;
+                        cods++;
+                        dtfic.Rows.Add("--- Business Logic Start", cods, orden++);
+                        if (lineaAnt.Contains("--"))
+                        {
+                            dtfic.Rows.Add(lineaAnt, cods, orden++);
+                        }
+                        dtfic.Rows.Add("", cods, orden++);
+                        etiqueta = "--- Business Logic End";
+                    }
+
                     //Finalizamos almacenamiento de los registros que se van a mantener
                     else if (lin == "--- Business Logic End" && lon == 1)
                     {
@@ -178,8 +196,18 @@ namespace ScriptsCreater
 
                     if (lon == 1)
                     {
-                        dtfic.Rows.Add(lin, cods, orden++);
+                        if (lin.ToLower().Contains("#tmp_keys_"))
+                        {
+                            valorIni = lin.ToLower().IndexOf("#tmp_keys");
+                            nombreTabTemp = lin.Substring(valorIni, lin.IndexOf(" ", valorIni) - valorIni);
+                            dtfic.Rows.Add(lin.Replace(nombreTabTemp, "#tmp_keys_" + tab), cods, orden++);
+                        }
+                        else
+                        {
+                            dtfic.Rows.Add(lin, cods, orden++);
+                        }
                     }
+                    lineaAnt = lin;
                 }
             }
 
@@ -369,12 +397,12 @@ namespace ScriptsCreater
             file_exec.WriteLine("EXEC " + sp_bd + "." + sp_sch + "." + sp + " NULL");
             file_exec.WriteLine("GO");
             file_exec.WriteLine("SELECT COUNT(1) FROM " + tabla);
-            file_exec.WriteLine("SELECT TOP 1 * FROM dbn1_norm_dhyf.audit.tbn1_logs_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = " + sp + " order by id desc");
+            file_exec.WriteLine("SELECT TOP 1 * FROM dbn1_norm_dhyf.audit.tbn1_logs_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "' order by id desc");
             file_exec.WriteLine("");
             file_exec.WriteLine("EXEC " + sp_bd + "." + sp_sch + "." + sp + " NULL");
             file_exec.WriteLine("GO");
             file_exec.WriteLine("SELECT COUNT(1) FROM " + tabla);
-            file_exec.WriteLine("SELECT TOP 1 * FROM dbn1_norm_dhyf.audit.tbn1_logs_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = " + sp + " order by id desc");
+            file_exec.WriteLine("SELECT TOP 1 * FROM dbn1_norm_dhyf.audit.tbn1_logs_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "' order by id desc");
             file_exec.WriteLine("");
             file_exec.WriteLine("SELECT TOP 10000 * FROM " + tabla);
             file_exec.WriteLine("GO");

@@ -28,7 +28,7 @@ namespace ScriptsCreater
             string nombrearchivoexec = "";
             string fichero;
             string tab = "";
-            string bd = "";
+            string bd = "dbn1_norm_dhyf";
             string clave = "";
             string campos = "";
             string campospk = "";
@@ -59,8 +59,16 @@ namespace ScriptsCreater
                     {
                         camposfilter = camposfilter + j[0] + ",";
                     }
+
                     Array.Resize(ref csv2, csv2.Length + 1);
-                    csv2[csv2.Length-1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString();
+                    if (j[2].ToString() != "")
+                    {
+                        csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";#";
+                    }
+                    else
+                    {
+                        csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";";
+                    }
                 }
             }
             campos = campos.Substring(0, campos.Length - 1);
@@ -70,13 +78,19 @@ namespace ScriptsCreater
                 camposfilter = camposfilter.Substring(0, camposfilter.Length - 1);
             }
             //Si no tenemos valor clave, lo generamos
-            if (campos.Contains(clave))
+            if (clave == "")
+            {
+                clave = "id_" + tab;
+            }
+            else if (campos.Contains(clave))
             {
                 clave = "";
             }
-            else if (clave == "")
+
+            //Indicamos la BBDD de normalizado
+            if (bd == "")
             {
-                clave = "id_tbn1_" + tab;
+                bd = "dbn1_norm_dhyf";
             }
 
             //Generamos nombre fichero y obtenemos lineas, renombrando fichero actual
@@ -84,7 +98,7 @@ namespace ScriptsCreater
             nombrearchivoexec = "Exec normalizado_" + tab + ".sql";
             string[] lineas = new string[0];
             string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
-            DataTable valorquery = a.valorQuery(lineas, csv, "ds", incremental);
+            DataTable valorquery = a.valorQuery(lineas, csv, "ds", incremental, tab);
 
             fichero = ruta + nombrearchivo;
             //Escribimos en el fichero
@@ -187,7 +201,6 @@ namespace ScriptsCreater
                 file.WriteLine("                DROP TABLE #tmp_q_" + tab + "");
                 file.WriteLine("            CREATE table #tmp_q_" + tab + "(");
                 file.WriteLine("                cc int default 1,");
-                file.WriteLine("                " + clave + " int,");
                 //--Campos--//
                 i = 0;
                 foreach (string d in csv)
@@ -458,13 +471,25 @@ namespace ScriptsCreater
                     foreach (string d in csv)
                     {
                         string[] j = d.Split(new Char[] { ';' });
-                        i++;
                         if (!j[0].Contains("#"))
                         {
-                            if (i == csv.Length)
-                                file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                            i++;
+                            if (i == 1)
+                            {
+                                file.WriteLine("                OR (t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
                                 file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
                             }
+                            else if (i == campos.Split(new Char[] { ',' }).Length)
+                            {
+                                file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                                file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
+                            }
+                            else
+                            {
+                                file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                                file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
+                            }
+                        }
                     }
                     file.WriteLine("        END");
                     file.WriteLine("--------BLOQUE FULL--------");
@@ -586,11 +611,24 @@ namespace ScriptsCreater
                 foreach (string d in csv)
                 {
                     string[] j = d.Split(new Char[] { ';' });
-                    i++;
                     if (!j[0].Contains("#"))
                     {
-                        file.WriteLine("                OR t." + j[0].ToString() + "<>query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                        file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
+                        i++;
+                        if (i == 1)
+                        {
+                            file.WriteLine("                OR (t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                            file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
+                        }
+                        else if (i == campos.Split(new Char[] { ',' }).Length)
+                        {
+                            file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                            file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
+                        }
+                        else
+                        {
+                            file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                            file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
+                        }
                     }
                 }
                 file.WriteLine("");
@@ -886,7 +924,7 @@ namespace ScriptsCreater
                         {
                             campos = campos + "'" + j[0] + "',";
                             Array.Resize(ref csv2, csv2.Length + 1);
-                            csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[2].ToString();
+                            csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[2].ToString() + ";";
                         }
                     }
                     campos = campos.Substring(0, campos.Length - 1);
@@ -924,24 +962,26 @@ namespace ScriptsCreater
                     }
                     file.WriteLine("");
 
-                    //Activamos CT
-                    if (ChangeTrack == false)
-                    {
-                        file.WriteLine("--------------------------------------");
-                    }
-                    else
-                    {
-                        file.WriteLine("/*--------------------------------------");
-                    }
-                    string ctpf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "act");
-                    if (ChangeTrack == false)
-                    {
-                        file.WriteLine("--------------------------------------");
-                    }
-                    else
-                    {
-                        file.WriteLine("--------------------------------------*/");
-                    }
+                    #region Activar CT comentado Dim
+                    ////Activamos CT
+                    //if (ChangeTrack == false)
+                    //{
+                    //    file.WriteLine("--------------------------------------");
+                    //}
+                    //else
+                    //{
+                    //    file.WriteLine("/*--------------------------------------");
+                    //}
+                    //string ctpf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "act");
+                    //if (ChangeTrack == false)
+                    //{
+                    //    file.WriteLine("--------------------------------------");
+                    //}
+                    //else
+                    //{
+                    //    file.WriteLine("--------------------------------------*/");
+                    //}
+                    #endregion Activar CT comentado Dim
 
                     file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_dim_" + tabDim);
                     file.WriteLine("");
@@ -1019,24 +1059,26 @@ namespace ScriptsCreater
                 }
                 file.WriteLine("");
 
-                //Activamos CT
-                if (ChangeTrack == false)
-                {
-                    file.WriteLine("--------------------------------------");
-                }
-                else
-                {
-                    file.WriteLine("/*--------------------------------------");
-                }
-                string ctp = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "act");
-                if (ChangeTrack == false)
-                {
-                    file.WriteLine("--------------------------------------");
-                }
-                else
-                {
-                    file.WriteLine("--------------------------------------*/");
-                }
+                #region Activar CT comentado fact
+                ////Activamos CT
+                //if (ChangeTrack == false)
+                //{
+                //    file.WriteLine("--------------------------------------");
+                //}
+                //else
+                //{
+                //    file.WriteLine("/*--------------------------------------");
+                //}
+                //string ctp = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "act");
+                //if (ChangeTrack == false)
+                //{
+                //    file.WriteLine("--------------------------------------");
+                //}
+                //else
+                //{
+                //    file.WriteLine("--------------------------------------*/");
+                //}
+                #endregion Activar CT comentado fact
 
                 file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_fact");
                 file.WriteLine("");
@@ -1627,7 +1669,7 @@ namespace ScriptsCreater
                             }
                         }
                     }
-                    file.WriteLine("        FROM " + bd + ".dbo.tbn1_" + prefijo_tab + "fact AS t");
+                    file.WriteLine("        FROM " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact AS t");
                     clave = "";
                     claveDim = "";
                     foreach (string d in csv2)
@@ -1642,7 +1684,7 @@ namespace ScriptsCreater
                     clave = clave.Substring(0, clave.Length - 2);
                     claveDim = claveDim.Substring(0, claveDim.Length - 5);
                     file.WriteLine("        INNER JOIN (SELECT " + clave + " FROM CHANGETABLE(CHANGES " + bdnrm + ".dbo.tbn1_" + tabNRM + ", @ct_norm_inicial) AS CT GROUP BY " + clave + ") as CT ON (" + claveDim + ")");
-                    file.WriteLine("        FULL JOIN  #tmp_" + prefijo_tab + "_fact AS query ON ");
+                    file.WriteLine("        FULL JOIN  #tmp_q_" + prefijo_tab + "_fact AS query ON ");
                     i = 0;
                     foreach (string d in csv2)
                     {
@@ -1848,8 +1890,8 @@ namespace ScriptsCreater
                         }
                     }
                 }
-                file.WriteLine("        FROM " + bd + ".dbo.tbn1_" + prefijo_tab + "fact AS t");
-                file.WriteLine("        FULL JOIN  #tmp_" + prefijo_tab + "_fact AS query ON");
+                file.WriteLine("        FROM " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact AS t");
+                file.WriteLine("        FULL JOIN  #tmp_q_" + prefijo_tab + "_fact AS query ON");
                 i = 0;
                 foreach (string d in csv2)
                 {
@@ -1965,7 +2007,7 @@ namespace ScriptsCreater
                         }
                         else
                         {
-                            file.WriteLine("        	AND (" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " = s." + j[0].ToString() + " OR (" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " IS NULL AND s.i" + j[0].ToString() + " IS NULL)) ");
+                            file.WriteLine("        	AND (" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " = s." + j[0].ToString() + " OR (" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL)) ");
                         }
                         i++;
                     }
@@ -1987,15 +2029,15 @@ namespace ScriptsCreater
                         i++;
                         if (i == 1)
                         {
-                            file.WriteLine("            ON ((" +bd + ".dbo.tbn1_" + prefijo_tab + "_fac." + j[0].ToString() + " = t." + j[0].ToString() + " OR (" + bd + ".dbo.tbn1_" + prefijo_tab + "." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL))");
+                            file.WriteLine("            ON ((tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " = tmp." + j[0].ToString() + " OR (tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " IS NULL AND tmp." + j[0].ToString() + " IS NULL))");
                         }
                         else if (i == campospk.Split(new Char[] { ',' }).Length)
                         {
-                            file.WriteLine("                AND (" + bd + ".dbo.tbn1_" + prefijo_tab + "." + j[0].ToString() + " = t." + j[0].ToString() + " OR (" + bd + ".dbo.tbn1_" + prefijo_tab + "." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)))");
+                            file.WriteLine("                AND (tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " = tmp." + j[0].ToString() + " OR (tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " IS NULL AND tmp." + j[0].ToString() + " IS NULL)))");
                         }
                         else
                         {
-                            file.WriteLine("                AND (" + bd + ".dbo.tbn1_" + prefijo_tab + "." + j[0].ToString() + " = t." + j[0].ToString() + " OR (" + bd + ".dbo.tbn1_" + prefijo_tab + "." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL))");
+                            file.WriteLine("                AND (tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " = tmp." + j[0].ToString() + " OR (tbn1_" + prefijo_tab + "_fact." + j[0].ToString() + " IS NULL AND tmp." + j[0].ToString() + " IS NULL))");
                         }
                     }
                 }
@@ -2093,29 +2135,29 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("    EXEC " + bdSP + ".dbo.spn1_cargar_" + prefijo_tab + "_dim_" + tabDim + " @p_id_carga");
                 }
-                if (IndexColumnStore == true)
-                {
-                    file.WriteLine("");
-                    //Desactivamos indice ColumnStore
-                    file.WriteLine("    --Borramos todos los indices NonCluster ColumnStore de la fact antes de cargarla");
-                    file.WriteLine("    DECLARE @ncindex nvarchar(128), @nmindex nvarchar(128), @sqlcmd nvarchar(max)");
-                    file.WriteLine("    DECLARE index_cursor CURSOR FOR");
-                    file.WriteLine("    SELECT name, type_desc FROM " + bd + ".SYS.INDEXES WHERE object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact')");
-                    file.WriteLine("    OPEN index_cursor");
-                    file.WriteLine("    FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
-                    file.WriteLine("    WHILE @@FETCH_STATUS = 0");
-                    file.WriteLine("    BEGIN");
-                    file.WriteLine("        IF (@ncindex = 'NONCLUSTERED COLUMNSTORE')");
-                    file.WriteLine("        BEGIN");
-                    file.WriteLine("            SET @sqlcmd = 'DROP INDEX ' + @nmindex + ' ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'");
-                    file.WriteLine("            EXEC (@sqlcmd)");
-                    file.WriteLine("        END");
-                    file.WriteLine("        FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
-                    file.WriteLine("    END");
-                    file.WriteLine("    CLOSE index_cursor");
-                    file.WriteLine("    DEALLOCATE index_cursor");
-                    file.WriteLine("");
-                }
+                file.WriteLine("");
+                
+                //Desactivamos indice ColumnStore
+                file.WriteLine("    --Borramos todos los indices NonCluster ColumnStore de la fact antes de cargarla");
+                file.WriteLine("    DECLARE @ncindex nvarchar(128), @nmindex nvarchar(128), @sqlcmd nvarchar(max)");
+                file.WriteLine("    DECLARE index_cursor CURSOR FOR");
+                file.WriteLine("    SELECT name, type_desc FROM " + bd + ".SYS.INDEXES WHERE object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact')");
+                file.WriteLine("    OPEN index_cursor");
+                file.WriteLine("    FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
+                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
+                file.WriteLine("    BEGIN");
+                file.WriteLine("        IF (@ncindex = 'NONCLUSTERED COLUMNSTORE')");
+                file.WriteLine("        BEGIN");
+                file.WriteLine("            SET @sqlcmd = 'DROP INDEX ' + @nmindex + ' ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'");
+                file.WriteLine("            EXEC (@sqlcmd)");
+                file.WriteLine("        END");
+                file.WriteLine("        FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
+                file.WriteLine("    END");
+                file.WriteLine("    CLOSE index_cursor");
+                file.WriteLine("    DEALLOCATE index_cursor");
+                file.WriteLine("");
+
+                //Ejectumos la carga de datos en la Fact
                 file.WriteLine("    EXEC " + bdSP + ".dbo.spn1_cargar_" + prefijo_tab + "_fact @p_id_carga");
                 file.WriteLine("");
                 if (IndexColumnStore == true)
@@ -2124,7 +2166,7 @@ namespace ScriptsCreater
                     //Activamos indice ColumnStore
                     file.WriteLine("    --Creamos de nuevo el índice ColumnStore si no existe");
                     file.WriteLine("    IF	EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + prefijo_tab + "_fact')");
-                    file.WriteLine("        AND NOT EXISTS (SELECT 1 FROM " + bd + ".dbo.sysindexes WHERE name='IDX_CS_tbn1_" + prefijo_tab + "_fact' AND object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'))");
+                    file.WriteLine("        AND NOT EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name='IDX_CS_tbn1_" + prefijo_tab + "_fact' AND object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'))");
                     file.WriteLine("    CREATE NONCLUSTERED COLUMNSTORE INDEX IDX_CS_tbn1_" + prefijo_tab + "_fact ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact");
                     file.WriteLine("        (id," + campos.Replace("'",""));
                     file.WriteLine("        )WITH (DROP_EXISTING = OFF)");

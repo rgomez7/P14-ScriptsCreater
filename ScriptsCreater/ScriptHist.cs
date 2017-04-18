@@ -46,7 +46,7 @@ namespace ScriptsCreater
                         campospk = campospk + "t_" + j[0] + ",";
                     }
                     Array.Resize(ref csv2, csv2.Length + 1);
-                    csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString();
+                    csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";";
                 }
             }
             campos = campos.Substring(0, campos.Length - 1);
