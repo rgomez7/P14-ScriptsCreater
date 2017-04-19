@@ -291,27 +291,32 @@ namespace ScriptsCreater
             //Formato string[] CSV a pasar (nombreCampo;valorCampo;# [para campos Clave])
 
             int i = 0;
+            string tipodato = "";
+            string coma = "";
+
             file.WriteLine("--Create Table");
             file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "')");
+            #region Create Table
             file.WriteLine("CREATE TABLE " + bd + "." + schema + "." + tab + "(");
             if (clave != "")
             {
-                file.WriteLine("        " + clave + " int IDENTITY(1,1),");
+                file.WriteLine("        " + clave + " int IDENTITY(1,1) NOT NULL,");
             }
             if (tiposcript == "historificacion")
             {
                 if (claveAuto == true)
                 {
-                    file.WriteLine("       " + clave.Replace("_tracelog", "") + " int,");
+                    file.WriteLine("       " + clave.Replace("_tracelog", "") + " int NULL,");
                 }
-                file.WriteLine("        ctct_fec_procesado datetime,");
-                file.WriteLine("        ctct_tipo_operacion varchar(15),");
+                file.WriteLine("        ctct_fec_procesado datetime NULL,");
+                file.WriteLine("        ctct_tipo_operacion varchar(15) NULL,");
             }
             else if (tiposcript == "maestro")
             {
-                file.WriteLine("        origen varchar(10),");
+                file.WriteLine("        origen varchar(10), NULL");
             }
             i = 0;
+            coma = ",";
             foreach (string d in csv)
             {
                 string[] j = d.Split(new Char[] { ';' });
@@ -320,19 +325,38 @@ namespace ScriptsCreater
                 {
                     if (i == csv.Length)
                     {
-                        file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString());
+                        coma = "";
+                    }
+                    if (tiposcript == "maestro")
+                    {
+                        tipodato = " NULL";
                     }
                     else
                     {
-                        file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + ",");
+                        if (j[2].ToString() == "#")
+                        {
+                            tipodato = " NOT NULL";
+                        }
+                        else if (j[3].ToString() == "#")
+                        {
+                            tipodato = " NOT NULL";
+                        }
+                        else
+                        {
+                            tipodato = " NULL";
+                        }
                     }
+
+                    file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + tipodato + coma) ;
                 }
             }
             file.WriteLine(")");
             file.WriteLine("WITH (DATA_COMPRESSION=PAGE)");
             file.WriteLine("GO");
             file.WriteLine("");
+            #endregion Create Table
 
+            #region Borrado Constraint
             //Borramos Constraint
             file.WriteLine("--Drop all Constraints");
             file.WriteLine("DECLARE @constraint nvarchar(128)");
@@ -356,7 +380,9 @@ namespace ScriptsCreater
             file.WriteLine("DEALLOCATE @cursor");
             file.WriteLine("GO");
             file.WriteLine("");
+            #endregion Borrado Constraint
 
+            #region Borrado Indices
             //Borramos Indices
             file.WriteLine("--Drop all non-clustered index");
             file.WriteLine("USE " + bd);
@@ -384,7 +410,9 @@ namespace ScriptsCreater
             file.WriteLine("DEALLOCATE @cursor");
             file.WriteLine("GO");
             file.WriteLine("");
+            #endregion Borrado Indices
 
+            #region Añadimos Columnas si no existen
             //Añadimos columnas si no existen
             file.WriteLine("--Add all Columns (if not exist)");
             foreach (string d in csv)
@@ -394,7 +422,18 @@ namespace ScriptsCreater
                 if (!j[0].Contains("#"))
                 {
                     file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
-                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString());
+                    if (tiposcript == "maestro")
+                        {
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NULL");
+                        }
+                    else if (j[2].ToString() == "#" || j[3].ToString() == "#")
+                        {
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                        }
+                    else
+                        {
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NULL");
+                        }
                     file.WriteLine("GO");
                 }
             }
@@ -403,18 +442,20 @@ namespace ScriptsCreater
                 if (claveAuto == true)
                 {
                     file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog","") + "')");
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int");
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int NULL");
                     file.WriteLine("GO");
                 }
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado')");
-                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_fec_procesado datetime");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_fec_procesado datetime NULL");
                 file.WriteLine("GO");
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_tipo_operacion')");
-                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_tipo_operacion varchar(15)");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_tipo_operacion varchar(15) NULL");
                 file.WriteLine("GO");
             }
             file.WriteLine("");
+            #endregion Añadimos Columnas si no existen
 
+            #region Borrado Columnas si no existen CSV
             //Borramos columnas que no existan el CSV
             file.WriteLine("--Drop not used columns");
             file.WriteLine("DECLARE @column nvarchar(128)");
@@ -450,47 +491,51 @@ namespace ScriptsCreater
             file.WriteLine("DEALLOCATE @cursor");
             file.WriteLine("GO");
             file.WriteLine("");
+            #endregion Borrado Columnas si no existen CSV
 
-            //Adjuntamos tipos de Campos
-            if (tiposcript != "maestro")
-            {
-                file.WriteLine("--Adjust column types");
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (j[2].ToString() == "#")
-                        {
-                            file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
-                        }
-                        else if (j[3].ToString() == "#")
-                        {
-                            file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
-                        }
-                        else
-                        {
-                            file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NULL");
-                        }
-                        file.WriteLine("GO");
-                    }
-                }
-                if (tiposcript == "historificacion")
-                {
-                    if (claveAuto == true)
-                    {
-                        file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + clave.Replace("_tracelog", "") + " int NULL");
-                        file.WriteLine("GO");
-                    }
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_fec_procesado datetime NULL");
-                    file.WriteLine("GO");
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_tipo_operacion varchar(15) NULL");
-                    file.WriteLine("GO");
-                }
-                file.WriteLine("");
-            }
+            #region Adjuntamos Tipos Campos
+            ////Adjuntamos tipos de Campos
+            //if (tiposcript != "maestro")
+            //{
+            //    file.WriteLine("--Adjust column types");
+            //    foreach (string d in csv)
+            //    {
+            //        string[] j = d.Split(new Char[] { ';' });
+            //        i++;
+            //        if (!j[0].Contains("#"))
+            //        {
+            //            if (j[2].ToString() == "#")
+            //            {
+            //                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+            //            }
+            //            else if (j[3].ToString() == "#")
+            //            {
+            //                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+            //            }
+            //            else
+            //            {
+            //                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NULL");
+            //            }
+            //            file.WriteLine("GO");
+            //        }
+            //    }
+            //    if (tiposcript == "historificacion")
+            //    {
+            //        if (claveAuto == true)
+            //        {
+            //            file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + clave.Replace("_tracelog", "") + " int NULL");
+            //            file.WriteLine("GO");
+            //        }
+            //        file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_fec_procesado datetime NULL");
+            //        file.WriteLine("GO");
+            //        file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_tipo_operacion varchar(15) NULL");
+            //        file.WriteLine("GO");
+            //    }
+            //    file.WriteLine("");
+            //}
+            #endregion Adjuntamos Tipos Campos
 
+            #region Añadimos PK
             //Añadimos PK siempre que pasemos valor en el parametro "campospk"
             if (campospk != "")
             {
@@ -511,6 +556,9 @@ namespace ScriptsCreater
                 file.WriteLine("GO");
                 file.WriteLine("");
             }
+            #endregion Añadimos PK
+
+            #region Añadimos Index
             //Añadimos Index
             if (tiposcript == "dm")
             {
@@ -543,6 +591,7 @@ namespace ScriptsCreater
                 file.WriteLine("--Add FKs if necessary");
                 file.WriteLine("");
             }
+            #endregion Añadimos Index
 
             return "OK";
         }

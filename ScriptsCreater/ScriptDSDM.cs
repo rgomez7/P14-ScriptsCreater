@@ -962,26 +962,12 @@ namespace ScriptsCreater
                     }
                     file.WriteLine("");
 
-                    #region Activar CT comentado Dim
-                    ////Activamos CT
-                    //if (ChangeTrack == false)
-                    //{
-                    //    file.WriteLine("--------------------------------------");
-                    //}
-                    //else
-                    //{
-                    //    file.WriteLine("/*--------------------------------------");
-                    //}
-                    //string ctpf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "act");
-                    //if (ChangeTrack == false)
-                    //{
-                    //    file.WriteLine("--------------------------------------");
-                    //}
-                    //else
-                    //{
-                    //    file.WriteLine("--------------------------------------*/");
-                    //}
-                    #endregion Activar CT comentado Dim
+                    #region Activar CT Dim
+                    //Activamos CT
+                    file.WriteLine("/*--------------------------------------");
+                    string ctpf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "act");
+                    file.WriteLine("--------------------------------------*/");
+                    #endregion Activar CT Dim
 
                     file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_dim_" + tabDim);
                     file.WriteLine("");
@@ -1059,26 +1045,12 @@ namespace ScriptsCreater
                 }
                 file.WriteLine("");
 
-                #region Activar CT comentado fact
-                ////Activamos CT
-                //if (ChangeTrack == false)
-                //{
-                //    file.WriteLine("--------------------------------------");
-                //}
-                //else
-                //{
-                //    file.WriteLine("/*--------------------------------------");
-                //}
-                //string ctp = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "act");
-                //if (ChangeTrack == false)
-                //{
-                //    file.WriteLine("--------------------------------------");
-                //}
-                //else
-                //{
-                //    file.WriteLine("--------------------------------------*/");
-                //}
-                #endregion Activar CT comentado fact
+                #region Activar CT fact
+                //Activamos CT
+                file.WriteLine("/*--------------------------------------");
+                string ctp = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "act");
+                file.WriteLine("--------------------------------------*/");
+                #endregion Activar CT fact
 
                 file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_fact");
                 file.WriteLine("");
@@ -1408,6 +1380,26 @@ namespace ScriptsCreater
 
                 //Cabecera
                 string cabF = sc.cabeceraLogSP(file, bdSP, "dbo", "spn1_cargar_" + prefijo_tab + "_fact", incremental, false);
+
+                //Desactivamos indice ColumnStore
+                file.WriteLine("    --Borramos todos los indices NonCluster ColumnStore de la fact antes de cargarla");
+                file.WriteLine("    DECLARE @ncindex nvarchar(128), @nmindex nvarchar(128), @sqlcmd nvarchar(max)");
+                file.WriteLine("    DECLARE index_cursor CURSOR FOR");
+                file.WriteLine("    SELECT name, type_desc FROM " + bd + ".SYS.INDEXES WHERE object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact')");
+                file.WriteLine("    OPEN index_cursor");
+                file.WriteLine("    FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
+                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
+                file.WriteLine("    BEGIN");
+                file.WriteLine("        IF (@ncindex = 'NONCLUSTERED COLUMNSTORE')");
+                file.WriteLine("        BEGIN");
+                file.WriteLine("            SET @sqlcmd = 'DROP INDEX ' + @nmindex + ' ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'");
+                file.WriteLine("            EXEC (@sqlcmd)");
+                file.WriteLine("        END");
+                file.WriteLine("        FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
+                file.WriteLine("    END");
+                file.WriteLine("    CLOSE index_cursor");
+                file.WriteLine("    DEALLOCATE index_cursor");
+                file.WriteLine("");
 
                 //Introducimos información para Metodo Incremental
                 if (incremental == true)
@@ -1965,8 +1957,8 @@ namespace ScriptsCreater
                 foreach (string tabDim in tD)
                 {
                     i++;
-                        file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_tbn1_" + prefijo_tab + "_fact_" + i + "') ");
-                        file.WriteLine("                ALTER INDEX  IX_tbn1_" + prefijo_tab + "_fact_"+ i + " ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact DISABLE; ");
+                    file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_tbn1_" + prefijo_tab + "_fact_" + i + "') ");
+                    file.WriteLine("                ALTER INDEX  IX_tbn1_" + prefijo_tab + "_fact_"+ i + " ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact DISABLE; ");
                 }
                 file.WriteLine("        END");
                 file.WriteLine("");
@@ -2092,6 +2084,19 @@ namespace ScriptsCreater
                     file.WriteLine("");
                 }
 
+                if (IndexColumnStore == true)
+                {
+                    file.WriteLine("");
+                    //Activamos indice ColumnStore
+                    file.WriteLine("    --Creamos de nuevo el índice ColumnStore si no existe");
+                    file.WriteLine("    IF	EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + prefijo_tab + "_fact')");
+                    file.WriteLine("        AND NOT EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name='IDX_CS_tbn1_" + prefijo_tab + "_fact' AND object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'))");
+                    file.WriteLine("    CREATE NONCLUSTERED COLUMNSTORE INDEX IDX_CS_tbn1_" + prefijo_tab + "_fact ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact");
+                    file.WriteLine("        (id," + campos.Replace("'",""));
+                    file.WriteLine("        )WITH (DROP_EXISTING = OFF)");
+                    file.WriteLine("");
+                }
+
                 //Pie
                 string pieF = sc.pieLogSP(file, "dm");
 
@@ -2135,43 +2140,10 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("    EXEC " + bdSP + ".dbo.spn1_cargar_" + prefijo_tab + "_dim_" + tabDim + " @p_id_carga");
                 }
-                file.WriteLine("");
-                
-                //Desactivamos indice ColumnStore
-                file.WriteLine("    --Borramos todos los indices NonCluster ColumnStore de la fact antes de cargarla");
-                file.WriteLine("    DECLARE @ncindex nvarchar(128), @nmindex nvarchar(128), @sqlcmd nvarchar(max)");
-                file.WriteLine("    DECLARE index_cursor CURSOR FOR");
-                file.WriteLine("    SELECT name, type_desc FROM " + bd + ".SYS.INDEXES WHERE object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact')");
-                file.WriteLine("    OPEN index_cursor");
-                file.WriteLine("    FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
-                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
-                file.WriteLine("    BEGIN");
-                file.WriteLine("        IF (@ncindex = 'NONCLUSTERED COLUMNSTORE')");
-                file.WriteLine("        BEGIN");
-                file.WriteLine("            SET @sqlcmd = 'DROP INDEX ' + @nmindex + ' ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'");
-                file.WriteLine("            EXEC (@sqlcmd)");
-                file.WriteLine("        END");
-                file.WriteLine("        FETCH NEXT FROM index_cursor INTO @nmindex, @ncindex");
-                file.WriteLine("    END");
-                file.WriteLine("    CLOSE index_cursor");
-                file.WriteLine("    DEALLOCATE index_cursor");
-                file.WriteLine("");
 
                 //Ejectumos la carga de datos en la Fact
                 file.WriteLine("    EXEC " + bdSP + ".dbo.spn1_cargar_" + prefijo_tab + "_fact @p_id_carga");
-                file.WriteLine("");
-                if (IndexColumnStore == true)
-                {
-                    file.WriteLine("");
-                    //Activamos indice ColumnStore
-                    file.WriteLine("    --Creamos de nuevo el índice ColumnStore si no existe");
-                    file.WriteLine("    IF	EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='tbn1_" + prefijo_tab + "_fact')");
-                    file.WriteLine("        AND NOT EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name='IDX_CS_tbn1_" + prefijo_tab + "_fact' AND object_id = OBJECT_ID('" + bd + ".dbo.tbn1_" + prefijo_tab + "_fact'))");
-                    file.WriteLine("    CREATE NONCLUSTERED COLUMNSTORE INDEX IDX_CS_tbn1_" + prefijo_tab + "_fact ON " + bd + ".dbo.tbn1_" + prefijo_tab + "_fact");
-                    file.WriteLine("        (id," + campos.Replace("'",""));
-                    file.WriteLine("        )WITH (DROP_EXISTING = OFF)");
-                    file.WriteLine("");
-                }
+
                 //WITH CHECK CHECK CONSTRAINT ALL
                 foreach (string tabDim in tD)
                 {
