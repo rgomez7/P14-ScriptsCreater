@@ -320,6 +320,8 @@
             // cb_IndexCS
             // 
             this.cb_IndexCS.AutoSize = true;
+            this.cb_IndexCS.Checked = true;
+            this.cb_IndexCS.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_IndexCS.Location = new System.Drawing.Point(19, 81);
             this.cb_IndexCS.Name = "cb_IndexCS";
             this.cb_IndexCS.Size = new System.Drawing.Size(209, 21);
@@ -342,8 +344,6 @@
             // cb_CreateTable
             // 
             this.cb_CreateTable.AutoSize = true;
-            this.cb_CreateTable.Checked = true;
-            this.cb_CreateTable.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_CreateTable.Location = new System.Drawing.Point(19, 26);
             this.cb_CreateTable.Name = "cb_CreateTable";
             this.cb_CreateTable.Size = new System.Drawing.Size(188, 21);
