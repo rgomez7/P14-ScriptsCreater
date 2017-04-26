@@ -306,14 +306,14 @@ namespace ScriptsCreater
             {
                 if (claveAuto == true)
                 {
-                    file.WriteLine("       " + clave.Replace("_tracelog", "") + " int NULL,");
+                    file.WriteLine("       " + clave.Replace("_tracelog", "") + " int NOT NULL,");
                 }
-                file.WriteLine("        ctct_fec_procesado datetime NULL,");
-                file.WriteLine("        ctct_tipo_operacion varchar(15) NULL,");
+                file.WriteLine("        ctct_fec_procesado datetime NOT NULL,");
+                file.WriteLine("        ctct_tipo_operacion varchar(15) NOT NULL,");
             }
             else if (tiposcript == "maestro")
             {
-                file.WriteLine("        origen varchar(10), NULL");
+                file.WriteLine("        origen varchar(10), NOT NULL");
             }
             i = 0;
             coma = ",";
@@ -327,26 +327,29 @@ namespace ScriptsCreater
                     {
                         coma = "";
                     }
-                    if (tiposcript == "maestro")
-                    {
-                        tipodato = " NULL";
-                    }
-                    else
-                    {
-                        if (j[2].ToString() == "#")
-                        {
-                            tipodato = " NOT NULL";
-                        }
-                        else if (j[3].ToString() == "#")
-                        {
-                            tipodato = " NOT NULL";
-                        }
-                        else
-                        {
-                            tipodato = " NULL";
-                        }
-                    }
+                    #region Comprobar tipo campo COMENTADO
+                    //if (tiposcript == "maestro")
+                    //{
+                    //    tipodato = " NULL";
+                    //}
+                    //else
+                    //{
+                    //    if (j[2].ToString() == "#")
+                    //    {
+                    //        tipodato = " NOT NULL";
+                    //    }
+                    //    else if (j[3].ToString() == "#")
+                    //    {
+                    //        tipodato = " NOT NULL";
+                    //    }
+                    //    else
+                    //    {
+                    //        tipodato = " NULL";
+                    //    }
+                    //}
+                    #endregion Comprobar tipo campo COMENTADO
 
+                    tipodato = " NOT NULL";
                     file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + tipodato + coma) ;
                 }
             }
@@ -421,10 +424,10 @@ namespace ScriptsCreater
                 i++;
                 if (!j[0].Contains("#"))
                 {
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                    //file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
                     if (tiposcript == "maestro")
                         {
-                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NULL");
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                         }
                     else if (j[2].ToString() == "#" || j[3].ToString() == "#")
                         {
@@ -432,7 +435,7 @@ namespace ScriptsCreater
                         }
                     else
                         {
-                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NULL");
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                         }
                     file.WriteLine("GO");
                 }
@@ -441,15 +444,15 @@ namespace ScriptsCreater
             {
                 if (claveAuto == true)
                 {
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog","") + "')");
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int NULL");
+                    //file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog","") + "')");
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int NOT NULL");
                     file.WriteLine("GO");
                 }
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado')");
-                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_fec_procesado datetime NULL");
+                //file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado')");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_fec_procesado datetime NOT NULL");
                 file.WriteLine("GO");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_tipo_operacion')");
-                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_tipo_operacion varchar(15) NULL");
+                //file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_tipo_operacion')");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_tipo_operacion varchar(15) NOT NULL");
                 file.WriteLine("GO");
             }
             file.WriteLine("");
