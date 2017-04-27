@@ -43,7 +43,7 @@ namespace ScriptsCreater
                     archivoruta = openFileDialog1.FileName;
                     archivo = openFileDialog1.SafeFileName;
                     txFile.Text = archivo;
-                rutaorigen = archivoruta.Replace(archivo, "");
+                    rutaorigen = archivoruta.Replace(archivo, "");
                     ruta = archivoruta.Replace(archivo, "");
                 if (ruta.ToLower().Contains("csv"))
                     {
@@ -128,7 +128,7 @@ namespace ScriptsCreater
                 //Opción maestro
                 if (rbMaestro.Checked)
                 {
-                    csv = cr.leerCSV(archivo, ruta);
+                    csv = cr.leerCSV(archivo, rutaorigen);
                     if (csv.Length == 0)
                     {
                         txFile.Text = "";
@@ -148,7 +148,7 @@ namespace ScriptsCreater
                 //Opción Integridad
                 else if (rbIntegridad.Checked)
                 {
-                    csv = cr.leerCSV(archivo, ruta);
+                    csv = cr.leerCSV(archivo, rutaorigen);
                     if (csv.Length == 0)
                     {
                         txFile.Text = "";
@@ -168,7 +168,7 @@ namespace ScriptsCreater
                 //Opción DS DM
                 else if (rbDSDM.Checked)
                 {
-                    csv = cr.leerCSV(archivo, ruta);
+                    csv = cr.leerCSV(archivo, rutaorigen);
                     if (csv.Length == 0)
                     {
                         txFile.Text = "";
@@ -241,7 +241,7 @@ namespace ScriptsCreater
                     //Para un archivo
                     if (rb_Archivo.Checked == true)
                     {
-                        csv = cr.leerCSV(archivo, ruta);
+                        csv = cr.leerCSV(archivo, rutaorigen);
                         if (csv.Length == 0)
                         {
                             txFile.Text = "";

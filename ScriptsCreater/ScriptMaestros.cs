@@ -60,7 +60,7 @@ namespace ScriptsCreater
 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                a.generar_file_exec(file_exec, "dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_maestro_" + tab);
+                a.generar_file_exec(file_exec, "dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_maestro_" + tab, false);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");

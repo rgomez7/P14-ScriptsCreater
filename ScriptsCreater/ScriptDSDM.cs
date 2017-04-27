@@ -111,7 +111,7 @@ namespace ScriptsCreater
                 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab);
+                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
@@ -541,7 +541,7 @@ namespace ScriptsCreater
                 file.WriteLine("");
 
                 //SP Comparamos registros para indicar la acción a realizar
-                file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc,id_" + tab + ", " + campospk + "," + campos.Replace("'","")+ ")");
+                file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk + "," + campos.Replace("'","")+ ")");
                 file.WriteLine("        SELECT");
                 file.WriteLine("            rr_mode=");
                 file.WriteLine("                CASE");
@@ -893,7 +893,7 @@ namespace ScriptsCreater
 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + prefijo_tab + "_fact", bdSP, "dbo", "spn1_cargar_dm_" + prefijo_tab);
+                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + prefijo_tab + "_fact", bdSP, "dbo", "spn1_cargar_dm_" + prefijo_tab, incremental);
 
                 //Documentación Exec
                 file_exec.WriteLine("");
@@ -929,32 +929,9 @@ namespace ScriptsCreater
                             campos = campos + "'" + j[0] + "',";
                             Array.Resize(ref csv2, csv2.Length + 1);
                             csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[2].ToString() + ";";
-                            //Incluimos los campos que no sean cod y no tengan valor en SID 
-                            if (j[0].ToLower().Substring(0, 3) == "cod" && j[3].Length > 1)
-                            {
-                                //No hacemos nada
-                            }
-                            else
-                            {
-                                if (!campospk.Contains("'" + j[0] + "',"))
-                                {
-                                    campospk = campospk + "'" + j[0] + "',";
-                                }
-                            }
-                            if (j[3].Length > 1 && !campos.Contains("'" + j[3] + "',"))
-                            {
-                                campos = campos + "'" + j[3] + "',";
-                                Array.Resize(ref csv2, csv2.Length + 1);
-                                csv2[csv2.Length - 1] = j[3].ToString() + ";int;;";
-                                if (!campospk.Contains("'" + j[3] + "',"))
-                                {
-                                    campospk = campospk + "'" + j[3] + "',";
-                                }
-                            }
                         }
                     }
                     campos = campos.Substring(0, campos.Length - 1);
-                    campospk = campospk.Substring(0, campos.Length - 1);
                     claveDim = claveDim.Substring(0, claveDim.Length - 1);
 
                     //realizamos llamada a funciones para carga automatica
@@ -976,7 +953,7 @@ namespace ScriptsCreater
                     //Drop FKs
                     sc.borrarFK(file, bd, "dbo", prefijo_tab + "_dim_" + tabDim);
 
-                    //campospk = campos;
+                    campospk = campos;
                     sc.regTablas(file, bd, "dbo", "tbn1_" + prefijo_tab + "_dim_" + tabDim, "id_dim_" + tabDim, campos, campospk, csv2, false, "dm");
 
                     if (CreateTable == false)
