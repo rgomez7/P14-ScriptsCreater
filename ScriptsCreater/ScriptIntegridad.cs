@@ -79,7 +79,7 @@ namespace ScriptsCreater
 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                a.generar_file_exec(file_exec, bdinteg + ".dbo." + tabinteg, "dbn1_stg_dhyf", "dbo", "spn1_integridad_" + tipobdinteg + "_" + tabinteg, false);
+                a.generar_file_exec(file_exec, bdinteg + ".dbo." + tabinteg, "dbn1_stg_dhyf", "dbo", "spn1_integridad_" + tipobdinteg + "_" + tabinteg, false, false);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");

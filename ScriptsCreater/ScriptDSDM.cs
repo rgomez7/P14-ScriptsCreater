@@ -111,7 +111,7 @@ namespace ScriptsCreater
                 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental);
+                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental, true);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
@@ -893,7 +893,7 @@ namespace ScriptsCreater
 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + prefijo_tab + "_fact", bdSP, "dbo", "spn1_cargar_dm_" + prefijo_tab, incremental);
+                a.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + prefijo_tab + "_fact", bdSP, "dbo", "spn1_cargar_dm_" + prefijo_tab, incremental, true);
 
                 //Documentación Exec
                 file_exec.WriteLine("");
