@@ -11,7 +11,7 @@ namespace ScriptsCreater
 {
     class Acciones
     {
-        public string version = "1.0.6";
+        public string version = "1.0.7";
 
         public string comprobarficheros(ref string[] lineds, string ruta, string nombrearchivo, int accion)
         {
@@ -62,30 +62,43 @@ namespace ScriptsCreater
             return "OK";
         }
 
-        public DataTable dtCSV(string[] csvData, int lineaCabecera)
+        public DataTable dtCSV(string[] csvData, int lineaCabecera, Boolean filtradoColumn)
         {
             DataTable csvDataTable = new DataTable();
             char separator = ';';
             bool isRowOneHeader = true;
+            string nombrecolumna;
+            int intRowIndex = 0;
+            string[] headings;
+
+            if (lineaCabecera == 0)
+            {
+                isRowOneHeader = false;
+                lineaCabecera++;
+            }
 
             if (csvData.Length > 0)
             {
-                String[] headings = csvData[lineaCabecera - 1].Split(separator);
-                int intRowIndex = 0;
-
+                headings = csvData[lineaCabecera - 1].Split(separator);
                 //Se la primera linea contiene o no las columnas
                 if (isRowOneHeader)
                 {
+                    intRowIndex = lineaCabecera - 1;
+
                     for (int i = 0; i < headings.Length; i++)
                     {
+                        nombrecolumna = headings[i].ToString();
+                        if (filtradoColumn == true)
+                        {
+                            nombrecolumna = nombrecolumna.ToLower().Replace(" ", "").Replace("?", "").Replace("#", "");
+                        }
                         //Se añade el nombre columnas a la tabla
-                        csvDataTable.Columns.Add(headings[i].ToString());
+                        csvDataTable.Columns.Add(nombrecolumna);
                     }
 
                     intRowIndex++;
                 }
-                //Si no hay cabecera, 
-                //se añade columnas como "Columna1", "Columna2", etc.
+                //Si no hay cabecera, se añade columnas como "Columna1", "Columna2", etc.
                 else
                 {
                     for (int i = 0; i < headings.Length; i++)
@@ -97,7 +110,7 @@ namespace ScriptsCreater
                 //Resto de valores se añanden a la tabla
                 for (int i = intRowIndex; i < csvData.Length; i++)
                 {
-                    //Crea una nuva linea
+                    //Crea una nueva linea
                     DataRow row = csvDataTable.NewRow();
 
                     for (int j = 0; j < headings.Length; j++)
@@ -111,6 +124,59 @@ namespace ScriptsCreater
                 }
             }
             return csvDataTable;
+        }
+
+        public string[] ordenarCSV(string[] csvData)
+        {
+            string[] csv = new string[0];
+            DataTable dt;
+            int cab = 0;
+            string valordatos = "";
+
+            foreach (string d in csvData)
+            {
+                string[] j = d.Split(new Char[] { ';' });
+                if (j[0].Contains("#"))
+                {
+                    cab++;
+                    Array.Resize(ref csv, csv.Length + 1);
+                    csv[csv.Length - 1] = d;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            if (cab == 0)
+            {
+                return csvData;
+            }
+            else
+            {
+                dt = dtCSV(csvData, cab, true);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    valordatos = "";
+
+                    valordatos = dr.ItemArray[dt.Columns.IndexOf("campo")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("tipo")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("tablasid")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("sid")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("clave")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("dim")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("campocruce")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("siddim")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("autosid")].ToString() + ";" +
+                        dr.ItemArray[dt.Columns.IndexOf("filter")].ToString();
+
+                    Array.Resize(ref csv, csv.Length + 1);
+                    csv[csv.Length - 1] = valordatos;
+                }
+
+                return csv;
+            }
         }
 
         public DataTable valorQuery(string[] fichero, string[] csv, string tipo, Boolean inc, string tab)
@@ -409,6 +475,31 @@ namespace ScriptsCreater
             file_exec.WriteLine("");
 
             return "OK";
+        }
+
+        public string[] leerCSV(string archivo, string ruta)
+        {
+            string[] csv = new string[0];
+            string line;
+            int i = 0;
+
+            //Pasamos valor CSV a variables
+            try
+            {
+                StreamReader file = new StreamReader(ruta + archivo);
+                while ((line = file.ReadLine()) != null)
+                {
+                    Array.Resize(ref csv, csv.Length + 1);
+                    csv[i] = line;
+                    i++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al abrir el archivo " + archivo + "\n\r" + ex.Message, "Error abrir fichero", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                Array.Resize(ref csv, 0);
+            }
+            return csv;
         }
     }
 }

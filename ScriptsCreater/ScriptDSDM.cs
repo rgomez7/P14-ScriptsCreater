@@ -39,6 +39,8 @@ namespace ScriptsCreater
             int i = 0;
             DataRow[] dr;
 
+            csv = a.ordenarCSV(csv);
+
             foreach (string d in csv)
             {
                 string[] j = d.Split(new Char[] { ';' });
@@ -211,11 +213,11 @@ namespace ScriptsCreater
                     {
                         if (i == csv.Length)
                         {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString());
+                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                         }
                         else
                         {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + ",");
+                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL,");
                         }
                     }
                 }
@@ -378,7 +380,7 @@ namespace ScriptsCreater
 
                     //SP Registramos los datos en la tabla temporal
                     //SP Comparamos registros para indicar la acción a realizar
-                    file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc,id_" + tab + ", " + campospk + "," + campos.Replace("'", "") + ")");
+                    file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk + "," + campos.Replace("'", "") + ")");
                     file.WriteLine("        SELECT");
                     file.WriteLine("            rr_mode=");
                     file.WriteLine("                CASE");
@@ -847,6 +849,8 @@ namespace ScriptsCreater
 
             int i = 0;
 
+            csv = a.ordenarCSV(csv);
+
             foreach (string d in csv)
             {
                 string[] j = d.Split(new Char[] { ';' });
@@ -861,7 +865,7 @@ namespace ScriptsCreater
                 }
                 else if (!j[0].Contains("#"))
                 {
-                    if (!tabDM.Contains(j[5].ToString()))
+                    if (!tabDM.Contains(j[5].ToString()) && j[5].ToString().ToLower() != "no")
                     {
                         tabDM = tabDM + j[5].ToString() + ";";
                     }
@@ -920,14 +924,37 @@ namespace ScriptsCreater
                     {
                         claveDim = claveDim + "id_dim_" + tabDim;
                         string[] j = d.Split(new Char[] { ';' });
-                        if (!j[0].Contains("#") && j[5].ToString().ToLower().ToLower() == tabDim)
+                        if (!j[0].Contains("#") && j[5].ToString().ToLower() == tabDim)
                         {
                             campos = campos + "'" + j[0] + "',";
                             Array.Resize(ref csv2, csv2.Length + 1);
                             csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[2].ToString() + ";";
+                            //Incluimos los campos que no sean cod y no tengan valor en SID 
+                            if (j[0].ToLower().Substring(0, 3) == "cod" && j[3].Length > 1)
+                            {
+                                //No hacemos nada
+                            }
+                            else
+                            {
+                                if (!campospk.Contains("'" + j[0] + "',"))
+                                {
+                                    campospk = campospk + "'" + j[0] + "',";
+                                }
+                            }
+                            if (j[3].Length > 1 && !campos.Contains("'" + j[3] + "',"))
+                            {
+                                campos = campos + "'" + j[3] + "',";
+                                Array.Resize(ref csv2, csv2.Length + 1);
+                                csv2[csv2.Length - 1] = j[3].ToString() + ";int;;";
+                                if (!campospk.Contains("'" + j[3] + "',"))
+                                {
+                                    campospk = campospk + "'" + j[3] + "',";
+                                }
+                            }
                         }
                     }
                     campos = campos.Substring(0, campos.Length - 1);
+                    campospk = campospk.Substring(0, campos.Length - 1);
                     claveDim = claveDim.Substring(0, claveDim.Length - 1);
 
                     //realizamos llamada a funciones para carga automatica
@@ -949,7 +976,7 @@ namespace ScriptsCreater
                     //Drop FKs
                     sc.borrarFK(file, bd, "dbo", prefijo_tab + "_dim_" + tabDim);
 
-                    campospk = campos;
+                    //campospk = campos;
                     sc.regTablas(file, bd, "dbo", "tbn1_" + prefijo_tab + "_dim_" + tabDim, "id_dim_" + tabDim, campos, campospk, csv2, false, "dm");
 
                     if (CreateTable == false)
@@ -1424,11 +1451,11 @@ namespace ScriptsCreater
                     {
                         if (i == csv2.Length)
                         {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString());
+                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                         }
                         else
                         {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + ",");
+                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL,");
                         }
                     }
                 }
@@ -1583,19 +1610,20 @@ namespace ScriptsCreater
                     i = 0;
                     foreach (string d in csv2)
                     {
-                        i++;
-                        if (i == campospk.Split(new Char[] { ',' }).Length)
+                        if (i == campospk.Split(new Char[] { ',' }).Length - 1)
                         {
                             coma = "";
                         }
                         string[] j = d.Split(new Char[] { ';' });
-                        if (j[2].ToString() == "#" && j[3].ToString() == "#")
+                        if (j[2].Length > 0 && j[3].ToString() == "#")
                         {
                             file.WriteLine("                 tbn1_" + prefijo_tab + j[0].ToString().ToLower().Replace("id", "") + "." + j[0].ToString() + coma);
+                            i++;
                         }
                         else if (j[2].ToString() == "" && j[3].ToString() == "#")
                         {
                             file.WriteLine("                 t." + j[0].ToString() + coma);
+                            i++;
                         }
                     }
                     file.WriteLine("        )");
@@ -1804,19 +1832,20 @@ namespace ScriptsCreater
                 i = 0;
                 foreach (string d in csv2)
                 {
-                    i++;
-                    if (i == campospk.Split(new Char[] { ',' }).Length)
+                    if (i == campospk.Split(new Char[] { ',' }).Length - 1)
                     {
                         coma = "";
                     }
                     string[] j = d.Split(new Char[] { ';' });
-                    if (j[2].ToString() == "#" && j[3].ToString() == "#")
+                    if (j[2].Length > 0 && j[3].ToString() == "#")
                     {
                         file.WriteLine("        tbn1_" + prefijo_tab + j[0].ToString().ToLower().Replace("id","") + "." + j[0].ToString() + coma);
+                        i++;
                     }
                     else if (j[2].ToString() == "" && j[3].ToString() == "#")
                     {
                         file.WriteLine("        t." + j[0].ToString() + coma);
+                        i++;
                     }
                 }
                 file.WriteLine("        )");

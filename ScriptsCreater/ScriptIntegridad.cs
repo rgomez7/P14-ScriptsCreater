@@ -25,7 +25,7 @@ namespace ScriptsCreater
             int camposinteg_num = 0;
             string columnasinteg = "";
             int columnasinteg_num = 0;
-            DataTable dtcsv = a.dtCSV(csv, 1);
+            DataTable dtcsv = a.dtCSV(csv, 1, false);
 
             foreach (DataColumn dc in dtcsv.Columns)
             {

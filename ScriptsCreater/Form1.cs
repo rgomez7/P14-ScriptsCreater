@@ -32,8 +32,6 @@ namespace ScriptsCreater
         //Esto es para el boton de seleción de archivos
         private void button1_Click(object sender, EventArgs e)
             {
-                string line;
-                int i = 0;
                 csv = new string[0];
 
                 OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -54,23 +52,14 @@ namespace ScriptsCreater
                     txSalida.Text = ruta;
 
                 //Pasamos valor CSV a variables
-                try
-                {
-                    StreamReader file = new StreamReader(archivoruta);
-                    while ((line = file.ReadLine()) != null)
-                    {
-                        Array.Resize(ref csv, csv.Length + 1);
-                        csv[i] = line;
-                        i++;
-                    }
-                }
-                catch (Exception ex)
+                csv = cr.leerCSV(archivo, ruta);
+                if (csv.Length == 0)
                 {
                     txFile.Text = "";
                     txSalida.Text = "";
-                    MessageBox.Show("Error al abrir el archivo " + archivo + "\n\r"  + ex.Message,  "Error abrir fichero", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
-
+                
+                //Acciones a realizar dependiendo del check selecionado
                 if (archivo.ToLower().Contains("mae"))
                 {
                     rbMaestro.Checked = true;
@@ -133,126 +122,171 @@ namespace ScriptsCreater
             string arcScript = "";
             string[] lineas = new string[0];
             ruta = txSalida.Text;
-
-            //Opción maestro
-            if (rbMaestro.Checked)
+         
+            if (txFile.Text != "")
             {
-                string linegen = sm.ScMaestro(archivo, csv, ruta, ref arcScript, cb_CreateTable.Checked);
-
-                if (linegen == "OK")
+                //Opción maestro
+                if (rbMaestro.Checked)
                 {
-                    MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            //Opción Integridad
-            else if (rbIntegridad.Checked)
-            {
-                string linegen = sinteg.ScIntegridad(archivo, csv, ruta, ref arcScript);
-
-                if (linegen == "OK")
-                {
-                    MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            //Opción DS DM
-            else if (rbDSDM.Checked)
-            {
-                //Genera tabla
-                if (rb_DSDM_T.Checked == true)
-                {
-                    string linegen = dsdm.table(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-
-                    if (linegen == "OK")
+                    csv = cr.leerCSV(archivo, ruta);
+                    if (csv.Length == 0)
                     {
-                        MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txFile.Text = "";
+                        txSalida.Text = "";
+                        MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
+                    else
+                    {
+                        string linegen = sm.ScMaestro(archivo, csv, ruta, ref arcScript, cb_CreateTable.Checked);
+
+                        if (linegen == "OK")
+                        {
+                            MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
                 }
-                //Genera DS
-                else if (rb_DSDM_DS.Checked == true)
+                //Opción Integridad
+                else if (rbIntegridad.Checked)
                 {
-                    string linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-
-                    if (linegen == "OK")
+                    csv = cr.leerCSV(archivo, ruta);
+                    if (csv.Length == 0)
                     {
-                        MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txFile.Text = "";
+                        txSalida.Text = "";
+                        MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
+                    else
+                    {
+                        string linegen = sinteg.ScIntegridad(archivo, csv, ruta, ref arcScript);
+
+                        if (linegen == "OK")
+                        {
+                            MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
                 }
-                //Genera DM
-                else if (rb_DSDM_DM.Checked == true)
+                //Opción DS DM
+                else if (rbDSDM.Checked)
                 {
-                    string linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
-
-                    if (linegen == "OK")
+                    csv = cr.leerCSV(archivo, ruta);
+                    if (csv.Length == 0)
                     {
-                        MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txFile.Text = "";
+                        txSalida.Text = "";
+                        MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
+                    else
+                    {
+                        //Genera tabla
+                        if (rb_DSDM_T.Checked == true)
+                        {
+                            string linegen = dsdm.table(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+
+                            if (linegen == "OK")
+                            {
+                                MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        //Genera DS
+                        else if (rb_DSDM_DS.Checked == true)
+                        {
+                            string linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+
+                            if (linegen == "OK")
+                            {
+                                MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        //Genera DM
+                        else if (rb_DSDM_DM.Checked == true)
+                        {
+                            string linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
+
+                            if (linegen == "OK")
+                            {
+                                MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        //Genera DS y DM
+                        else if (rb_DSDM_All.Checked == true)
+                        {
+                            string fichero = "";
+                            string linegen = "OK";
+
+                            //DS
+                            linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                            fichero = fichero + "\n\r" + arcScript;
+
+                            //DM
+                            linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
+                            fichero = fichero + "\n\r" + arcScript;
+
+                            if (linegen == "OK")
+                            {
+                                MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        //Si no seleccionas ningúna Opción
+                        else
+                        {
+                            MessageBox.Show("Debe seleccionar una opción DS-DM para generar los ficheros", "Generación Ficheros", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        }
                     }
                 }
-                //Genera DS y DM
-                else if (rb_DSDM_All.Checked == true)
+                //Genera Historificación
+                else if (rbHist.Checked)
                 {
                     string fichero = "";
                     string linegen = "OK";
-                    
-                    //DS
-                    linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-                    fichero = fichero + "\n\r" + arcScript;
+                    //Para un archivo
+                    if (rb_Archivo.Checked == true)
+                    {
+                        csv = cr.leerCSV(archivo, ruta);
+                        if (csv.Length == 0)
+                        {
+                            txFile.Text = "";
+                            txSalida.Text = "";
+                            MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        }
+                        else
+                        {
+                            linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                            fichero = fichero + "\n\r" + arcScript;
+                        }
+                    }
+                    //Para todos los archivos de la Carpeta
+                    else if (rb_Directorio.Checked == true)
+                    {
+                        txFile.Text = "*.csv";
+                        string[] dirs = Directory.GetFiles(rutaorigen, "*.csv");
+                        foreach (string dir in dirs)
+                        {
+                            archivo = dir.Replace(rutaorigen, "");
 
-                    //DM
-                    linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
-                    fichero = fichero + "\n\r" + arcScript;
+                            linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                            fichero = fichero + "\n\r" + arcScript;
+                        }
+                    }
+                    //Si no seleccionas ningúna Opción
+                    else
+                    {
+                        MessageBox.Show("Debe seleccionar una opción Historificación para generar los ficheros", "Generación Ficheros", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
 
+                    //Si todo es correcto
                     if (linegen == "OK")
                     {
                         MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
-                //Si no seleccionas ningúna Opción
+
+                //Si no seleccionas ningún Tipo Script
                 else
                 {
-                    MessageBox.Show("Debe seleccionar una opción DS-DM para generar los ficheros", "Generación Ficheros", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    MessageBox.Show("Debe seleccionar una opción en Tipo Script para generar los ficheros", "Generación Tipo Script", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
             }
-            //Genera Historificación
-            else if (rbHist.Checked)
-            {
-                string fichero = "";
-                string linegen = "OK";
-                //Para un archivo
-                if (rb_Archivo.Checked == true)
-                {
-                    linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-                    fichero = fichero + "\n\r" + arcScript;
-                }
-                //Para todos los archivos de la Carpeta
-                else if (rb_Directorio.Checked == true)
-                {
-                    txFile.Text = "*.csv";
-                    string[] dirs = Directory.GetFiles(rutaorigen, "*.csv");
-                    foreach (string dir in dirs)
-                    {
-                        archivo = dir.Replace(rutaorigen,"");
-
-                        linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-                        fichero = fichero + "\n\r" + arcScript;
-                    }
-                }
-                //Si no seleccionas ningúna Opción
-                else
-                {
-                    MessageBox.Show("Debe seleccionar una opción Historificación para generar los ficheros", "Generación Ficheros", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                }
-
-                //Si todo es correcto
-                if (linegen == "OK")
-                {
-                    MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-
-
-
         }
-
 
         #region "Modificación RadioButton"
 
@@ -296,8 +330,6 @@ namespace ScriptsCreater
 
 
 
-        #endregion
-
         private void rb_DSDM_T_CheckedChanged(object sender, EventArgs e)
         {
             cb_IndexCS.Visible = false;
@@ -317,5 +349,7 @@ namespace ScriptsCreater
         {
             cb_IndexCS.Visible = true;
         }
+
+        #endregion
     }
 }
