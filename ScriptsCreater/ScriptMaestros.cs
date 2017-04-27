@@ -124,7 +124,7 @@ namespace ScriptsCreater
                 file.WriteLine("        DROP TABLE #tmp_mae_" + tab + "");
                 file.WriteLine("    CREATE table #tmp_mae_" + tab + "(");
                 file.WriteLine("        rr_mode varchar(1),");
-                file.WriteLine("        id_mae_" + tab + " int,");
+                file.WriteLine("        id_mae_" + tab + " int NOT NULL,");
                 i = 0;
                 foreach (string d in csv)
                 {
@@ -136,17 +136,17 @@ namespace ScriptsCreater
                         {
                             if (j[2].ToString() == "#")
                             {
-                                file.WriteLine("         t_" + j[0].ToString() + " " + j[1].ToString());
+                                file.WriteLine("         t_" + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                             }
-                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString());
+                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                         }
                         else
                         {
                             if (j[2].ToString() == "#")
                             {
-                                file.WriteLine("         t_" + j[0].ToString() + " " + j[1].ToString() + ",");
+                                file.WriteLine("         t_" + j[0].ToString() + " " + j[1].ToString() + "NOT NULL,");
                             }
-                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + ",");
+                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + "NOT NULL,");
                         }
                     }
                 }

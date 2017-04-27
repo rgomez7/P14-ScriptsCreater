@@ -186,11 +186,11 @@ namespace ScriptsCreater
                 //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
                 string sp_inc = sc.regSP_Incremental(file);
                 ////////
-                file.WriteLine("            select @es_carga_completa = es_carga_completa");
-                file.WriteLine("            from dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
-                file.WriteLine("            where objeto = @objeto;");
+                file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
+                file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
+                file.WriteLine("            WHERE objeto = @objeto;");
                 file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
-                file.WriteLine("           set @fec_procesado = getdate();");
+                file.WriteLine("           SET @fec_procesado = getdate();");
                 file.WriteLine("");
                 //////
                 //SP Etiquetas            
