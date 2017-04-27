@@ -25,6 +25,7 @@ namespace ScriptsCreater
             int camposinteg_num = 0;
             string columnasinteg = "";
             int columnasinteg_num = 0;
+            string[] cinteg;
             DataTable dtcsv = a.dtCSV(csv, 1, false);
 
             foreach (DataColumn dc in dtcsv.Columns)
@@ -110,12 +111,34 @@ namespace ScriptsCreater
                     file.WriteLine("BEGIN");
                     file.WriteLine("    SET IDENTITY_INSERT " + bdinteg + ".dbo." + tabinteg + " ON");
                     file.WriteLine("    INSERT INTO " + bdinteg + ".dbo." + tabinteg + "(" + camposinteg.ToLower().Replace("cod", "id") + "," + camposinteg + "," + columnasinteg + ")");
-                    file.WriteLine("        VALUES(-1,NULL,'N/A')");
+                    file.WriteLine("        VALUES(-1,'','N/A')");
                     file.WriteLine("    SET IDENTITY_INSERT " + bdinteg + ".dbo." + tabinteg + " OFF");
                     file.WriteLine("END");
                     file.WriteLine("");
                 }
-                
+                else if (camposinteg_num == 2)
+                {
+                    cinteg = camposinteg.Split(',');
+                    i = 0;
+                    foreach (string ci in cinteg)
+                    {
+                        if (tabinteg.ToLower().Contains(cinteg[i].ToLower().Replace("cod_","").Replace(" ","")))
+                        {
+                            break;
+                        }
+                        i++;
+                    }
+                    file.WriteLine("--Valor -1 en id si no existe para la tabla Maestros");
+                    file.WriteLine("IF NOT EXISTS(SELECT 1 FROM " + bdinteg + ".dbo." + tabinteg + " WHERE " + cinteg[0].ToLower().Replace("cod", "id") + " = -1 AND " + cinteg[1].ToLower().Replace("cod", "id") + " = -1)");
+                    file.WriteLine("BEGIN");
+                    file.WriteLine("    SET IDENTITY_INSERT " + bdinteg + ".dbo." + tabinteg + " ON");
+                    file.WriteLine("    INSERT INTO " + bdinteg + ".dbo." + tabinteg + "(" + cinteg[i].ToLower().Replace("cod", "id") + "," + camposinteg + "," + columnasinteg + ")");
+                    file.WriteLine("        VALUES(-1,'','','N/A')");
+                    file.WriteLine("    SET IDENTITY_INSERT " + bdinteg + ".dbo." + tabinteg + " OFF");
+                    file.WriteLine("END");
+                    file.WriteLine("");
+                }
+
                 //SP Acciones
                 file.WriteLine("--Generamos Query");
                 file.WriteLine("); WITH");
@@ -135,7 +158,7 @@ namespace ScriptsCreater
                             i++;
                             file.WriteLine("                    SELECT " + dr.ItemArray[2].ToString() + " AS " + camposinteg + ", " + dr.ItemArray[2].ToString() + " AS " + columnasinteg);
                             file.WriteLine("                    FROM " + dr.ItemArray[0].ToString() + ".dbo." + dr.ItemArray[1].ToString() + "");
-                            file.WriteLine("                    GROUP BY " + dr.ItemArray[2].ToString());
+                            file.WriteLine("                    GROUP BY " + dr.ItemArray[2].ToString() + ", " + dr.ItemArray[3].ToString());
 
                             if (i < dtcsv.Rows.Count)
                                 file.WriteLine("                    UNION");
@@ -145,7 +168,6 @@ namespace ScriptsCreater
                             i++;
                         }
                     }
-
                     file.WriteLine("                ) AS O");
                     file.WriteLine("            )");
 
@@ -155,6 +177,40 @@ namespace ScriptsCreater
                     file.WriteLine("            FROM query");
                     file.WriteLine("            LEFT JOIN " + bdinteg + ".dbo." + tabinteg + " " + tabinteg + " ON (" + tabinteg + "." + camposinteg + "=query." + camposinteg + ")");
                     file.WriteLine("            WHERE " + tabinteg + "." + camposinteg + " IS NULL");
+                    file.WriteLine("            SET @rc = @@ROWCOUNT");
+                    file.WriteLine("");
+
+                }
+                //Solo tenemos en cuenta si tiene dos campos
+                else if (camposinteg_num == 2)
+                {
+                    cinteg = camposinteg.Split(',');
+                    foreach (DataRow dr in dtcsv.Rows)
+                    {
+                        if (dr.ItemArray[1].ToString() != tabinteg)
+                        {
+                            i++;
+                            file.WriteLine("                    SELECT " + dr.ItemArray[2].ToString() + " AS " + cinteg[0].ToString() + ", " + dr.ItemArray[3].ToString() + " AS " + cinteg[1].ToString() + ", " + dr.ItemArray[2].ToString() + " AS " + columnasinteg);
+                            file.WriteLine("                    FROM " + dr.ItemArray[0].ToString() + ".dbo." + dr.ItemArray[1].ToString() + "");
+                            file.WriteLine("                    GROUP BY " + dr.ItemArray[2].ToString() + ", " + dr.ItemArray[3].ToString());
+
+                            if (i < dtcsv.Rows.Count)
+                                file.WriteLine("                    UNION");
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                    file.WriteLine("                ) AS O");
+                    file.WriteLine("            )");
+
+                    //Montamos el Insert sobre la Query
+                    file.WriteLine("            INSERT " + bdinteg + ".dbo." + tabinteg + "(" + camposinteg + ", " + columnasinteg + ")");
+                    file.WriteLine("            SELECT query." + cinteg[0]  + ", query." + cinteg[1] + ", query." + columnasinteg);
+                    file.WriteLine("            FROM query");
+                    file.WriteLine("            LEFT JOIN " + bdinteg + ".dbo." + tabinteg + " " + tabinteg + " ON (" + tabinteg + "." + cinteg[0] + "=query." + cinteg[0] + " AND " + tabinteg + "." + cinteg[1] + "=query." + cinteg[1] + ")");
+                    file.WriteLine("            WHERE " + tabinteg + "." + cinteg[0] + " IS NULL OR " + tabinteg + "." + cinteg[1] + " IS NULL");
                     file.WriteLine("            SET @rc = @@ROWCOUNT");
                     file.WriteLine("");
                 }

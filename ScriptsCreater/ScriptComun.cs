@@ -124,6 +124,9 @@ namespace ScriptsCreater
             file.WriteLine("                    @p_fecha_inicio = @fecha_inicio,");
             file.WriteLine("                    @p_descripcion_warning = @descripcion_warning_precondiciones,");
             file.WriteLine("                    @p_out_id = @id_warning_precondiones OUT");
+            file.WriteLine("");
+            file.WriteLine("    PRINT 'Warning en ' + @objeto + ': ' + @descripcion_warning_precondiciones");
+            file.WriteLine("");
             file.WriteLine("        END");
             file.WriteLine("");
             file.WriteLine("        --actualizar el log para indicar que este SP ha finalizado 'OK'");
@@ -165,7 +168,7 @@ namespace ScriptsCreater
                 file.WriteLine("        ;THROW");
             }
             file.WriteLine("");
-            file.WriteLine("    PRINT 'Error en ' + @objeto_error + ': (Linea ' + @linea_error + ') ' + @descripcion_error");
+            file.WriteLine("    PRINT 'Error en ' + @objeto_error + ': (Linea ' + Convert(nvarchar(10), @linea_error, ) + ') ' + @descripcion_error");
             file.WriteLine("");
             file.WriteLine("    END CATCH");
             file.WriteLine("");
