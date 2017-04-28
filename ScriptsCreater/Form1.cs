@@ -122,7 +122,13 @@ namespace ScriptsCreater
             string arcScript = "";
             string[] lineas = new string[0];
             ruta = txSalida.Text;
-         
+
+            if (ruta.Substring(ruta.Length - 2, 2) != "\\" )
+            {
+                ruta = ruta + "\\";
+                txSalida.Text = ruta;
+            }
+
             if (txFile.Text != "")
             {
                 //Opción maestro

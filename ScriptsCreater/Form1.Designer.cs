@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.btnScript = new System.Windows.Forms.Button();
             this.btnBuscar = new System.Windows.Forms.Button();
             this.txSalida = new System.Windows.Forms.TextBox();
@@ -367,6 +368,7 @@
             this.Controls.Add(this.btnBuscar);
             this.Controls.Add(this.txSalida);
             this.Controls.Add(this.txFile);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Generador Script";
             this.Load += new System.EventHandler(this.Form1_Load);
