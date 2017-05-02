@@ -52,7 +52,7 @@ namespace ScriptsCreater
                     txSalida.Text = ruta;
 
                 //Pasamos valor CSV a variables
-                csv = cr.leerCSV(archivo, ruta);
+                csv = cr.leerCSV(archivo, rutaorigen);
                 if (csv.Length == 0)
                 {
                     txFile.Text = "";
@@ -123,7 +123,7 @@ namespace ScriptsCreater
             string[] lineas = new string[0];
             ruta = txSalida.Text;
 
-            if (ruta.Substring(ruta.Length - 2, 2) != "\\" )
+            if (ruta.Substring(ruta.Length - 1, 1) != "\\" )
             {
                 ruta = ruta + "\\";
                 txSalida.Text = ruta;

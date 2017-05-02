@@ -22,6 +22,7 @@ namespace ScriptsCreater
             string clave = "";
             string tclave = "";
             string campos = "";
+            string camposCV = "";
             string txtlb = "";
 
             foreach (string d in csv)
@@ -34,6 +35,14 @@ namespace ScriptsCreater
                 else if (!j[0].Contains("#"))
                 {
                     campos = campos + "'" + j[0] + "',";
+                    if (j[1].ToString().Contains("decimal") || j[1].ToString().Contains("numeric"))
+                    {
+                        camposCV = camposCV + "0,";
+                    }
+                    else
+                    {
+                        camposCV = camposCV + "'',";
+                    }
                     if (j[2] == "#")
                     {
                         clave = clave + j[0] + ",";
@@ -42,6 +51,7 @@ namespace ScriptsCreater
                 }
             }
             campos = campos.Substring(0, campos.Length - 1);
+            camposCV = camposCV.Substring(0, camposCV.Length - 1);
             clave = clave.Substring(0, clave.Length - 1);
             tclave = tclave.Substring(0, tclave.Length - 1);
 
@@ -115,8 +125,8 @@ namespace ScriptsCreater
                 //SP Añadimos registro valor -1
                 file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " ON");
                 file.WriteLine("        IF NOT EXISTS(SELECT 1 FROM dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " WHERE id_mae_" + tab + "=-1)");
-                file.WriteLine("            INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "(id_mae_" + tab + "," + clave + ",origen)");
-                file.WriteLine("            VALUES(-1,NULL,'MAESTRO')");
+                file.WriteLine("            INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "(id_mae_" + tab + "," + campos.Replace("'","") + ",origen)");
+                file.WriteLine("            VALUES(-1," + camposCV + ",'MAESTRO')");
                 file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " OFF");
                 file.WriteLine("");          
                 //SP Creamos objeto temporal
@@ -124,7 +134,7 @@ namespace ScriptsCreater
                 file.WriteLine("        DROP TABLE #tmp_mae_" + tab + "");
                 file.WriteLine("    CREATE table #tmp_mae_" + tab + "(");
                 file.WriteLine("        rr_mode varchar(1),");
-                file.WriteLine("        id_mae_" + tab + " int NOT NULL,");
+                file.WriteLine("        id_mae_" + tab + " int,");
                 i = 0;
                 foreach (string d in csv)
                 {
@@ -136,17 +146,17 @@ namespace ScriptsCreater
                         {
                             if (j[2].ToString() == "#")
                             {
-                                file.WriteLine("         t_" + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                                file.WriteLine("        t_" + j[0].ToString() + " " + j[1].ToString() + "");
                             }
-                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + "");
                         }
                         else
                         {
                             if (j[2].ToString() == "#")
                             {
-                                file.WriteLine("         t_" + j[0].ToString() + " " + j[1].ToString() + "NOT NULL,");
+                                file.WriteLine("         t_" + j[0].ToString() + " " + j[1].ToString() + ",");
                             }
-                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + "NOT NULL,");
+                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + ",");
                         }
                     }
                 }

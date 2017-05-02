@@ -168,7 +168,7 @@ namespace ScriptsCreater
                 file.WriteLine("        ;THROW");
             }
             file.WriteLine("");
-            file.WriteLine("    PRINT 'Error en ' + @objeto_error + ': (Linea ' + Convert(nvarchar(10), @linea_error, ) + ') ' + @descripcion_error");
+            file.WriteLine("    PRINT 'Error en ' + @objeto_error + ': (Linea ' + Convert(nvarchar(10), @linea_error) + ') ' + @descripcion_error");
             file.WriteLine("");
             file.WriteLine("    END CATCH");
             file.WriteLine("");
@@ -298,6 +298,7 @@ namespace ScriptsCreater
             int i = 0;
             string tipodato = "";
             string coma = "";
+            string ValorDato = "";
 
             file.WriteLine("--Create Table");
             file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "')");
@@ -318,7 +319,7 @@ namespace ScriptsCreater
             }
             else if (tiposcript == "maestro")
             {
-                file.WriteLine("        origen varchar(10), NOT NULL");
+                file.WriteLine("        origen varchar(10) NOT NULL,");
             }
             i = 0;
             coma = ",";
@@ -419,6 +420,60 @@ namespace ScriptsCreater
             file.WriteLine("GO");
             file.WriteLine("");
             #endregion Borrado Indices
+
+            #region Quitar Valores NULL
+
+            file.WriteLine("--Quitamos valores nulos");
+            foreach (string d in csv)
+            {
+                string[] j = d.Split(new Char[] { ';' });
+                i++;
+                if (!j[0].Contains("#"))
+                {
+                    if (j[1].ToString().Contains("decimal") || j[1].ToString().Contains("numeric"))
+                    {
+                        ValorDato = "0";
+                    }
+                    else
+                    {
+                        ValorDato = "''";
+                    }
+
+                    if (tiposcript == "maestro")
+                    {
+                        file.WriteLine("IF EXISTS(SELECT 1 FROM " + bd + "." + schema + "." + tab + " WHERE " + j[0].ToString() + " is null)");
+                        file.WriteLine("    UPDATE " + bd + "." + schema + "." + tab + " SET " + j[0].ToString() + " = " + ValorDato  + " WHERE " + j[0].ToString() + " is null");
+                    }
+                    else if (j[2].ToString() == "#" || j[3].ToString() == "#")
+                    {
+                        //No se hace nada
+                    }
+                    else
+                    {
+                        file.WriteLine("IF EXISTS(SELECT 1 FROM " + bd + "." + schema + "." + tab + " WHERE " + j[0].ToString() + " is null)");
+                        file.WriteLine("    UPDATE " + bd + "." + schema + "." + tab + " SET " + j[0].ToString() + " = " + ValorDato + " WHERE " + j[0].ToString() + " is null");
+                    }
+                    file.WriteLine("GO");
+                }
+            }
+            if (tiposcript == "historificacion")
+            {
+                if (claveAuto == true)
+                {
+                    file.WriteLine("IF EXISTS(SELECT 1 FROM " + bd + "." + schema + "." + tab + " WHERE " + clave.Replace("_tracelog", "") + " is null)");
+                    file.WriteLine("    UPDATE " + bd + "." + schema + "." + tab + " SET " + clave.Replace("_tracelog", "") + " = '' WHERE " + clave.Replace("_tracelog", "") + " is null");
+                    file.WriteLine("GO");
+                }
+                file.WriteLine("IF EXISTS(SELECT 1 FROM " + bd + "." + schema + "." + tab + " WHERE ctct_fec_procesado is null)");
+                file.WriteLine("    UPDATE " + bd + "." + schema + "." + tab + " SET ctct_fec_procesado = '' WHERE ctct_fec_procesado is null");
+                file.WriteLine("GO");
+                file.WriteLine("IF EXISTS(SELECT 1 FROM " + bd + "." + schema + "." + tab + " WHERE ctct_tipo_operacion is null)");
+                file.WriteLine("    UPDATE " + bd + "." + schema + "." + tab + " SET ctct_tipo_operacion = '' WHERE ctct_tipo_operacion is null");
+                file.WriteLine("GO");
+            }
+            file.WriteLine("");
+
+            #endregion Quitar Valores NULL
 
             #region Añadimos Columnas si no existen
             //Añadimos columnas si no existen
