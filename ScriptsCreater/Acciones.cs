@@ -11,7 +11,7 @@ namespace ScriptsCreater
 {
     class Acciones
     {
-        public string version = "1.0.8";
+        public string version = "1.0.9";
 
         public string comprobarficheros(ref string[] lineds, string ruta, string nombrearchivo, int accion)
         {
@@ -454,48 +454,6 @@ namespace ScriptsCreater
 
             //Retornamos el DT final
             return dtfinal;
-        }
-
-        public string generar_file_exec(StreamWriter file_exec, string tabla, string sp_bd, string sp_sch, string sp, Boolean incremental, Boolean precondicion)
-        {
-            if (incremental == true)
-            {
-                file_exec.WriteLine("-------------------------------------------------------------------");
-                file_exec.WriteLine("--Comprueba tipo de carga");
-                file_exec.WriteLine("SELECT es_carga_completa FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "'");
-                file_exec.WriteLine("");
-                file_exec.WriteLine("--Carga Full");
-                file_exec.WriteLine("--UPDATE dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro SET es_carga_completa = 1 where  bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "'");
-                file_exec.WriteLine("--Carga Incremental");
-                file_exec.WriteLine("--UPDATE dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro SET es_carga_completa = 0 where  bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "'");
-                file_exec.WriteLine("");
-            }
-            if (precondicion == true)
-            {
-                file_exec.WriteLine("-------------------------------------------------------------------");
-                file_exec.WriteLine("--Ver estado Precondiciones");
-                file_exec.WriteLine("SELECT estado_precondicion FROM dbn1_norm_dhyf.audit.tbn1_precondiciones_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "'");
-                file_exec.WriteLine("");
-            }
-            file_exec.WriteLine("-------------------------------------------------------------------");
-            file_exec.WriteLine("--Pasos de Ejecución");
-            file_exec.WriteLine("SELECT COUNT(1) FROM " + tabla);
-            file_exec.WriteLine("");
-            file_exec.WriteLine("EXEC " + sp_bd + "." + sp_sch + "." + sp + " NULL");
-            file_exec.WriteLine("GO");
-            file_exec.WriteLine("SELECT COUNT(1) FROM " + tabla);
-            file_exec.WriteLine("SELECT TOP 1 * FROM dbn1_norm_dhyf.audit.tbn1_logs_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "' order by id desc");
-            file_exec.WriteLine("");
-            file_exec.WriteLine("EXEC " + sp_bd + "." + sp_sch + "." + sp + " NULL");
-            file_exec.WriteLine("GO");
-            file_exec.WriteLine("SELECT COUNT(1) FROM " + tabla);
-            file_exec.WriteLine("SELECT TOP 1 * FROM dbn1_norm_dhyf.audit.tbn1_logs_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "' order by id desc");
-            file_exec.WriteLine("");
-            file_exec.WriteLine("SELECT TOP 10000 * FROM " + tabla);
-            file_exec.WriteLine("GO");
-            file_exec.WriteLine("");
-
-            return "OK";
         }
 
         public string[] leerCSV(string archivo, string ruta)

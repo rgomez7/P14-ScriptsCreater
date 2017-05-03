@@ -108,7 +108,7 @@ namespace ScriptsCreater
 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                a.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, false, true);
+                sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, false, true);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
