@@ -321,6 +321,7 @@ namespace ScriptsCreater
                 //--------------Bloque Incremental PK
                 dtini.Rows.Add("--- Business Logic Start", 2, orden++);
                 dtini.Rows.Add("--Lo que haya entre 'Business Logic' se respeta si se regenera el Script", 2, orden++);
+                dtini.Rows.Add("    --- QUERY 1 --------------------------------------------------------------", 2, orden++);
                 dtini.Rows.Add("", 2, orden++);
                 dtini.Rows.Add("        ;WITH", 2, orden++);
                 dtini.Rows.Add("        query AS (", 2, orden++);
@@ -330,6 +331,7 @@ namespace ScriptsCreater
                 //---------------Bloque Incremental Datos
                 dtini.Rows.Add("--- Business Logic Start", 3, orden++);
                 dtini.Rows.Add("--Lo que haya entre 'Business Logic' se respeta si se regenera el Script", 3, orden++);
+                dtini.Rows.Add("    --- QUERY 2 --------------------------------------------------------------", 3, orden++);
                 dtini.Rows.Add("", 3, orden++);
                 dtini.Rows.Add("        ;WITH", 3, orden++);
                 dtini.Rows.Add("        query AS (", 3, orden++);
@@ -339,6 +341,7 @@ namespace ScriptsCreater
                 //---------------Bloque Full
                 dtini.Rows.Add("--- Business Logic Start", 4, orden++);
                 dtini.Rows.Add("--Lo que haya entre 'Business Logic' se respeta si se regenera el Script", 4, orden++);
+                dtini.Rows.Add("    --- QUERY 3 --------------------------------------------------------------", 4, orden++);
                 dtini.Rows.Add("", 4, orden++);
                 dtini.Rows.Add("        ;WITH", 4, orden++);
                 dtini.Rows.Add("        query AS (", 4, orden++);

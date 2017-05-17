@@ -47,7 +47,7 @@ namespace ScriptsCreater
                     ruta = archivoruta.Replace(archivo, "");
                 if (ruta.ToLower().Contains("csv"))
                     {
-                    ruta = ruta.Replace("csv\\", "");
+                    ruta = ruta.ToLower().Replace("csv\\", "");
                     }
                     txSalida.Text = ruta;
 
