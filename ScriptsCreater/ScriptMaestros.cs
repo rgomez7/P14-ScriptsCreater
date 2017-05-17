@@ -14,7 +14,7 @@ namespace ScriptsCreater
         Acciones a = new Acciones();
         ScriptComun sc = new ScriptComun();
 
-        public string ScMaestro(string archivo, string[] csv, string ruta, ref string nombrearchivo,Boolean CreateTable)
+        public string ScMaestro(string archivo, string[] csv, string ruta, ref string nombrearchivo,Boolean CreateTable, Boolean ct)
         {
             string nombrearchivoexec = "";
             int i = 0;
@@ -22,6 +22,7 @@ namespace ScriptsCreater
             string clave = "";
             string tclave = "";
             string campos = "";
+            string camposPK = "";
             string camposCV = "";
             string txtlb = "";
 
@@ -35,9 +36,25 @@ namespace ScriptsCreater
                 else if (!j[0].Contains("#"))
                 {
                     campos = campos + "'" + j[0] + "',";
-                    if (j[1].ToString().Contains("decimal") || j[1].ToString().Contains("numeric"))
+                    
+                    //Campos clave
+                    if (j[2].Contains("#"))
+                    {
+                        camposPK = camposPK + "t_" + j[0] + ",";
+                    }
+
+                    //Valores para los campos
+                    if (j[1].ToString().ToLower().Contains("decimal") || j[1].ToString().ToLower().Contains("numeric"))
                     {
                         camposCV = camposCV + "0,";
+                    }
+                    else if (j[1].ToString().ToLower().Contains("date") && j[0].ToString().ToLower().Contains("hasta"))
+                    {
+                        camposCV = camposCV + "'12/31/9999',";
+                    }
+                    else if (j[1].ToString().ToLower().Contains("date"))
+                    {
+                        camposCV = camposCV + "'01/01/0001',";
                     }
                     else
                     {
@@ -51,6 +68,7 @@ namespace ScriptsCreater
                 }
             }
             campos = campos.Substring(0, campos.Length - 1);
+            camposPK = camposPK.Substring(0, camposPK.Length - 1);
             camposCV = camposCV.Substring(0, camposCV.Length - 1);
             clave = clave.Substring(0, clave.Length - 1);
             tclave = tclave.Substring(0, tclave.Length - 1);
@@ -91,7 +109,20 @@ namespace ScriptsCreater
                 file.WriteLine("--Begin table create/prepare -> tbn1_mae_" + tab);
                 file.WriteLine("");
 
-                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, "", csv, false, "maestro");
+                //Desactivamos CT
+                if (ct == true)
+                {
+                    string ctd = sc.changetracking(file, "tbn1_mae_" + tab, "dbn1_dmr_dhyf", "dbo", "des");
+                }
+
+                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, camposPK, csv, false, "maestro");
+                camposPK = "";
+
+                //Activamos CT
+                if (ct == true)
+                {
+                    string cta = sc.changetracking(file, "tbn1_mae_" + tab, "dbn1_dmr_dhyf", "dbo", "act");
+                }
 
                 if (CreateTable == false)
                 {

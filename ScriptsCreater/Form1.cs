@@ -65,8 +65,10 @@ namespace ScriptsCreater
                     rbMaestro.Checked = true;
                     gbDSDM.Visible = false;
                     gbHist.Visible = false;
-                    gbAcciones.Visible = true;
-                    cb_ChangeTrack.Visible = false;
+                    gbAcciones.Visible = true;                    
+                    cb_ChangeTrack.Text = "Activar Change Tracking";
+                    cb_ChangeTrack.Checked = false;
+                    cb_ChangeTrack.Visible = true;
                     cb_IndexCS.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("ds"))
@@ -75,6 +77,8 @@ namespace ScriptsCreater
                     gbDSDM.Visible = true;
                     gbHist.Visible = false;
                     gbAcciones.Visible = true;
+                    cb_ChangeTrack.Text = "Change Tracking Comentado";
+                    cb_ChangeTrack.Checked = true;
                     cb_ChangeTrack.Visible = true;
                     cb_IndexCS.Visible = false;
                 }
@@ -94,6 +98,8 @@ namespace ScriptsCreater
                     gbHist.Visible = true;
                     rb_Archivo.Checked = true;
                     gbAcciones.Visible = true;
+                    cb_ChangeTrack.Text = "Change Tracking Comentado";
+                    cb_ChangeTrack.Checked = true;
                     cb_ChangeTrack.Visible = true;
                     cb_IndexCS.Visible = false;
                 }
@@ -143,7 +149,7 @@ namespace ScriptsCreater
                     }
                     else
                     {
-                        string linegen = sm.ScMaestro(archivo, csv, ruta, ref arcScript, cb_CreateTable.Checked);
+                        string linegen = sm.ScMaestro(archivo, csv, ruta, ref arcScript, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
 
                         if (linegen == "OK")
                         {
@@ -310,7 +316,9 @@ namespace ScriptsCreater
             gbDSDM.Visible = false;
             gbHist.Visible = false;
             gbAcciones.Visible = true;
-            cb_ChangeTrack.Visible = false;
+            cb_ChangeTrack.Text = "Activar Change Tracking";
+            cb_ChangeTrack.Checked = false;
+            cb_ChangeTrack.Visible = true;
             cb_IndexCS.Visible = false;
         }
 
@@ -320,6 +328,8 @@ namespace ScriptsCreater
             gbHist.Visible = true;
             rb_Archivo.Checked = true;
             gbAcciones.Visible = true;
+            cb_ChangeTrack.Text = "Change Tracking Comentado";
+            cb_ChangeTrack.Checked = true;
             cb_ChangeTrack.Visible = true;
             cb_IndexCS.Visible = false;
         }
@@ -329,6 +339,8 @@ namespace ScriptsCreater
             gbDSDM.Visible = true;
             gbHist.Visible = false;
             gbAcciones.Visible = true;
+            cb_ChangeTrack.Text = "Change Tracking Comentado";
+            cb_ChangeTrack.Checked = true;
             cb_ChangeTrack.Visible = true;
             cb_IndexCS.Visible = false;
         }
