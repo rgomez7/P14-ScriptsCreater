@@ -44,17 +44,29 @@ namespace ScriptsCreater
                     }
 
                     //Valores para los campos
-                    if (j[1].ToString().ToLower().Contains("decimal") || j[1].ToString().ToLower().Contains("numeric"))
+                    if (j[1].ToString().ToLower().Contains("decimal") || j[1].ToString().ToLower().Contains("numeric") || j[1].ToString().ToLower().Contains("bit"))
                     {
                         camposCV = camposCV + "0,";
                     }
-                    else if (j[1].ToString().ToLower().Contains("date") && j[0].ToString().ToLower().Contains("hasta"))
+                    //else if (j[1].ToString().ToLower().Contains("date") && j[0].ToString().ToLower().Contains("hasta"))
+                    //{
+                    //    camposCV = camposCV + "'12/31/9999',";
+                    //}
+                    //else if (j[1].ToString().ToLower().Contains("date"))
+                    //{
+                    //    camposCV = camposCV + "'01/01/0001',";
+                    //}
+                    else if (j[1].ToString().ToLower().Contains("varchar") && j[0].ToString().ToLower().Contains("cod_"))
                     {
-                        camposCV = camposCV + "'12/31/9999',";
+                        camposCV = camposCV + "'-',";
                     }
-                    else if (j[1].ToString().ToLower().Contains("date"))
+                    else if (j[1].ToString().ToLower().Replace(" ", "").Contains("varchar(1)") || j[1].ToString().ToLower().Replace(" ", "").Contains("varchar(2)"))
                     {
-                        camposCV = camposCV + "'01/01/0001',";
+                        camposCV = camposCV + "'-',";
+                    }
+                    else if (j[1].ToString().ToLower().Contains("varchar"))
+                    {
+                        camposCV = camposCV + "'N/A',";
                     }
                     else
                     {

@@ -275,6 +275,19 @@ namespace ScriptsCreater
                     file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
                     file.WriteLine("            WHERE objeto = @objeto;");
                     file.WriteLine("");
+                    
+                    dr = null;
+                    dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
+                    foreach (DataRow l2 in dr)
+                    {
+                        file.WriteLine(l2.ItemArray[0].ToString());
+                    }
+                    file.WriteLine("");
+                    
+                    file.WriteLine("    IF @es_carga_completa = 0");
+                    file.WriteLine("    BEGIN");
+                    file.WriteLine("--------BLOQUE INCREMENTAL--------");
+                    file.WriteLine("");
                     file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_keys_" + tab + "') IS NOT NULL");
                     file.WriteLine("                DROP TABLE #tmp_keys_" + tab + "");
                     file.WriteLine("            CREATE table #tmp_keys_" + tab + "(");
@@ -299,19 +312,6 @@ namespace ScriptsCreater
                         }
                     }
                     file.WriteLine("               )");
-                    file.WriteLine("");
-
-                    dr = null;
-                    dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
-                    foreach (DataRow l2 in dr)
-                    {
-                        file.WriteLine(l2.ItemArray[0].ToString());
-                    }
-                    file.WriteLine("");
-                    
-                    file.WriteLine("    IF @es_carga_completa = 0");
-                    file.WriteLine("    BEGIN");
-                    file.WriteLine("--------BLOQUE INCREMENTAL--------");
                     file.WriteLine("");
 
                     //SP Creamos la insert de carga de datos
@@ -1481,7 +1481,15 @@ namespace ScriptsCreater
                     file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
                     file.WriteLine("            WHERE objeto = 'spn1_cargar_dm_" + prefijo_tab + "';");
                     file.WriteLine("");
-                    file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_keys_" + prefijo_tab  + "_fact') IS NOT NULL");
+                    file.WriteLine("--- Inicio Bloque común para Incremental y Full");
+                    file.WriteLine("");
+                    file.WriteLine("--- Fin Bloque común para Incremental y Full");
+                    file.WriteLine("");
+                    file.WriteLine("--------BLOQUE INCREMENTAL--------");
+                    file.WriteLine("    IF @es_carga_completa = 0");
+                    file.WriteLine("    BEGIN");
+                    file.WriteLine("");
+                    file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_keys_" + prefijo_tab + "_fact') IS NOT NULL");
                     file.WriteLine("                DROP TABLE #tmp_keys_" + prefijo_tab + "_fact");
                     file.WriteLine("            CREATE table #tmp_keys_" + prefijo_tab + "_fact(");
                     claveDim = "";
@@ -1495,14 +1503,6 @@ namespace ScriptsCreater
                     }
                     claveDim = claveDim.Substring(0, claveDim.Length - 2);
                     file.WriteLine("                " + claveDim + ");");
-                    file.WriteLine("");
-                    file.WriteLine("--- Inicio Bloque común para Incremental y Full");
-                    file.WriteLine("");
-                    file.WriteLine("--- Fin Bloque común para Incremental y Full");
-                    file.WriteLine("");
-                    file.WriteLine("--------BLOQUE INCREMENTAL--------");
-                    file.WriteLine("    IF @es_carga_completa = 0");
-                    file.WriteLine("    BEGIN");
                     file.WriteLine("");
                     file.WriteLine("    ;WITH");
                     file.WriteLine("    query AS (");
