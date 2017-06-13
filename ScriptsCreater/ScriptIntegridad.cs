@@ -69,7 +69,7 @@ namespace ScriptsCreater
             string[] lineas = new string[0];
             nombrearchivo = "Script integridad_" + tipobdinteg + "_" + tabinteg + ".sql";
             nombrearchivoexec = "Exec integridad_" + tipobdinteg + "_" + tabinteg + ".sql";
-            string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
+            string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
 
             //Escribimos en el fichero
             try

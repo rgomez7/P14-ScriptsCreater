@@ -98,7 +98,7 @@ namespace ScriptsCreater
             nombrearchivoexec = "Exec TL " + tipobd + "_" + cabtab + tab + "_tracelog_TL.sql";
             //nombrearchivo = nombrearchivo.Replace("xxx", tipobd);
             string fichero = ruta + nombrearchivo;
-            dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
+            dev = a.comprobarficheros(ref lineas, fichero, 1);
 
             //Escribimos en el fichero
             try

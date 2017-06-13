@@ -13,12 +13,12 @@ namespace ScriptsCreater
     {
         public string version = "1.1.1";
 
-        public string comprobarficheros(ref string[] lineds, string ruta, string nombrearchivo, int accion)
+        public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {
-            string nombrefic;
+            //string nombrefic;
             int counter = 0;
             string line;
-            nombrefic = ruta + nombrearchivo;
+            //nombrefic = ruta + nombrearchivo;
 
             try
             {

@@ -88,10 +88,11 @@ namespace ScriptsCreater
             string[] lineas = new string[0];
             nombrearchivo = "Script maestro_" + tab + ".sql"; 
             nombrearchivoexec = "Exec maestro_" + tab + ".sql";
-            string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
+            string fichero = ruta + nombrearchivo;
+            string dev = a.comprobarficheros(ref lineas, fichero, 1);
             DataTable valorquery = a.valorQuery(lineas, csv, "maestro", false, "");
 
-            string fichero = ruta + nombrearchivo;
+            
             //Escribimos en el fichero
             try
             {

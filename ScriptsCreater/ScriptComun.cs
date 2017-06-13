@@ -26,6 +26,11 @@ namespace ScriptsCreater
             file.WriteLine("                @rc int = 0,");
             file.WriteLine("                @count_all int,");
             file.WriteLine("                @count_ins int,");
+            // es historificación
+            if (esHist)
+            {
+                file.WriteLine("                @fec_procesado datetime,");
+            }
             if (incremental == true)
             {
                 file.WriteLine("                @idx_reclim int,");
@@ -42,11 +47,6 @@ namespace ScriptsCreater
             else
             {
                 file.WriteLine("                @idx_reclim int");
-            }
-            // es historificación
-            if (esHist)
-            {
-                file.WriteLine("                @fec_procesado datetime;");
             }
 
             file.WriteLine("");

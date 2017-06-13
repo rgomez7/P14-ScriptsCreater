@@ -99,10 +99,10 @@ namespace ScriptsCreater
             nombrearchivo = "Script normalizado_" + tab + ".sql";
             nombrearchivoexec = "Exec normalizado_" + tab + ".sql";
             string[] lineas = new string[0];
-            string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
+            fichero = ruta + nombrearchivo;
+            string dev = a.comprobarficheros(ref lineas, fichero, 1);
             DataTable valorquery = a.valorQuery(lineas, csv, "ds", incremental, tab);
 
-            fichero = ruta + nombrearchivo;
             //Escribimos en el fichero
             try
             {
@@ -143,14 +143,8 @@ namespace ScriptsCreater
                 //Create Table
                 sc.regTablas(file, bd, schema, "tbn1_" + tab, clave, campos, campospk, csv2, false, "ds");
 
-                if (CreateTable == false)
-                {
-                    file.WriteLine("--------------------------------------");
-                }
-                else
-                {
-                    file.WriteLine("--------------------------------------*/");
-                }
+                file.WriteLine("--------------------------------------*/");
+
                 file.WriteLine("");
                 //Activamos CT
                 if (ChangeTrack == true)
@@ -162,14 +156,9 @@ namespace ScriptsCreater
                     file.WriteLine("--------------------------------------");
                 }
                 string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");
-                if (ChangeTrack == false)
-                {
-                    file.WriteLine("--------------------------------------");
-                }
-                else
-                {
-                    file.WriteLine("--------------------------------------*/");
-                }
+
+                file.WriteLine("--------------------------------------*/");
+
                 file.WriteLine("--End table create/prepare -> tbn1_" + tab );
                 file.WriteLine("");
                 #endregion "Tabla"
@@ -834,7 +823,7 @@ namespace ScriptsCreater
             string fichero;
             string prefijo_tab = "";
             string tabNRM = "";
-            string tabDM = "";
+            string tabDM = ";";
             string tabFact = "";
             string bd = "dbn1_dmr_dhyf";
             string bdnrm = "dbn1_norm_dhyf";
@@ -875,16 +864,17 @@ namespace ScriptsCreater
                     }
                 }
             }
-            tabDM = tabDM.Substring(0, tabDM.Length - 1);
-            tabDM = tabDM.Replace(";" + tabFact, "").ToLower();
+            tabDM = tabDM.ToLower().Replace(";" + tabFact.ToLower() + ";", ";");
+            tabDM = tabDM.Substring(1, tabDM.Length - 2);
+            
 
             //Generamos nombre fichero y obtenemos lineas, renombrando fichero actual
             nombrearchivo = "Script dimensional_" + prefijo_tab + "_dm.sql";
             nombrearchivoexec = "Exec dimensional_" + prefijo_tab + "_dm.sql";
             string[] lineas = new string[0];
-            string dev = a.comprobarficheros(ref lineas, ruta, nombrearchivo, 1);
-
             fichero = ruta + nombrearchivo;
+            string dev = a.comprobarficheros(ref lineas, fichero, 1);
+
             //Escribimos en el fichero
             try
             {
