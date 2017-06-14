@@ -183,28 +183,30 @@ namespace ScriptsCreater
         public string changetracking(StreamWriter file, string tab, string bd, string sch, string act_des)
         {
                 //Desactivar CT
-                if (act_des == "des")
-                {
-                    file.WriteLine("--Drop CT");
-                    file.WriteLine("IF EXISTS (");
-                }
-                else
-                {
-                    file.WriteLine("--Add CT");
-                    file.WriteLine("IF NOT EXISTS (");
-                }
+            if (act_des == "des")
+            {
+                file.WriteLine("--Drop CT");
+                file.WriteLine("-- CUIDADO!!! Descomentar el DROP CT solo en caso estrictamente necesario (en caso de que se necesite cambiar PK) ");
+                file.WriteLine("-- dado que sino se pierden las trazas utilizadas por otros procedimientos incrementales que puedan leer de esta tabla.");
+                file.WriteLine("");
+                file.WriteLine("--IF EXISTS (");
+                file.WriteLine("--    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
+                file.WriteLine("--    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
+                file.WriteLine("--    WHERE obj.name = '" + tab + "' )");
+                file.WriteLine("--ALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
+            }
+            else
+            {
+                file.WriteLine("--Add CT");
+                file.WriteLine("IF NOT EXISTS (");
+                file.WriteLine("IF EXISTS (");
                 file.WriteLine("    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
                 file.WriteLine("    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
                 file.WriteLine("    WHERE obj.name = '" + tab + "' )");
-                if (act_des == "des")
-                {
-                    file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
-                }
-                else
-                {
-                    file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
-                }
-                file.WriteLine("");
+                file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
+            }
+               
+            file.WriteLine("");
 
             return "OK";
         }

@@ -24,6 +24,7 @@ namespace ScriptsCreater
             string campos = "";
             string tipobd = "";
             string schema = "";
+            string schema_sp = "stg";
             string cabtab = "";
             string[] lineas = new string[0];
             string dev = "";
@@ -172,16 +173,16 @@ namespace ScriptsCreater
                 file.WriteLine("--//Stored Procedure");
                 file.WriteLine("USE dbn1_hist_dhyf");
                 file.WriteLine("GO");
-                file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + tipobd + "_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                file.WriteLine("    DROP PROCEDURE " + schema + ".spn1_cargar_tracelog_" + tipobd + "_" + tab);
+                file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + tipobd + "_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
+                file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobd + "_" + tab);
                 file.WriteLine("GO");
                 file.WriteLine("");
-                file.WriteLine("CREATE PROCEDURE " + schema + ".spn1_cargar_tracelog_" + tipobd + "_" + tab + "(@p_id_carga int) AS");
+                file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobd + "_" + tab + "(@p_id_carga int) AS");
                 file.WriteLine("BEGIN");
                 file.WriteLine("");
 
                 //SP Cabecera
-                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobd + "_" + tab, true, true);
+                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + tipobd + "_" + tab, true, true);
 
                 //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
                 string sp_inc = sc.regSP_Incremental(file);
@@ -204,9 +205,9 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 file.WriteLine("            SELECT " + campospk.Replace("t_", "") + ", sys_change_operation");
                 file.WriteLine("            INTO #CT_TMP");
-                file.WriteLine("            FROM changetable(changes " + bd + ".dbo." + cabtab + tab + ",@ct_" + schema + "_inicial) as CT");
+                file.WriteLine("            FROM changetable(changes " + bd + ".dbo." + cabtab + tab + ",@ct_" + schema_sp + "_inicial) as CT");
                 file.WriteLine("");
-                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'","") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema_sp + "." + cabtab + tab + "_tracelog(" + campos.Replace("'","") + ", ctct_fec_procesado, ctct_tipo_operacion)");
                 file.WriteLine("            SELECT");
                 foreach (string d in csv)
                 {
@@ -266,7 +267,7 @@ namespace ScriptsCreater
                 file.WriteLine("--Inicio Bloque Carga Full");
                 file.WriteLine("        ELSE");
                 file.WriteLine("        BEGIN");
-                file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
+                file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema_sp + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
                 file.WriteLine("            BEGIN");
                 file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
                 file.WriteLine("                DECLARE @id_warning_1 int");
@@ -274,7 +275,7 @@ namespace ScriptsCreater
                 file.WriteLine("            END");
                 file.WriteLine("            ELSE");
                 file.WriteLine("            BEGIN");
-                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema_sp + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
                 file.WriteLine("            SELECT");
                 foreach (string d in csv)
                 {
