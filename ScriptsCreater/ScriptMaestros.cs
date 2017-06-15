@@ -79,6 +79,12 @@ namespace ScriptsCreater
                     }
                 }
             }
+
+            if (tab.Contains("mae_"))
+            {
+                tab = tab.Replace("mae_", "");
+            }
+
             campos = campos.Substring(0, campos.Length - 1);
             camposPK = camposPK.Substring(0, camposPK.Length - 1);
             camposCV = camposCV.Substring(0, camposCV.Length - 1);
@@ -101,7 +107,7 @@ namespace ScriptsCreater
 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                sc.generar_file_exec(file_exec, "dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_maestro_" + tab, false, false);
+                sc.generar_file_exec(file_exec, "dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_maestro_" + tab, false, false);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
@@ -119,22 +125,22 @@ namespace ScriptsCreater
                     file.WriteLine("/*--------------------------------------");
                 }
                 file.WriteLine("");
-                file.WriteLine("--Begin table create/prepare -> tbn1_mae_mae_" + tab);
+                file.WriteLine("--Begin table create/prepare -> tbn1_mae_" + tab);
                 file.WriteLine("");
 
                 //Desactivamos CT
                 if (ct == true)
                 {
-                    string ctd = sc.changetracking(file, "tbn1_mae_mae_" + tab, "dbn1_dmr_dhyf", "dbo", "des");
+                    string ctd = sc.changetracking(file, "tbn1_mae_" + tab, "dbn1_dmr_dhyf", "dbo", "des");
                 }
 
-                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_mae_" + tab, "id_mae_" + tab, campos, camposPK, csv, false, "maestro");
+                sc.regTablas(file, "dbn1_dmr_dhyf", "dbo", "tbn1_mae_" + tab, "id_mae_" + tab, campos, camposPK, csv, false, "maestro");
                 camposPK = "";
 
                 //Activamos CT
                 if (ct == true)
                 {
-                    string cta = sc.changetracking(file, "tbn1_mae_mae_" + tab, "dbn1_dmr_dhyf", "dbo", "act");
+                    string cta = sc.changetracking(file, "tbn1_mae_" + tab, "dbn1_dmr_dhyf", "dbo", "act");
                 }
 
                 if (CreateTable == false)
@@ -146,7 +152,7 @@ namespace ScriptsCreater
                     file.WriteLine("--------------------------------------*/");
                 }
 
-                file.WriteLine("--End table create/prepare -> tbn1_mae_mae_" + tab);
+                file.WriteLine("--End table create/prepare -> tbn1_mae_" + tab);
                 file.WriteLine("");
 
                 //Cambiamos a otra BBDD y empezamos la nueva tarea
@@ -167,11 +173,11 @@ namespace ScriptsCreater
 
                 //SP Cuerpo
                 //SP Añadimos registro valor -1
-                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + " ON");
-                file.WriteLine("        IF NOT EXISTS(SELECT 1 FROM dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + " WHERE id_mae_" + tab + "=-1)");
-                file.WriteLine("            INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + "(id_mae_" + tab + "," + campos.Replace("'","") + ",origen)");
+                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " ON");
+                file.WriteLine("        IF NOT EXISTS(SELECT 1 FROM dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " WHERE id_mae_" + tab + "=-1)");
+                file.WriteLine("            INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "(id_mae_" + tab + "," + campos.Replace("'","") + ",origen)");
                 file.WriteLine("            VALUES(-1," + camposCV + ",'MAESTRO')");
-                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + " OFF");
+                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " OFF");
                 file.WriteLine("");          
                 //SP Creamos objeto temporal
                 file.WriteLine("    IF OBJECT_ID('tempdb..#tmp_mae_" + tab + "') IS NOT NULL");
@@ -220,7 +226,7 @@ namespace ScriptsCreater
                 file.WriteLine("        SELECT");
                 file.WriteLine("            rr_mode=");
                 file.WriteLine("                CASE");
-                file.WriteLine("                    WHEN tbn1_mae_mae_" + tab + ".id_mae_" + tab + " IS NULL THEN 'I'");
+                file.WriteLine("                    WHEN tbn1_mae_" + tab + ".id_mae_" + tab + " IS NULL THEN 'I'");
                 txtlb = "";
                 foreach (string d in csv)
                 {
@@ -235,7 +241,7 @@ namespace ScriptsCreater
                 }
                 file.WriteLine("                    WHEN " + txtlb + " id_mae_" + tab + "<>-1 THEN 'D'");
                 file.WriteLine("                    ELSE 'U' END,");
-                file.WriteLine("            tbn1_mae_mae_" + tab + ".id_mae_" + tab + " AS id_mae_" + tab + ",");
+                file.WriteLine("            tbn1_mae_" + tab + ".id_mae_" + tab + " AS id_mae_" + tab + ",");
                 foreach (string d in csv)
                 {
                     string[] j = d.Split(new Char[] { ';' });
@@ -243,7 +249,7 @@ namespace ScriptsCreater
                     {
                         if (j[2].ToString() == "#")
                         {
-                            file.WriteLine("            tbn1_mae_mae_" + tab + "." + j[0].ToString() + " AS t_" + j[0].ToString() + ",");
+                            file.WriteLine("            tbn1_mae_" + tab + "." + j[0].ToString() + " AS t_" + j[0].ToString() + ",");
                         }
                     }
                 }
@@ -256,17 +262,15 @@ namespace ScriptsCreater
                     {
                         if (i == csv.Length)
                         {
-
                             file.WriteLine("            query." + j[0].ToString() + " AS " + j[0].ToString());
                         }
                         else
                         {
-
                             file.WriteLine("            query." + j[0].ToString() + " AS " + j[0].ToString() + ",");
                         }
                     }
                 }
-                file.WriteLine("        FROM dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + " AS tbn1_mae_mae_" + tab);
+                file.WriteLine("        FROM dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " AS tbn1_mae_" + tab);
                 file.WriteLine("        FULL JOIN query on (");
                 i = 0;
                 foreach (string d in csv)
@@ -280,7 +284,7 @@ namespace ScriptsCreater
                             {
                                 file.WriteLine("        AND ");
                             }
-                            file.WriteLine("        (query." + j[0].ToString() + "=tbn1_mae_mae_" + tab + "." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND tbn1_mae_mae_" + tab + "." + j[0].ToString() + " IS NULL))");
+                            file.WriteLine("        (query." + j[0].ToString() + "=tbn1_mae_" + tab + "." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND tbn1_mae_" + tab + "." + j[0].ToString() + " IS NULL))");
                             i++;
                         }
                     }
@@ -297,14 +301,13 @@ namespace ScriptsCreater
                     {
                         if (j[2] == "#")
                         {
-
                             file.WriteLine("            (query." + j[0].ToString() + " IS NULL AND id_mae_" + tab + "<>-1)");
                         }
                         else
                         {
-                            file.WriteLine("            (tbn1_mae_mae_" + tab + "." + j[0].ToString() + "<>query." + j[0].ToString() + " ");
-                            file.WriteLine("               OR (tbn1_mae_mae_" + tab + "." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL) ");
-                            file.WriteLine("               OR (tbn1_mae_mae_" + tab + "." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
+                            file.WriteLine("            (tbn1_mae_" + tab + "." + j[0].ToString() + "<>query." + j[0].ToString() + " ");
+                            file.WriteLine("               OR (tbn1_mae_" + tab + "." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL) ");
+                            file.WriteLine("               OR (tbn1_mae_" + tab + "." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
                         }
                                                 
                         if (i < csv.Length)
@@ -320,7 +323,7 @@ namespace ScriptsCreater
                 file.WriteLine("        SELECT @count_ins = count(8) from #tmp_mae_" + tab + " where rr_mode='I'");
                 file.WriteLine("");
                 //Actualizamos registros en DMR
-                file.WriteLine("        UPDATE dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab);
+                file.WriteLine("        UPDATE dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab);
                 file.WriteLine("            SET");
                 file.WriteLine("                origen='MAESTRO',");
                 i = 0;
@@ -374,7 +377,7 @@ namespace ScriptsCreater
                             {
                                 file.WriteLine("        AND ");
                             }
-                            file.WriteLine("            (dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + "." + j[0].ToString() + " = s." + j[0].ToString() + " OR (tbn1_mae_mae_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
+                            file.WriteLine("            (dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "." + j[0].ToString() + " = s." + j[0].ToString() + " OR (tbn1_mae_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
                             i++;
                         }
                     }
@@ -384,11 +387,11 @@ namespace ScriptsCreater
                 //SP Modificamos el Indice y realizamos el Insert
                 file.WriteLine("        IF @count_ins >= @idx_reclim");
                 file.WriteLine("        BEGIN");
-                file.WriteLine("            IF EXISTS (SELECT 1 FROM dbn1_dmr_dhyf.sys.indexes WHERE name = 'IX_tbn1_mae_mae_" + tab + "_unique')");
-                file.WriteLine("            ALTER INDEX IX_tbn1_mae_mae_" + tab + "_unique ON dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + " DISABLE");
+                file.WriteLine("            IF EXISTS (SELECT 1 FROM dbn1_dmr_dhyf.sys.indexes WHERE name = 'IX_tbn1_mae_" + tab + "_unique')");
+                file.WriteLine("            ALTER INDEX IX_tbn1_mae_" + tab + "_unique ON dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " DISABLE");
                 file.WriteLine("        END");
                 file.WriteLine("");
-                file.WriteLine("        INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + "(" + campos.Replace("'", "") + ",origen)");
+                file.WriteLine("        INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + "(" + campos.Replace("'", "") + ",origen)");
                 file.WriteLine("        SELECT");
                 i = 0;
                 foreach (string d in csv)
@@ -414,8 +417,8 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 file.WriteLine("        IF @count_ins >= @idx_reclim");
                 file.WriteLine("        BEGIN");
-                file.WriteLine("            IF EXISTS (SELECT 1 FROM dbn1_dmr_dhyf.sys.indexes WHERE name = 'IX_tbn1_mae_mae_" + tab + "_unique')");
-                file.WriteLine("            ALTER INDEX IX_tbn1_mae_mae_" + tab + "_unique ON dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + " REBUILD");
+                file.WriteLine("            IF EXISTS (SELECT 1 FROM dbn1_dmr_dhyf.sys.indexes WHERE name = 'IX_tbn1_mae_" + tab + "_unique')");
+                file.WriteLine("            ALTER INDEX IX_tbn1_mae_" + tab + "_unique ON dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " REBUILD");
                 file.WriteLine("        END");
                 file.WriteLine("");
                 //SP Borramos object temporal
@@ -523,7 +526,11 @@ namespace ScriptsCreater
                     camposCV = camposCV + "'',";
                 }
             }
-            
+            //si tab no lleva el prefijo mae, se lo asignamos
+            if (!tab.Contains("mae_"))
+            {
+                tab = "mae_" + tab;
+            }
 
             campos = campos.Substring(0, campos.Length - 1);
             campospk = campospk.Substring(0, campospk.Length - 1);
@@ -564,7 +571,7 @@ namespace ScriptsCreater
 
                 file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                 file_exec.WriteLine("GO");
-                sc.generar_file_exec(file_exec, bd + ".dbo.tbn1_mae_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_maestro_" + tab, incremental, true);
+                sc.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_maestro_" + tab, incremental, true);
 
                 file.WriteLine("PRINT '" + nombrearchivo + "'");
                 file.WriteLine("GO");
@@ -585,16 +592,16 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("--------------------------------------");
                 }
-                file.WriteLine("--Begin table create/prepare -> tbn1_mae_" + tab);
+                file.WriteLine("--Begin table create/prepare -> tbn1_" + tab);
                 file.WriteLine("");
                 //Desactivamos CT
-                string ctd = sc.changetracking(file, "tbn1_mae_" + tab, bd, "dbo", "des");
+                string ctd = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "des");
 
                 //Drop FKs
                 sc.borrarFK(file, bd, schema, tab);
 
                 //Create Table
-                sc.regTablas(file, bd, schema, "tbn1_mae_" + tab, clave, campos, campospk, csv2, false, "ds");
+                sc.regTablas(file, bd, schema, "tbn1_" + tab, clave, campos, campospk, csv2, false, "ds");
 
                 file.WriteLine("--------------------------------------*/");
 
@@ -608,11 +615,11 @@ namespace ScriptsCreater
                 {
                     file.WriteLine("--------------------------------------");
                 }
-                string cta = sc.changetracking(file, "tbn1_mae_" + tab, bd, "dbo", "act");
+                string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");
 
                 file.WriteLine("--------------------------------------*/");
 
-                file.WriteLine("--End table create/prepare -> tbn1_mae_" + tab);
+                file.WriteLine("--End table create/prepare -> tbn1_" + tab);
                 file.WriteLine("");
                 #endregion "Tabla"
 
@@ -640,15 +647,15 @@ namespace ScriptsCreater
                 }
 
                 //SP Añadimos registro valor -1
-                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " ON");
-                file.WriteLine("        IF NOT EXISTS(SELECT 1 FROM dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " WHERE id_" + tab + "=-1)");
-                file.WriteLine("            INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_mae_mae_" + tab + "(id_" + tab + "," + campos.Replace("'", "") + ",origen)");
+                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_" + tab + " ON");
+                file.WriteLine("        IF NOT EXISTS(SELECT 1 FROM dbn1_dmr_dhyf.dbo.tbn1_" + tab + " WHERE id_" + tab + "=-1)");
+                file.WriteLine("            INSERT INTO dbn1_dmr_dhyf.dbo.tbn1_" + tab + "(id_" + tab + "," + campos.Replace("'", "") + ",origen)");
                 file.WriteLine("            VALUES(-1," + camposCV + ",'MAESTRO')");
-                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_mae_" + tab + " OFF");
+                file.WriteLine("        SET IDENTITY_INSERT dbn1_dmr_dhyf.dbo.tbn1_" + tab + " OFF");
                 file.WriteLine("");
 
                 //SP Creamos Object Temporal
-                file.WriteLine("            ALTER TABLE " + bd + ".dbo.tbn1_mae_" + tab + " NOCHECK CONSTRAINT ALL");
+                file.WriteLine("            ALTER TABLE " + bd + ".dbo.tbn1_" + tab + " NOCHECK CONSTRAINT ALL");
                 file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_q_" + tab + "') IS NOT NULL");
                 file.WriteLine("                DROP TABLE #tmp_q_" + tab + "");
                 file.WriteLine("            CREATE table #tmp_q_" + tab + "(");
@@ -722,7 +729,7 @@ namespace ScriptsCreater
                 if (incremental == true)
                 {
                     file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
-                    file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_mae_carga_dwh_maestro");
+                    file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
                     file.WriteLine("            WHERE objeto = @objeto;");
                     file.WriteLine("");
 
@@ -871,7 +878,7 @@ namespace ScriptsCreater
                             }
                         }
                     }
-                    file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_mae_" + tab + " AS t");
+                    file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_" + tab + " AS t");
                     file.WriteLine("        INNER JOIN #tmp_keys_" + tab + " AS keys on (");
                     i = 0;
                     foreach (string d in csv)
@@ -1039,7 +1046,7 @@ namespace ScriptsCreater
                         }
                     }
                 }
-                file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_mae_" + tab + " AS t");
+                file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_" + tab + " AS t");
                 file.WriteLine("        FULL JOIN #tmp_q_" + tab + " AS query on (");
                 //--//Realizamos las comparaciones de claves
                 i = 0;
@@ -1116,7 +1123,7 @@ namespace ScriptsCreater
                 file.WriteLine("        --END");
                 file.WriteLine("");
                 //SP Actualizamos los registros existentes con cambios
-                file.WriteLine("        UPDATE " + bd + "." + schema + ".tbn1_mae_" + tab + "");
+                file.WriteLine("        UPDATE " + bd + "." + schema + ".tbn1_" + tab + "");
                 file.WriteLine("            SET");
                 //--//Realizamos el Update, comparamos los campos
                 i = 0;
@@ -1169,13 +1176,13 @@ namespace ScriptsCreater
                         {
                             if (i == 0)
                             {
-                                //file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_mae_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_mae_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
-                                file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_mae_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
+                                //file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
+                                file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
                             }
                             else
                             {
-                                //file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_mae_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_mae_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
-                                file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_mae_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
+                                //file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
+                                file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
                             }
                             i++;
                         }
@@ -1187,12 +1194,12 @@ namespace ScriptsCreater
                 //SP Desactivamos Indice de la tabla principal
                 file.WriteLine("        IF @count_ins >= @idx_reclim");
                 file.WriteLine("        BEGIN");
-                file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_mae_" + tab + "_unique')");
-                file.WriteLine("            ALTER INDEX IX_tbn1_mae_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_mae_" + tab + " DISABLE;");
+                file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_" + tab + "_unique')");
+                file.WriteLine("            ALTER INDEX IX_tbn1_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_" + tab + " DISABLE;");
                 file.WriteLine("        END");
                 file.WriteLine("");
                 //SP Insertamos nuevos registros
-                file.WriteLine("        INSERT INTO " + bd + "." + schema + ".tbn1_mae_" + tab + " WITH(TABLOCK) (" + campos.Replace("'", "") + ")");
+                file.WriteLine("        INSERT INTO " + bd + "." + schema + ".tbn1_" + tab + " WITH(TABLOCK) (" + campos.Replace("'", "") + ")");
                 file.WriteLine("        SELECT");
                 i = 0;
                 foreach (string d in csv)
@@ -1222,21 +1229,21 @@ namespace ScriptsCreater
                 //SP Activamos indice de la tabla principal
                 file.WriteLine("        IF @count_ins >= @idx_reclim");
                 file.WriteLine("        BEGIN");
-                file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_mae_" + tab + "_unique')");
-                file.WriteLine("            ALTER INDEX IX_tbn1_mae_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_mae_" + tab + " REBUILD;");
+                file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_" + tab + "_unique')");
+                file.WriteLine("            ALTER INDEX IX_tbn1_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_" + tab + " REBUILD;");
                 file.WriteLine("        END");
                 file.WriteLine("");
                 if (incremental == true)
                 {
                     file.WriteLine("--Insertar registros de incrementalidad en tabla ct_procesado");
-                    file.WriteLine("        UPDATE dbn1_norm_dhyf.audit.tbn1_mae_procedimientos_ct_procesado");
+                    file.WriteLine("        UPDATE dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
                     file.WriteLine("        SET ct_stg  = @ct_stg_final,");
                     file.WriteLine("            ct_norm = @ct_norm_final,");
                     file.WriteLine("            ct_dmr = @ct_dmr_final");
                     file.WriteLine("        WHERE procedimiento = @objeto; ");
                     file.WriteLine("");
                 }
-                file.WriteLine("        ALTER TABLE " + bd + "." + schema + ".tbn1_mae_" + tab + " WITH CHECK CHECK CONSTRAINT ALL");
+                file.WriteLine("        ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " WITH CHECK CHECK CONSTRAINT ALL");
                 file.WriteLine("");
                 #endregion "ModificacionesTablasSP"
 

@@ -955,7 +955,7 @@ namespace ScriptsCreater
                     file.WriteLine("");
 
                     //Desactivamos CT
-                    string ctdf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "des");
+                    //string ctdf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "des");
 
                     //Drop FKs
                     sc.borrarFK(file, bd, "dbo", prefijo_tab + "_dim_" + tabDim);
@@ -975,9 +975,9 @@ namespace ScriptsCreater
 
                     #region Activar CT Dim
                     //Activamos CT
-                    file.WriteLine("/*--------------------------------------");
-                    string ctpf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "act");
-                    file.WriteLine("--------------------------------------*/");
+                    //file.WriteLine("/*--------------------------------------");
+                    //string ctpf = sc.changetracking(file, "tbn1_" + prefijo_tab + "_dim_" + tabDim, bd, "dbo", "act");
+                    //file.WriteLine("--------------------------------------*/");
                     #endregion Activar CT Dim
 
                     file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_dim_" + tabDim);
@@ -1038,7 +1038,7 @@ namespace ScriptsCreater
                 campospk = campospk.Substring(0, campospk.Length - 1);
 
                 //Desactivamos CT
-                string ctd = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "des");
+                //string ctd = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "des");
 
                 //Drop FKs
                 sc.borrarFK(file, bd, "dbo", prefijo_tab + "_fact");
@@ -1058,9 +1058,9 @@ namespace ScriptsCreater
 
                 #region Activar CT fact
                 //Activamos CT
-                file.WriteLine("/*--------------------------------------");
-                string ctp = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "act");
-                file.WriteLine("--------------------------------------*/");
+                //file.WriteLine("/*--------------------------------------");
+                //string ctp = sc.changetracking(file, "tbn1_" + prefijo_tab + "_fact", bd, "dbo", "act");
+                //file.WriteLine("--------------------------------------*/");
                 #endregion Activar CT fact
 
                 file.WriteLine("--End table create/prepare -> tbn1_" + prefijo_tab + "_fact");

@@ -199,7 +199,6 @@ namespace ScriptsCreater
             {
                 file.WriteLine("--Add CT");
                 file.WriteLine("IF NOT EXISTS (");
-                file.WriteLine("IF EXISTS (");
                 file.WriteLine("    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
                 file.WriteLine("    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
                 file.WriteLine("    WHERE obj.name = '" + tab + "' )");
@@ -378,6 +377,8 @@ namespace ScriptsCreater
             file.WriteLine("    SELECT constraint_name FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS");
             file.WriteLine("    WHERE table_schema = '" + schema + "'");
             file.WriteLine("        AND table_name = '" + tab + "'");
+            file.WriteLine("        --Comentar la siguiente linea para borrar todas las Constraint, sino solo se borran aquellas que no sean Primary Key--");
+            file.WriteLine("        AND CONSTRAINT_TYPE != 'PRIMARY KEY'");
             file.WriteLine("    OPEN @cursor");
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @constraint");
             file.WriteLine("    WHILE @@FETCH_STATUS = 0");

@@ -205,9 +205,9 @@ namespace ScriptsCreater
                 file.WriteLine("");
                 file.WriteLine("            SELECT " + campospk.Replace("t_", "") + ", sys_change_operation");
                 file.WriteLine("            INTO #CT_TMP");
-                file.WriteLine("            FROM changetable(changes " + bd + ".dbo." + cabtab + tab + ",@ct_" + schema_sp + "_inicial) as CT");
+                file.WriteLine("            FROM changetable(changes " + bd + ".dbo." + cabtab + tab + ",@ct_" + schema + "_inicial) as CT");
                 file.WriteLine("");
-                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema_sp + "." + cabtab + tab + "_tracelog(" + campos.Replace("'","") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'","") + ", ctct_fec_procesado, ctct_tipo_operacion)");
                 file.WriteLine("            SELECT");
                 foreach (string d in csv)
                 {
@@ -267,7 +267,7 @@ namespace ScriptsCreater
                 file.WriteLine("--Inicio Bloque Carga Full");
                 file.WriteLine("        ELSE");
                 file.WriteLine("        BEGIN");
-                file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema_sp + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
+                file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
                 file.WriteLine("            BEGIN");
                 file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
                 file.WriteLine("                DECLARE @id_warning_1 int");
@@ -275,7 +275,7 @@ namespace ScriptsCreater
                 file.WriteLine("            END");
                 file.WriteLine("            ELSE");
                 file.WriteLine("            BEGIN");
-                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema_sp + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
                 file.WriteLine("            SELECT");
                 foreach (string d in csv)
                 {
