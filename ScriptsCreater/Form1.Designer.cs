@@ -55,6 +55,7 @@
             this.cb_IndexCS = new System.Windows.Forms.CheckBox();
             this.cb_ChangeTrack = new System.Windows.Forms.CheckBox();
             this.cb_CreateTable = new System.Windows.Forms.CheckBox();
+            this.rbLectorCSV = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.gbDSDM.SuspendLayout();
             this.gbHist.SuspendLayout();
@@ -116,6 +117,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.rbLectorCSV);
             this.groupBox1.Controls.Add(this.rbHist);
             this.groupBox1.Controls.Add(this.rbIntegridad);
             this.groupBox1.Controls.Add(this.rbDSDM);
@@ -352,6 +354,18 @@
             this.cb_CreateTable.Text = "Create Table Comentado";
             this.cb_CreateTable.UseVisualStyleBackColor = true;
             // 
+            // rbLectorCSV
+            // 
+            this.rbLectorCSV.AutoSize = true;
+            this.rbLectorCSV.Location = new System.Drawing.Point(24, 134);
+            this.rbLectorCSV.Name = "rbLectorCSV";
+            this.rbLectorCSV.Size = new System.Drawing.Size(148, 21);
+            this.rbLectorCSV.TabIndex = 4;
+            this.rbLectorCSV.TabStop = true;
+            this.rbLectorCSV.Text = "Lector CSV UNION";
+            this.rbLectorCSV.UseVisualStyleBackColor = true;
+            this.rbLectorCSV.CheckedChanged += new System.EventHandler(this.rbLectorCSV_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -413,6 +427,7 @@
         private System.Windows.Forms.CheckBox cb_ChangeTrack;
         private System.Windows.Forms.CheckBox cb_CreateTable;
         private System.Windows.Forms.CheckBox cb_IndexCS;
+        private System.Windows.Forms.RadioButton rbLectorCSV;
     }
 }
 

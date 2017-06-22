@@ -18,6 +18,7 @@ namespace ScriptsCreater
         ScriptIntegridad sinteg = new ScriptIntegridad();
         ScriptDSDM dsdm = new ScriptDSDM();
         ScriptHist sh = new ScriptHist();
+        ScriptLectorCSV lec = new ScriptLectorCSV();
 
         public Form1()
         {
@@ -273,6 +274,9 @@ namespace ScriptsCreater
                         string[] dirs = Directory.GetFiles(rutaorigen, "*.csv");
                         foreach (string dir in dirs)
                         {
+                            csv = null;
+                            csv = cr.leerCSV(archivo, rutaorigen);
+
                             archivo = dir.Replace(rutaorigen, "");
 
                             linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
@@ -289,6 +293,18 @@ namespace ScriptsCreater
                     if (linegen == "OK")
                     {
                         MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+
+                //Opción generación Script con Union ALL de los campos
+                else if (rbLectorCSV.Checked == true)
+                {
+                    csv = cr.leerCSV(archivo, rutaorigen);
+                    string linegen = lec.selectUnion(archivo, csv, ruta, ref arcScript);
+
+                    if (linegen == "OK")
+                    {
+                        MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
 
@@ -345,7 +361,16 @@ namespace ScriptsCreater
             cb_IndexCS.Visible = false;
         }
 
-
+        private void rbLectorCSV_CheckedChanged(object sender, EventArgs e)
+        {
+            gbDSDM.Visible = false;
+            gbHist.Visible = false;
+            gbAcciones.Visible = false;
+            cb_ChangeTrack.Text = "Change Tracking Comentado";
+            cb_ChangeTrack.Checked = false;
+            cb_ChangeTrack.Visible = false;
+            cb_IndexCS.Visible = false;
+        }
 
 
         private void rb_DSDM_T_CheckedChanged(object sender, EventArgs e)
@@ -369,5 +394,6 @@ namespace ScriptsCreater
         }
 
         #endregion
+
     }
 }

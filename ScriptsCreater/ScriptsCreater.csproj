@@ -97,6 +97,7 @@
     <Compile Include="ScriptDSDM.cs" />
     <Compile Include="ScriptHist.cs" />
     <Compile Include="ScriptIntegridad.cs" />
+    <Compile Include="ScriptLectorCSV.cs" />
     <Compile Include="ScriptMaestros.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>

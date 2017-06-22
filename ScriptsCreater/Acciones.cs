@@ -11,7 +11,7 @@ namespace ScriptsCreater
 {
     class Acciones
     {
-        public string version = "1.1.2";
+        public string version = "1.1.3";
 
         public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {
@@ -468,7 +468,7 @@ namespace ScriptsCreater
             //Pasamos valor CSV a variables
             try
             {
-                StreamReader file = new StreamReader(ruta + archivo);
+                StreamReader file = new StreamReader(ruta + archivo, Encoding.Default);
                 while ((line = file.ReadLine()) != null)
                 {
                     Array.Resize(ref csv, csv.Length + 1);

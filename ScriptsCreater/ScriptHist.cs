@@ -60,20 +60,28 @@ namespace ScriptsCreater
             }
 
             //Asignamos nombre al nombrearchivo
-            if (bd.Contains("dmr"))
+            if (bd.Contains("dmr") || tab.Contains("dm"))
             {
                 tipobd = "dimensional";
                 schema = "dmr";
+                if (bd == "")
+                {
+                    bd = "dbn1_dmr_dhyf";
+                }
             }
             else if (bd.Contains("stg"))
             {
                 tipobd = "staging";
                 schema = "stg";
             }
-            else if (bd.Contains("norm"))
+            else if (bd.Contains("norm") || tab.Contains("ds"))
             {
                 tipobd = "normalizado";
                 schema = "norm";
+                if (bd == "")
+                {
+                    bd = "dbn1_norm_dhyf";
+                }
             }
             else
             {
