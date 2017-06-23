@@ -94,7 +94,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptComun.cs" />
-    <Compile Include="ScriptDSDM.cs" />
+    <Compile Include="ScriptDS.cs" />
+    <Compile Include="ScriptDM.cs" />
     <Compile Include="ScriptHist.cs" />
     <Compile Include="ScriptIntegridad.cs" />
     <Compile Include="ScriptLectorCSV.cs" />

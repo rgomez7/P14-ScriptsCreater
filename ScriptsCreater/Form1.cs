@@ -16,7 +16,8 @@ namespace ScriptsCreater
         Acciones cr = new Acciones();
         ScriptMaestros sm = new ScriptMaestros();
         ScriptIntegridad sinteg = new ScriptIntegridad();
-        ScriptDSDM dsdm = new ScriptDSDM();
+        ScriptDS ds = new ScriptDS();
+        ScriptDM dm = new ScriptDM();
         ScriptHist sh = new ScriptHist();
         ScriptLectorCSV lec = new ScriptLectorCSV();
 
@@ -32,26 +33,29 @@ namespace ScriptsCreater
 
         //Esto es para el boton de seleción de archivos
         private void button1_Click(object sender, EventArgs e)
+        {
+            csv = new string[0];
+
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Filter = "Archivo CSV|*.csv";
+            openFileDialog1.Title = "Seleccione un Archivo";
+
+            if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                csv = new string[0];
-
-                OpenFileDialog openFileDialog1 = new OpenFileDialog();
-                openFileDialog1.Filter = "Archivo CSV|*.csv";
-                openFileDialog1.Title = "Seleccione un Archivo";
-
-                if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                archivoruta = openFileDialog1.FileName;
+                archivo = openFileDialog1.SafeFileName;
+                txFile.Text = archivo;
+                rutaorigen = archivoruta.Replace(archivo, "");
+                if (txSalida.Text == "")
                 {
-                    archivoruta = openFileDialog1.FileName;
-                    archivo = openFileDialog1.SafeFileName;
-                    txFile.Text = archivo;
-                    rutaorigen = archivoruta.Replace(archivo, "");
                     ruta = archivoruta.Replace(archivo, "");
-                if (ruta.ToLower().Contains("csv"))
+                    if (ruta.ToLower().Contains("csv"))
                     {
-                    ruta = ruta.ToLower().Replace("csv\\", "");
+                        ruta = ruta.ToLower().Replace("csv\\", "");
                     }
                     txSalida.Text = ruta;
-
+                }
+                
                 //Pasamos valor CSV a variables
                 csv = cr.leerCSV(archivo, rutaorigen);
                 if (csv.Length == 0)
@@ -193,7 +197,7 @@ namespace ScriptsCreater
                         //Genera tabla
                         if (rb_DSDM_T.Checked == true)
                         {
-                            string linegen = dsdm.table(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                            string linegen = ds.table(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
 
                             if (linegen == "OK")
                             {
@@ -203,7 +207,7 @@ namespace ScriptsCreater
                         //Genera DS
                         else if (rb_DSDM_DS.Checked == true)
                         {
-                            string linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                            string linegen = ds.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
 
                             if (linegen == "OK")
                             {
@@ -213,7 +217,7 @@ namespace ScriptsCreater
                         //Genera DM
                         else if (rb_DSDM_DM.Checked == true)
                         {
-                            string linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
+                            string linegen = dm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
 
                             if (linegen == "OK")
                             {
@@ -227,11 +231,11 @@ namespace ScriptsCreater
                             string linegen = "OK";
 
                             //DS
-                            linegen = dsdm.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                            linegen = ds.ds(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
                             fichero = fichero + "\n\r" + arcScript;
 
                             //DM
-                            linegen = dsdm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
+                            linegen = dm.dm(archivo, csv, ruta, ref arcScript, cbIncremental.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked, cb_IndexCS.Checked);
                             fichero = fichero + "\n\r" + arcScript;
 
                             if (linegen == "OK")
