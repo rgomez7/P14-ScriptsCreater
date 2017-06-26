@@ -29,71 +29,79 @@ namespace ScriptsCreater
             fichero = ruta + nombrearchivo;
             string dev = a.comprobarficheros(ref lineas, fichero, 1);
 
-            try
+            if (a.comprobarDir(ruta) == "OK")
             {
-                StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
-                
-                //calculamos tamaño campos
-                foreach (string d in csv)
+                try
                 {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (i == 0)
+                    StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+
+                    //calculamos tamaño campos
+                    foreach (string d in csv)
                     {
-                        Array.Resize(ref tam, j.Length);
-                    }
-                    else
-                    {
-                        x = 0;
-                        foreach (string c in j)
+                        string[] j = d.Split(new Char[] { ';' });
+                        if (i == 0)
                         {
-                            if(Convert.ToInt32(tam[x]) < c.Length)
+                            Array.Resize(ref tam, j.Length);
+                        }
+                        else
+                        {
+                            x = 0;
+                            foreach (string c in j)
                             {
-                                tam[x] = c.Length.ToString();
+                                if (Convert.ToInt32(tam[x]) < c.Length)
+                                {
+                                    tam[x] = c.Length.ToString();
+                                }
+                                x++;
                             }
-                            x++;
                         }
+                        i++;
                     }
-                    i++;
-                }
 
-                i = 0;
-                //Guardamos los registros
-                foreach (string d in csv)
+                    i = 0;
+                    //Guardamos los registros
+                    foreach (string d in csv)
+                    {
+                        string[] j = d.Split(new Char[] { ';' });
+                        //Primera linea es cabecera, se guarda en un array
+                        if (i == 0)
+                        {
+                            cab = j;
+                        }
+                        else
+                        {
+                            valores = "";
+                            x = 0;
+                            foreach (string c in j)
+                            {
+                                campo = String.Format("{0,-" + tam[x] + "}", c);
+                                valores = valores + "'" + campo + "' as " + cab[x].ToString() + ", ";
+                                x++;
+                            }
+                            valores = valores.Substring(0, valores.Length - 2);
+                            file.WriteLine("SELECT " + valores);
+
+                            if (i + 1 < csv.Length)
+                            {
+                                file.WriteLine("UNION ALL ");
+                            }
+                        }
+                        i++;
+                    }
+                    file.Close();
+                }
+                catch (Exception ex)
                 {
-                    string[] j = d.Split(new Char[] { ';' });
-                    //Primera linea es cabecera, se guarda en un array
-                    if (i == 0)
-                    {
-                        cab = j;
-                    }
-                    else
-                    {
-                        valores = "";
-                        x = 0;
-                        foreach (string c in j)
-                        {
-                            campo = String.Format("{0,-" + tam[x] + "}", c);
-                            valores = valores + "'" + campo + "' as " + cab[x].ToString() + ", ";
-                            x++;
-                        }
-                        valores = valores.Substring(0, valores.Length - 2);
-                        file.WriteLine("SELECT " + valores);
-
-                        if (i + 1 < csv.Length)
-                        {
-                            file.WriteLine("UNION ALL ");
-                        }
-                    }
-                    i++;
+                    MessageBox.Show("Error al escribir en archivo " + nombrearchivo + "\r\n" + ex.Message, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                    return "NO";
                 }
-                file.Close();
+                return "OK";
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show("Error al escribir en archivo " + nombrearchivo + "\r\n" + ex.Message, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                 return "NO";
             }
-            return "OK";
         }
     }
 }

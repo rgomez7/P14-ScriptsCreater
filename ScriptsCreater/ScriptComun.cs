@@ -324,41 +324,61 @@ namespace ScriptsCreater
             }
             i = 0;
             coma = ",";
-            foreach (string d in csv)
+            if (tiposcript == "historificacion")
             {
-                string[] j = d.Split(new Char[] { ';' });
-                i++;
-                if (!j[0].Contains("#"))
+                foreach (string d in csv)
                 {
-                    if (i == csv.Length)
+                    string[] j = d.Split(new Char[] { ';' });
+                    i++;
+                    if (!j[0].Contains("#"))
                     {
-                        coma = "";
+                        if (i == csv.Length)
+                        {
+                            coma = "";
+                        }
+                        file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + coma) ;
                     }
-                    #region Comprobar tipo campo COMENTADO
-                    //if (tiposcript == "maestro")
-                    //{
-                    //    tipodato = " NULL";
-                    //}
-                    //else
-                    //{
-                    //    if (j[2].ToString() == "#")
-                    //    {
-                    //        tipodato = " NOT NULL";
-                    //    }
-                    //    else if (j[3].ToString() == "#")
-                    //    {
-                    //        tipodato = " NOT NULL";
-                    //    }
-                    //    else
-                    //    {
-                    //        tipodato = " NULL";
-                    //    }
-                    //}
-                    #endregion Comprobar tipo campo COMENTADO
-
-                    tipodato = " NOT NULL";
-                    file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + tipodato + coma) ;
                 }
+            }
+            else
+            {
+                foreach (string d in csv)
+                {
+                    string[] j = d.Split(new Char[] { ';' });
+                    i++;
+                    if (!j[0].Contains("#"))
+                    {
+                        if (i == csv.Length)
+                        {
+                            coma = "";
+                        }
+                        #region Comprobar tipo campo COMENTADO
+                        //if (tiposcript == "maestro")
+                        //{
+                        //    tipodato = " NULL";
+                        //}
+                        //else
+                        //{
+                        //    if (j[2].ToString() == "#")
+                        //    {
+                        //        tipodato = " NOT NULL";
+                        //    }
+                        //    else if (j[3].ToString() == "#")
+                        //    {
+                        //        tipodato = " NOT NULL";
+                        //    }
+                        //    else
+                        //    {
+                        //        tipodato = " NULL";
+                        //    }
+                        //}
+                        #endregion Comprobar tipo campo COMENTADO
+
+                        tipodato = " NOT NULL";
+                        file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + tipodato + coma);
+                    }
+                }
+
             }
             file.WriteLine(")");
             file.WriteLine("WITH (DATA_COMPRESSION=PAGE)");
@@ -506,6 +526,10 @@ namespace ScriptsCreater
                         {
                         file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato );
                         }
+                    else if (tiposcript == "historificacion")
+                    {
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " " + ValorDato);
+                    }
                     else
                         {
                         file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato );
@@ -520,7 +544,7 @@ namespace ScriptsCreater
                 if (claveAuto == true)
                 {
                     file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog","") + "')");
-                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int NOT NULL" + ValorDato);
+                    file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int " + ValorDato);
                     file.WriteLine("GO");
                 }
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado')");
@@ -582,9 +606,18 @@ namespace ScriptsCreater
                     i++;
                     if (!j[0].Contains("#"))
                     {
-                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "' AND IS_NULLABLE='NO')");
-                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
-                        file.WriteLine("GO");
+                        if (tiposcript == "historificacion")
+                        {
+                            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                            file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() );
+                            file.WriteLine("GO");
+                        }
+                        else
+                        {
+                            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "' AND IS_NULLABLE='NO')");
+                            file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                            file.WriteLine("GO");
+                        }
                     }
                 }
                 if (tiposcript == "historificacion")
@@ -592,7 +625,7 @@ namespace ScriptsCreater
                     if (claveAuto == true)
                     {
                         file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog", "") + "' AND IS_NULLABLE='NO')");
-                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + clave.Replace("_tracelog", "") + " int NOT NULL");
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + clave.Replace("_tracelog", "") + " int ");
                         file.WriteLine("GO");
                     }
                     file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado' AND IS_NULLABLE='NO')");

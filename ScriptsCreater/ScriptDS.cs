@@ -103,227 +103,260 @@ namespace ScriptsCreater
             string dev = a.comprobarficheros(ref lineas, fichero, 1);
             DataTable valorquery = a.valorQuery(lineas, csv, "ds", incremental, tab);
 
-            //Escribimos en el fichero
-            try
+            if (a.comprobarDir(ruta) == "OK")
             {
-                StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
-                StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
-
-                file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
-                file_exec.WriteLine("GO");
-                sc.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental, true);
-
-                file.WriteLine("PRINT '" + nombrearchivo + "'");
-                file.WriteLine("GO");
-                file.WriteLine("");
-                file.WriteLine("--Generado versión vb " + a.version);
-                file.WriteLine("");
-                file.WriteLine("SET QUOTED_IDENTIFIER ON;");
-                file.WriteLine("GO");
-                file.WriteLine("");
-
-                #region "Tabla"
-
-                if (CreateTable == true)
+                //Escribimos en el fichero
+                try
                 {
-                    file.WriteLine("/*--------------------------------------");
-                }
-                else
-                {
-                    file.WriteLine("--------------------------------------");
-                }
-                file.WriteLine("--Begin table create/prepare -> tbn1_" + tab);
-                file.WriteLine("");
-                //Desactivamos CT
-                string ctd = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "des");
+                    StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+                    StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
-                //Drop FKs
-                sc.borrarFK(file, bd, schema, tab);
+                    file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                    file_exec.WriteLine("GO");
+                    sc.generar_file_exec(file_exec, bd + ".dbo.tbn1_" + tab, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental, true);
 
-                //Create Table
-                sc.regTablas(file, bd, schema, "tbn1_" + tab, clave, campos, campospk, csv2, false, "ds");
-
-                file.WriteLine("--------------------------------------*/");
-
-                file.WriteLine("");
-                //Activamos CT
-                if (ChangeTrack == true)
-                {
-                    file.WriteLine("/*--------------------------------------");
-                }
-                else
-                {
-                    file.WriteLine("--------------------------------------");
-                }
-                string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");
-
-                file.WriteLine("--------------------------------------*/");
-
-                file.WriteLine("--End table create/prepare -> tbn1_" + tab);
-                file.WriteLine("");
-                #endregion "Tabla"
-
-                #region "SP"
-
-                #region "CabeceraSP"
-                //SP Creamos SP
-                file.WriteLine("USE dbn1_stg_dhyf");
-                file.WriteLine("GO");
-                file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_stg_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = 'dbo' AND ROUTINE_NAME = 'spn1_cargar_normalizado_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                file.WriteLine("    DROP PROCEDURE dbo.spn1_cargar_normalizado_" + tab);
-                file.WriteLine("GO");
-                file.WriteLine("");
-                file.WriteLine("CREATE PROCEDURE dbo.spn1_cargar_normalizado_" + tab + "(@p_id_carga int) AS");
-                file.WriteLine("BEGIN");
-                file.WriteLine("");
-
-                //SP Cabecera
-                string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental, false);
-
-                if (incremental == true)
-                {
-                    //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
-                    string sp_inc = sc.regSP_Incremental(file);
-                }
-
-                //SP Creamos Object Temporal
-                file.WriteLine("            ALTER TABLE " + bd + ".dbo.tbn1_" + tab + " NOCHECK CONSTRAINT ALL");
-                file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_q_" + tab + "') IS NOT NULL");
-                file.WriteLine("                DROP TABLE #tmp_q_" + tab + "");
-                file.WriteLine("            CREATE table #tmp_q_" + tab + "(");
-                file.WriteLine("                cc int default 1,");
-                //--Campos--//
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
-                        }
-                        else
-                        {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL,");
-                        }
-                    }
-                }
-                file.WriteLine("            );");
-                file.WriteLine("");
-
-                //SP Creamos segundo Object temporal
-                file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_" + tab + "') IS NOT NULL");
-                file.WriteLine("                DROP TABLE #tmp_" + tab + "");
-                file.WriteLine("            CREATE table #tmp_" + tab + "(");
-                file.WriteLine("                rr_mode varchar(1),");
-                file.WriteLine("                cc int,");
-                file.WriteLine("                " + clave + " int,");
-                //--Claves--//
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (j[4].Contains("#"))
-                        {
-                            file.WriteLine("                t_" + j[0].ToString() + " " + j[1].ToString() + ",");
-                        }
-                    }
-                }
-                //--Campos--//
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + ",");
-                        }
-                    }
-                }
-                file.WriteLine("            );");
-                file.WriteLine("");
-                #endregion "CabeceraSP"
-
-                //SP Insertamos carga de datos a Maestro
-                #region "Control cambios SP"
-                //SP si es incremental incluimos la comprobación del registro en tipo de carga y metemos la parte comun de Full / Incremental
-                if (incremental == true)
-                {
-                    file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
-                    file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
-                    file.WriteLine("            WHERE objeto = @objeto;");
+                    file.WriteLine("PRINT '" + nombrearchivo + "'");
+                    file.WriteLine("GO");
+                    file.WriteLine("");
+                    file.WriteLine("--Generado versión vb " + a.version);
+                    file.WriteLine("");
+                    file.WriteLine("SET QUOTED_IDENTIFIER ON;");
+                    file.WriteLine("GO");
                     file.WriteLine("");
 
-                    dr = null;
-                    dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
-                    foreach (DataRow l2 in dr)
+                    #region "Tabla"
+
+                    if (CreateTable == true)
                     {
-                        file.WriteLine(l2.ItemArray[0].ToString());
+                        file.WriteLine("/*--------------------------------------");
                     }
+                    else
+                    {
+                        file.WriteLine("--------------------------------------");
+                    }
+                    file.WriteLine("--Begin table create/prepare -> tbn1_" + tab);
+                    file.WriteLine("");
+                    //Desactivamos CT
+                    string ctd = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "des");
+
+                    //Drop FKs
+                    sc.borrarFK(file, bd, schema, tab);
+
+                    //Create Table
+                    sc.regTablas(file, bd, schema, "tbn1_" + tab, clave, campos, campospk, csv2, false, "ds");
+
+                    file.WriteLine("--------------------------------------*/");
+
+                    file.WriteLine("");
+                    //Activamos CT
+                    if (ChangeTrack == true)
+                    {
+                        file.WriteLine("/*--------------------------------------");
+                    }
+                    else
+                    {
+                        file.WriteLine("--------------------------------------");
+                    }
+                    string cta = sc.changetracking(file, "tbn1_" + tab, bd, "dbo", "act");
+
+                    file.WriteLine("--------------------------------------*/");
+
+                    file.WriteLine("--End table create/prepare -> tbn1_" + tab);
+                    file.WriteLine("");
+                    #endregion "Tabla"
+
+                    #region "SP"
+
+                    #region "CabeceraSP"
+                    //SP Creamos SP
+                    file.WriteLine("USE dbn1_stg_dhyf");
+                    file.WriteLine("GO");
+                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_stg_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = 'dbo' AND ROUTINE_NAME = 'spn1_cargar_normalizado_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
+                    file.WriteLine("    DROP PROCEDURE dbo.spn1_cargar_normalizado_" + tab);
+                    file.WriteLine("GO");
+                    file.WriteLine("");
+                    file.WriteLine("CREATE PROCEDURE dbo.spn1_cargar_normalizado_" + tab + "(@p_id_carga int) AS");
+                    file.WriteLine("BEGIN");
                     file.WriteLine("");
 
-                    file.WriteLine("    IF @es_carga_completa = 0");
-                    file.WriteLine("    BEGIN");
-                    file.WriteLine("--------BLOQUE INCREMENTAL--------");
-                    file.WriteLine("");
-                    file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_keys_" + tab + "') IS NOT NULL");
-                    file.WriteLine("                DROP TABLE #tmp_keys_" + tab + "");
-                    file.WriteLine("            CREATE table #tmp_keys_" + tab + "(");
+                    //SP Cabecera
+                    string cab2 = sc.cabeceraLogSP(file, "dbn1_stg_dhyf", "dbo", "spn1_cargar_normalizado_" + tab, incremental, false);
+
+                    if (incremental == true)
+                    {
+                        //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
+                        string sp_inc = sc.regSP_Incremental(file);
+                    }
+
+                    //SP Creamos Object Temporal
+                    file.WriteLine("            ALTER TABLE " + bd + ".dbo.tbn1_" + tab + " NOCHECK CONSTRAINT ALL");
+                    file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_q_" + tab + "') IS NOT NULL");
+                    file.WriteLine("                DROP TABLE #tmp_q_" + tab + "");
+                    file.WriteLine("            CREATE table #tmp_q_" + tab + "(");
+                    file.WriteLine("                cc int default 1,");
+                    //--Campos--//
                     i = 0;
                     foreach (string d in csv)
                     {
                         string[] j = d.Split(new Char[] { ';' });
+                        i++;
                         if (!j[0].Contains("#"))
                         {
-                            if (j[9].Contains("#"))
+                            if (i == csv.Length)
                             {
-                                i++;
-                                if (i == camposfilter.Split(new Char[] { ',' }).Length)
-                                {
-                                    file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString());
-                                }
-                                else
-                                {
-                                    file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + ",");
-                                }
+                                file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                            }
+                            else
+                            {
+                                file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL,");
                             }
                         }
                     }
-                    file.WriteLine("               )");
+                    file.WriteLine("            );");
                     file.WriteLine("");
 
-                    //SP Creamos la insert de carga de datos
-                    dr = null;
-                    dr = valorquery.Select("codScript=2", "codScript ASC, orden ASC");
-                    foreach (DataRow l2 in dr)
+                    //SP Creamos segundo Object temporal
+                    file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_" + tab + "') IS NOT NULL");
+                    file.WriteLine("                DROP TABLE #tmp_" + tab + "");
+                    file.WriteLine("            CREATE table #tmp_" + tab + "(");
+                    file.WriteLine("                rr_mode varchar(1),");
+                    file.WriteLine("                cc int,");
+                    file.WriteLine("                " + clave + " int,");
+                    //--Claves--//
+                    foreach (string d in csv)
                     {
-                        file.WriteLine(l2.ItemArray[0].ToString());
+                        string[] j = d.Split(new Char[] { ';' });
+                        i++;
+                        if (!j[0].Contains("#"))
+                        {
+                            if (j[4].Contains("#"))
+                            {
+                                file.WriteLine("                t_" + j[0].ToString() + " " + j[1].ToString() + ",");
+                            }
+                        }
                     }
-                    file.WriteLine("");
-                    file.WriteLine("        INSERT INTO #tmp_keys_" + tab);
-                    file.WriteLine("            (" + camposfilter + ")");
-                    file.WriteLine("        SELECT ");
+                    //--Campos--//
                     i = 0;
                     foreach (string d in csv)
                     {
                         string[] j = d.Split(new Char[] { ';' });
+                        i++;
                         if (!j[0].Contains("#"))
                         {
-                            if (j[9].Contains("#"))
+                            if (i == csv.Length)
                             {
-                                i++;
-                                if (i == camposfilter.Split(new Char[] { ',' }).Length)
+                                file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString());
+                            }
+                            else
+                            {
+                                file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + ",");
+                            }
+                        }
+                    }
+                    file.WriteLine("            );");
+                    file.WriteLine("");
+                    #endregion "CabeceraSP"
+
+                    //SP Insertamos carga de datos a Maestro
+                    #region "Control cambios SP"
+                    //SP si es incremental incluimos la comprobación del registro en tipo de carga y metemos la parte comun de Full / Incremental
+                    if (incremental == true)
+                    {
+                        file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
+                        file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
+                        file.WriteLine("            WHERE objeto = @objeto;");
+                        file.WriteLine("");
+
+                        dr = null;
+                        dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
+                        foreach (DataRow l2 in dr)
+                        {
+                            file.WriteLine(l2.ItemArray[0].ToString());
+                        }
+                        file.WriteLine("");
+
+                        file.WriteLine("    IF @es_carga_completa = 0");
+                        file.WriteLine("    BEGIN");
+                        file.WriteLine("--------BLOQUE INCREMENTAL--------");
+                        file.WriteLine("");
+                        file.WriteLine("            IF OBJECT_ID('tempdb..#tmp_keys_" + tab + "') IS NOT NULL");
+                        file.WriteLine("                DROP TABLE #tmp_keys_" + tab + "");
+                        file.WriteLine("            CREATE table #tmp_keys_" + tab + "(");
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (!j[0].Contains("#"))
+                            {
+                                if (j[9].Contains("#"))
+                                {
+                                    i++;
+                                    if (i == camposfilter.Split(new Char[] { ',' }).Length)
+                                    {
+                                        file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString());
+                                    }
+                                    else
+                                    {
+                                        file.WriteLine("                " + j[0].ToString() + " " + j[1].ToString() + ",");
+                                    }
+                                }
+                            }
+                        }
+                        file.WriteLine("               )");
+                        file.WriteLine("");
+
+                        //SP Creamos la insert de carga de datos
+                        dr = null;
+                        dr = valorquery.Select("codScript=2", "codScript ASC, orden ASC");
+                        foreach (DataRow l2 in dr)
+                        {
+                            file.WriteLine(l2.ItemArray[0].ToString());
+                        }
+                        file.WriteLine("");
+                        file.WriteLine("        INSERT INTO #tmp_keys_" + tab);
+                        file.WriteLine("            (" + camposfilter + ")");
+                        file.WriteLine("        SELECT ");
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (!j[0].Contains("#"))
+                            {
+                                if (j[9].Contains("#"))
+                                {
+                                    i++;
+                                    if (i == camposfilter.Split(new Char[] { ',' }).Length)
+                                    {
+                                        file.WriteLine("            query." + j[0].ToString() + " as " + j[0].ToString());
+                                    }
+                                    else
+                                    {
+                                        file.WriteLine("            query." + j[0].ToString() + " as " + j[0].ToString() + ",");
+                                    }
+                                }
+                            }
+                        }
+                        file.WriteLine("        FROM query");
+                        file.WriteLine("");
+                        //
+                        dr = null;
+                        dr = valorquery.Select("codScript=3", "codScript ASC, orden ASC");
+                        foreach (DataRow l2 in dr)
+                        {
+                            file.WriteLine(l2.ItemArray[0].ToString());
+                        }
+                        file.WriteLine("");
+                        file.WriteLine("        INSERT INTO #tmp_q_" + tab);
+                        file.WriteLine("        (" + campos.Replace("'", "") + ")");
+                        file.WriteLine("        SELECT    ");
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            i++;
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (!j[0].Contains("#"))
+                            {
+                                if (i == csv.Length)
                                 {
                                     file.WriteLine("            query." + j[0].ToString() + " as " + j[0].ToString());
                                 }
@@ -333,41 +366,178 @@ namespace ScriptsCreater
                                 }
                             }
                         }
+                        file.WriteLine("        FROM    query");
+                        file.WriteLine("");
+
+                        //SP Registramos los datos en la tabla temporal
+                        //SP Comparamos registros para indicar la acción a realizar
+                        file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk + "," + campos.Replace("'", "") + ")");
+                        file.WriteLine("        SELECT");
+                        file.WriteLine("            rr_mode=");
+                        file.WriteLine("                CASE");
+                        file.WriteLine("                    WHEN t." + clave + " IS NULL THEN 'I'");
+                        file.WriteLine("                    WHEN cc IS NULL THEN 'D'");
+                        file.WriteLine("                ELSE 'U' END,");
+                        file.WriteLine("            cc AS cc,");
+                        file.WriteLine("            t." + clave + " AS " + clave + ",");
+                        //--//Incluimos las claves
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            i++;
+                            if (!j[0].Contains("#"))
+                            {
+                                if (j[4].ToString() == "#")
+                                {
+                                    file.WriteLine("            t." + j[0].ToString() + " AS t_" + j[0].ToString() + ",");
+                                }
+                            }
+                        }
+                        //--//Incluimos los campos
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            i++;
+                            if (!j[0].Contains("#"))
+                            {
+                                if (i == csv.Length)
+                                {
+                                    file.WriteLine("            query." + j[0].ToString() + " AS " + j[0].ToString());
+                                }
+                                else
+                                {
+                                    file.WriteLine("            query." + j[0].ToString() + " AS " + j[0].ToString() + ",");
+                                }
+                            }
+                        }
+                        file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_" + tab + " AS t");
+                        file.WriteLine("        INNER JOIN #tmp_keys_" + tab + " AS keys on (");
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (!j[0].Contains("#"))
+                            {
+                                if (j[9].ToString() == "#")
+                                {
+                                    i++;
+                                    if (i == camposfilter.Split(new Char[] { ',' }).Length)
+                                    {
+                                        //file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + " OR (keys." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)))");
+                                        file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + "))");
+                                    }
+                                    else
+                                    {
+                                        //file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + " OR (keys." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)) AND");
+                                        file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + ") AND");
+                                    }
+                                }
+                            }
+                        }
+                        file.WriteLine("        FULL JOIN #tmp_q_" + tab + " AS query on (");
+                        //--//Realizamos las comparaciones de claves
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (!j[0].Contains("#"))
+                            {
+                                if (j[4].ToString() == "#")
+                                {
+                                    i++;
+                                    if (i == campospk.Split(new Char[] { ',' }).Length)
+                                    {
+                                        //file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)))");
+                                        file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + "))");
+                                    }
+                                    else
+                                    {
+                                        //file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)) AND");
+                                        file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + ") AND");
+                                    }
+                                }
+                            }
+                        }
+                        file.WriteLine("        WHERE ");
+                        file.WriteLine("            t." + clave + " IS NULL OR");
+                        file.WriteLine("            cc IS NULL");
+                        //--//Realizamos las comparaciones de claves
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (!j[0].Contains("#"))
+                            {
+                                i++;
+                                if (i == 1)
+                                {
+                                    //file.WriteLine("                OR (t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                                    //file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
+                                    file.WriteLine("                OR (t." + j[0].ToString() + " <> query." + j[0].ToString());
+                                }
+                                else if (i == campos.Split(new Char[] { ',' }).Length)
+                                {
+                                    //file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                                    //file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
+                                    file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + ")");
+                                }
+                                else
+                                {
+                                    //file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
+                                    //file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
+                                    file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString());
+                                }
+                            }
+                        }
+                        file.WriteLine("        END");
+                        file.WriteLine("--------BLOQUE FULL--------");
+                        file.WriteLine("        ELSE");
+                        file.WriteLine("        BEGIN");
+                        file.WriteLine("");
+
+                        dr = null;
+                        dr = valorquery.Select("codScript=4", "codScript ASC, orden ASC");
+                        foreach (DataRow l2 in dr)
+                        {
+                            file.WriteLine(l2.ItemArray[0].ToString());
+                        }
                     }
-                    file.WriteLine("        FROM query");
-                    file.WriteLine("");
-                    //
-                    dr = null;
-                    dr = valorquery.Select("codScript=3", "codScript ASC, orden ASC");
-                    foreach (DataRow l2 in dr)
+                    else
                     {
-                        file.WriteLine(l2.ItemArray[0].ToString());
+                        //SP Creamos la insert de carga de datos
+                        dr = null;
+                        dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
+                        foreach (DataRow l2 in dr)
+                        {
+                            file.WriteLine(l2.ItemArray[0].ToString());
+                        }
                     }
                     file.WriteLine("");
-                    file.WriteLine("        INSERT INTO #tmp_q_" + tab);
-                    file.WriteLine("        (" + campos.Replace("'", "") + ")");
-                    file.WriteLine("        SELECT    ");
+                    //SP Montamos campos para tabla Query
+                    file.WriteLine("INSERT INTO #tmp_q_" + tab + " (" + campos.Replace("'", "") + ")");
+                    file.WriteLine("SELECT");
                     i = 0;
                     foreach (string d in csv)
                     {
-                        i++;
                         string[] j = d.Split(new Char[] { ';' });
+                        i++;
                         if (!j[0].Contains("#"))
                         {
                             if (i == csv.Length)
                             {
-                                file.WriteLine("            query." + j[0].ToString() + " as " + j[0].ToString());
+                                file.WriteLine("    query." + j[0].ToString());
                             }
                             else
                             {
-                                file.WriteLine("            query." + j[0].ToString() + " as " + j[0].ToString() + ",");
+                                file.WriteLine("    query." + j[0].ToString() + ",");
                             }
                         }
                     }
-                    file.WriteLine("        FROM    query");
+                    file.WriteLine("FROM query");
                     file.WriteLine("");
 
-                    //SP Registramos los datos en la tabla temporal
                     //SP Comparamos registros para indicar la acción a realizar
                     file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk + "," + campos.Replace("'", "") + ")");
                     file.WriteLine("        SELECT");
@@ -375,7 +545,7 @@ namespace ScriptsCreater
                     file.WriteLine("                CASE");
                     file.WriteLine("                    WHEN t." + clave + " IS NULL THEN 'I'");
                     file.WriteLine("                    WHEN cc IS NULL THEN 'D'");
-                    file.WriteLine("                ELSE 'U' END,");
+                    file.WriteLine("                    ELSE 'U' END,");
                     file.WriteLine("            cc AS cc,");
                     file.WriteLine("            t." + clave + " AS " + clave + ",");
                     //--//Incluimos las claves
@@ -411,29 +581,6 @@ namespace ScriptsCreater
                         }
                     }
                     file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_" + tab + " AS t");
-                    file.WriteLine("        INNER JOIN #tmp_keys_" + tab + " AS keys on (");
-                    i = 0;
-                    foreach (string d in csv)
-                    {
-                        string[] j = d.Split(new Char[] { ';' });
-                        if (!j[0].Contains("#"))
-                        {
-                            if (j[9].ToString() == "#")
-                            {
-                                i++;
-                                if (i == camposfilter.Split(new Char[] { ',' }).Length)
-                                {
-                                    //file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + " OR (keys." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)))");
-                                    file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + "))");
-                                }
-                                else
-                                {
-                                    //file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + " OR (keys." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)) AND");
-                                    file.WriteLine("            (keys." + j[0].ToString() + " = t." + j[0].ToString() + ") AND");
-                                }
-                            }
-                        }
-                    }
                     file.WriteLine("        FULL JOIN #tmp_q_" + tab + " AS query on (");
                     //--//Realizamos las comparaciones de claves
                     i = 0;
@@ -447,13 +594,13 @@ namespace ScriptsCreater
                                 i++;
                                 if (i == campospk.Split(new Char[] { ',' }).Length)
                                 {
-                                    //file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)))");
-                                    file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + "))");
+                                    //file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)))");
+                                    file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + "))");
                                 }
                                 else
                                 {
-                                    //file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)) AND");
-                                    file.WriteLine("            (query." + j[0].ToString() + " = t." + j[0].ToString() + ") AND");
+                                    //file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)) AND");
+                                    file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + ") AND");
                                 }
                             }
                         }
@@ -489,349 +636,209 @@ namespace ScriptsCreater
                             }
                         }
                     }
-                    file.WriteLine("        END");
-                    file.WriteLine("--------BLOQUE FULL--------");
-                    file.WriteLine("        ELSE");
-                    file.WriteLine("        BEGIN");
                     file.WriteLine("");
 
-                    dr = null;
-                    dr = valorquery.Select("codScript=4", "codScript ASC, orden ASC");
-                    foreach (DataRow l2 in dr)
+                    if (incremental == true)
                     {
-                        file.WriteLine(l2.ItemArray[0].ToString());
+                        file.WriteLine("           END");
+                        file.WriteLine("--------FIN BLOQUES--------");
+                        file.WriteLine("");
                     }
-                }
-                else
-                {
-                    //SP Creamos la insert de carga de datos
-                    dr = null;
-                    dr = valorquery.Select("codScript=1", "codScript ASC, orden ASC");
-                    foreach (DataRow l2 in dr)
-                    {
-                        file.WriteLine(l2.ItemArray[0].ToString());
-                    }
-                }
-                file.WriteLine("");
-                //SP Montamos campos para tabla Query
-                file.WriteLine("INSERT INTO #tmp_q_" + tab + " (" + campos.Replace("'", "") + ")");
-                file.WriteLine("SELECT");
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("    query." + j[0].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("    query." + j[0].ToString() + ",");
-                        }
-                    }
-                }
-                file.WriteLine("FROM query");
-                file.WriteLine("");
+                    #endregion "Control cambios SP"
 
-                //SP Comparamos registros para indicar la acción a realizar
-                file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk + "," + campos.Replace("'", "") + ")");
-                file.WriteLine("        SELECT");
-                file.WriteLine("            rr_mode=");
-                file.WriteLine("                CASE");
-                file.WriteLine("                    WHEN t." + clave + " IS NULL THEN 'I'");
-                file.WriteLine("                    WHEN cc IS NULL THEN 'D'");
-                file.WriteLine("                    ELSE 'U' END,");
-                file.WriteLine("            cc AS cc,");
-                file.WriteLine("            t." + clave + " AS " + clave + ",");
-                //--//Incluimos las claves
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
+                    #region "ModificacionesTablasSP"
+                    //SP Insertamos datos en variables
+                    file.WriteLine("        SET @idx_reclim = 10000");
+                    file.WriteLine("        SELECT @count_all = count(1) from #tmp_" + tab);
+                    file.WriteLine("        SELECT @count_ins = count(1) from #tmp_" + tab + " where rr_mode='I'");
+                    file.WriteLine("");
+                    file.WriteLine("        --IF @count_all >= @idx_reclim --Si hay indices no unique se desactivan");
+                    file.WriteLine("        --BEGIN");
+                    file.WriteLine("        --END");
+                    file.WriteLine("");
+                    //SP Actualizamos los registros existentes con cambios
+                    file.WriteLine("        UPDATE " + bd + "." + schema + ".tbn1_" + tab + "");
+                    file.WriteLine("            SET");
+                    //--//Realizamos el Update, comparamos los campos
+                    i = 0;
+                    foreach (string d in csv)
                     {
-                        if (j[4].ToString() == "#")
-                        {
-                            file.WriteLine("            t." + j[0].ToString() + " AS t_" + j[0].ToString() + ",");
-                        }
-                    }
-                }
-                //--//Incluimos los campos
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("            query." + j[0].ToString() + " AS " + j[0].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("            query." + j[0].ToString() + " AS " + j[0].ToString() + ",");
-                        }
-                    }
-                }
-                file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_" + tab + " AS t");
-                file.WriteLine("        FULL JOIN #tmp_q_" + tab + " AS query on (");
-                //--//Realizamos las comparaciones de claves
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (!j[0].Contains("#"))
-                    {
-                        if (j[4].ToString() == "#")
-                        {
-                            i++;
-                            if (i == campospk.Split(new Char[] { ',' }).Length)
-                            {
-                                //file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)))");
-                                file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + "))");
-                            }
-                            else
-                            {
-                                //file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + " OR (query." + j[0].ToString() + " IS NULL AND t." + j[0].ToString() + " IS NULL)) AND");
-                                file.WriteLine("        (query." + j[0].ToString() + " = t." + j[0].ToString() + ") AND");
-                            }
-                        }
-                    }
-                }
-                file.WriteLine("        WHERE ");
-                file.WriteLine("            t." + clave + " IS NULL OR");
-                file.WriteLine("            cc IS NULL");
-                //--//Realizamos las comparaciones de claves
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (!j[0].Contains("#"))
-                    {
+                        string[] j = d.Split(new Char[] { ';' });
                         i++;
-                        if (i == 1)
+                        if (!j[0].Contains("#"))
                         {
-                            //file.WriteLine("                OR (t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                            //file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
-                            file.WriteLine("                OR (t." + j[0].ToString() + " <> query." + j[0].ToString());
-                        }
-                        else if (i == campos.Split(new Char[] { ',' }).Length)
-                        {
-                            //file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                            //file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL))");
-                            file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + ")");
-                        }
-                        else
-                        {
-                            //file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString() + " OR (t." + j[0].ToString() + " IS NULL AND query." + j[0].ToString() + " IS NOT NULL)");
-                            //file.WriteLine("                    OR (t." + j[0].ToString() + " IS NOT NULL AND query." + j[0].ToString() + " IS NULL)");
-                            file.WriteLine("                OR t." + j[0].ToString() + " <> query." + j[0].ToString());
-                        }
-                    }
-                }
-                file.WriteLine("");
-
-                if (incremental == true)
-                {
-                    file.WriteLine("           END");
-                    file.WriteLine("--------FIN BLOQUES--------");
-                    file.WriteLine("");
-                }
-                #endregion "Control cambios SP"
-
-                #region "ModificacionesTablasSP"
-                //SP Insertamos datos en variables
-                file.WriteLine("        SET @idx_reclim = 10000");
-                file.WriteLine("        SELECT @count_all = count(1) from #tmp_" + tab);
-                file.WriteLine("        SELECT @count_ins = count(1) from #tmp_" + tab + " where rr_mode='I'");
-                file.WriteLine("");
-                file.WriteLine("        --IF @count_all >= @idx_reclim --Si hay indices no unique se desactivan");
-                file.WriteLine("        --BEGIN");
-                file.WriteLine("        --END");
-                file.WriteLine("");
-                //SP Actualizamos los registros existentes con cambios
-                file.WriteLine("        UPDATE " + bd + "." + schema + ".tbn1_" + tab + "");
-                file.WriteLine("            SET");
-                //--//Realizamos el Update, comparamos los campos
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("                " + j[0].ToString() + " = s." + j[0].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("                " + j[0].ToString() + " = s." + j[0].ToString() + ",");
-                        }
-                    }
-                }
-                file.WriteLine("        FROM (");
-                file.WriteLine("            SELECT");
-                //--//Insertamos los campos a modificar
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
-                    {
-                        if (i == csv.Length)
-                        {
-                            file.WriteLine("                " + j[0].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("                " + j[0].ToString() + ",");
-                        }
-                    }
-                }
-                file.WriteLine("            FROM #tmp_" + tab);
-                file.WriteLine("            WHERE rr_mode='U') s");
-                //--//Realizamos las comparaciones de claves
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (!j[0].Contains("#"))
-                    {
-                        if (j[4].ToString() == "#")
-                        {
-                            if (i == 0)
+                            if (i == csv.Length)
                             {
-                                //file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
-                                file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
+                                file.WriteLine("                " + j[0].ToString() + " = s." + j[0].ToString());
                             }
                             else
                             {
-                                //file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
-                                file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
+                                file.WriteLine("                " + j[0].ToString() + " = s." + j[0].ToString() + ",");
                             }
-                            i++;
                         }
                     }
-                }
-                file.WriteLine("        SET @rc=@@ROWCOUNT;");
-                file.WriteLine("");
-                //SP Borramos registros que no existan
-                file.WriteLine("        DELETE " + bd + "." + schema + ".tbn1_" + tab);
-                file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_" + tab + " AS tbn1_" + tab);
-                file.WriteLine("        INNER JOIN #tmp_" + tab + " AS tmp");
-                //--//Realizamos las comparaciones de claves
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (!j[0].Contains("#"))
+                    file.WriteLine("        FROM (");
+                    file.WriteLine("            SELECT");
+                    //--//Insertamos los campos a modificar
+                    i = 0;
+                    foreach (string d in csv)
                     {
-                        if (j[4].ToString() == "#")
+                        string[] j = d.Split(new Char[] { ';' });
+                        i++;
+                        if (!j[0].Contains("#"))
                         {
-                            i++;
-                            if (i == 1)
+                            if (i == csv.Length)
                             {
-                                //file.WriteLine("        ON ((tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + " OR (tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND tmp.t_" + j[0].ToString() + " IS NULL))");
-                                file.WriteLine("        ON ((tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + ")");
-                            }
-                            else if (i == campospk.Split(new Char[] { ',' }).Length)
-                            {
-                                //file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + " OR (tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND tmp.t_" + j[0].ToString() + " IS NULL)))");
-                                file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + "))");
+                                file.WriteLine("                " + j[0].ToString());
                             }
                             else
                             {
-                                //file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + " OR (tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND tmp.t_" + j[0].ToString() + " IS NULL))");
-                                file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + ")");
+                                file.WriteLine("                " + j[0].ToString() + ",");
                             }
                         }
                     }
-                }
-                file.WriteLine("        WHERE tmp.rr_mode = 'D'");
-                file.WriteLine("        SET @rc = @rc + @@ROWCOUNT;");
-                file.WriteLine("");
-
-                //SP Desactivamos Indice de la tabla principal
-                file.WriteLine("        IF @count_ins >= @idx_reclim");
-                file.WriteLine("        BEGIN");
-                file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_" + tab + "_unique')");
-                file.WriteLine("            ALTER INDEX IX_tbn1_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_" + tab + " DISABLE;");
-                file.WriteLine("        END");
-                file.WriteLine("");
-                //SP Insertamos nuevos registros
-                file.WriteLine("        INSERT INTO " + bd + "." + schema + ".tbn1_" + tab + " WITH(TABLOCK) (" + campos.Replace("'", "") + ")");
-                file.WriteLine("        SELECT");
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    i++;
-                    if (!j[0].Contains("#"))
+                    file.WriteLine("            FROM #tmp_" + tab);
+                    file.WriteLine("            WHERE rr_mode='U') s");
+                    //--//Realizamos las comparaciones de claves
+                    i = 0;
+                    foreach (string d in csv)
                     {
-                        if (i == csv.Length)
+                        string[] j = d.Split(new Char[] { ';' });
+                        if (!j[0].Contains("#"))
                         {
-                            file.WriteLine("            " + j[0].ToString());
-                        }
-                        else
-                        {
-                            file.WriteLine("            " + j[0].ToString() + ",");
+                            if (j[4].ToString() == "#")
+                            {
+                                if (i == 0)
+                                {
+                                    //file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
+                                    file.WriteLine("            WHERE (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
+                                }
+                                else
+                                {
+                                    //file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + " OR (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND s." + j[0].ToString() + " IS NULL))");
+                                    file.WriteLine("                AND (" + bd + "." + schema + ".tbn1_" + tab + "." + j[0].ToString() + "=s." + j[0].ToString() + ")");
+                                }
+                                i++;
+                            }
                         }
                     }
-                }
-                file.WriteLine("            FROM #tmp_" + tab);
-                file.WriteLine("            WHERE rr_mode='I';");
-                file.WriteLine("        SET @rc = @rc + @@ROWCOUNT;");
-                file.WriteLine("");
-                file.WriteLine("        --IF @count_all >= @idx_reclim --Si hay indices no unique -> rebuild");
-                file.WriteLine("        --BEGIN");
-                file.WriteLine("        --END");
-                file.WriteLine("");
-                //SP Activamos indice de la tabla principal
-                file.WriteLine("        IF @count_ins >= @idx_reclim");
-                file.WriteLine("        BEGIN");
-                file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_" + tab + "_unique')");
-                file.WriteLine("            ALTER INDEX IX_tbn1_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_" + tab + " REBUILD;");
-                file.WriteLine("        END");
-                file.WriteLine("");
-                if (incremental == true)
-                {
-                    file.WriteLine("--Insertar registros de incrementalidad en tabla ct_procesado");
-                    file.WriteLine("        UPDATE dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
-                    file.WriteLine("        SET ct_stg  = @ct_stg_final,");
-                    file.WriteLine("            ct_norm = @ct_norm_final,");
-                    file.WriteLine("            ct_dmr = @ct_dmr_final");
-                    file.WriteLine("        WHERE procedimiento = @objeto; ");
+                    file.WriteLine("        SET @rc=@@ROWCOUNT;");
                     file.WriteLine("");
+                    //SP Borramos registros que no existan
+                    file.WriteLine("        DELETE " + bd + "." + schema + ".tbn1_" + tab);
+                    file.WriteLine("        FROM " + bd + "." + schema + ".tbn1_" + tab + " AS tbn1_" + tab);
+                    file.WriteLine("        INNER JOIN #tmp_" + tab + " AS tmp");
+                    //--//Realizamos las comparaciones de claves
+                    i = 0;
+                    foreach (string d in csv)
+                    {
+                        string[] j = d.Split(new Char[] { ';' });
+                        if (!j[0].Contains("#"))
+                        {
+                            if (j[4].ToString() == "#")
+                            {
+                                i++;
+                                if (i == 1)
+                                {
+                                    //file.WriteLine("        ON ((tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + " OR (tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND tmp.t_" + j[0].ToString() + " IS NULL))");
+                                    file.WriteLine("        ON ((tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + ")");
+                                }
+                                else if (i == campospk.Split(new Char[] { ',' }).Length)
+                                {
+                                    //file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + " OR (tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND tmp.t_" + j[0].ToString() + " IS NULL)))");
+                                    file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + "))");
+                                }
+                                else
+                                {
+                                    //file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + " OR (tbn1_" + tab + "." + j[0].ToString() + " IS NULL AND tmp.t_" + j[0].ToString() + " IS NULL))");
+                                    file.WriteLine("            AND (tbn1_" + tab + "." + j[0].ToString() + "=tmp.t_" + j[0].ToString() + ")");
+                                }
+                            }
+                        }
+                    }
+                    file.WriteLine("        WHERE tmp.rr_mode = 'D'");
+                    file.WriteLine("        SET @rc = @rc + @@ROWCOUNT;");
+                    file.WriteLine("");
+
+                    //SP Desactivamos Indice de la tabla principal
+                    file.WriteLine("        IF @count_ins >= @idx_reclim");
+                    file.WriteLine("        BEGIN");
+                    file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_" + tab + "_unique')");
+                    file.WriteLine("            ALTER INDEX IX_tbn1_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_" + tab + " DISABLE;");
+                    file.WriteLine("        END");
+                    file.WriteLine("");
+                    //SP Insertamos nuevos registros
+                    file.WriteLine("        INSERT INTO " + bd + "." + schema + ".tbn1_" + tab + " WITH(TABLOCK) (" + campos.Replace("'", "") + ")");
+                    file.WriteLine("        SELECT");
+                    i = 0;
+                    foreach (string d in csv)
+                    {
+                        string[] j = d.Split(new Char[] { ';' });
+                        i++;
+                        if (!j[0].Contains("#"))
+                        {
+                            if (i == csv.Length)
+                            {
+                                file.WriteLine("            " + j[0].ToString());
+                            }
+                            else
+                            {
+                                file.WriteLine("            " + j[0].ToString() + ",");
+                            }
+                        }
+                    }
+                    file.WriteLine("            FROM #tmp_" + tab);
+                    file.WriteLine("            WHERE rr_mode='I';");
+                    file.WriteLine("        SET @rc = @rc + @@ROWCOUNT;");
+                    file.WriteLine("");
+                    file.WriteLine("        --IF @count_all >= @idx_reclim --Si hay indices no unique -> rebuild");
+                    file.WriteLine("        --BEGIN");
+                    file.WriteLine("        --END");
+                    file.WriteLine("");
+                    //SP Activamos indice de la tabla principal
+                    file.WriteLine("        IF @count_ins >= @idx_reclim");
+                    file.WriteLine("        BEGIN");
+                    file.WriteLine("            IF EXISTS (SELECT 1 FROM " + bd + ".sys.indexes WHERE name = 'IX_tbn1_" + tab + "_unique')");
+                    file.WriteLine("            ALTER INDEX IX_tbn1_" + tab + "_unique ON " + bd + "." + schema + ".tbn1_" + tab + " REBUILD;");
+                    file.WriteLine("        END");
+                    file.WriteLine("");
+                    if (incremental == true)
+                    {
+                        file.WriteLine("--Insertar registros de incrementalidad en tabla ct_procesado");
+                        file.WriteLine("        UPDATE dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
+                        file.WriteLine("        SET ct_stg  = @ct_stg_final,");
+                        file.WriteLine("            ct_norm = @ct_norm_final,");
+                        file.WriteLine("            ct_dmr = @ct_dmr_final");
+                        file.WriteLine("        WHERE procedimiento = @objeto; ");
+                        file.WriteLine("");
+                    }
+                    file.WriteLine("        ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " WITH CHECK CHECK CONSTRAINT ALL");
+                    file.WriteLine("");
+                    #endregion "ModificacionesTablasSP"
+
+                    //SP Pie
+                    string pie = sc.pieLogSP(file, "ds");
+
+                    file.WriteLine("GO");
+                    file.WriteLine("");
+                    #endregion "SP"
+
+                    file.Close();
+                    file_exec.Close();
                 }
-                file.WriteLine("        ALTER TABLE " + bd + "." + schema + ".tbn1_" + tab + " WITH CHECK CHECK CONSTRAINT ALL");
-                file.WriteLine("");
-                #endregion "ModificacionesTablasSP"
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al escribir en archivo " + nombrearchivo + "\r\n" + ex.Message, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                    return "NO";
+                }
 
-                //SP Pie
-                string pie = sc.pieLogSP(file, "ds");
-
-                file.WriteLine("GO");
-                file.WriteLine("");
-                #endregion "SP"
-
-                file.Close();
-                file_exec.Close();
+                return "OK";
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show("Error al escribir en archivo " + nombrearchivo + "\r\n" + ex.Message, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                 return "NO";
             }
-
-            return "OK";
         }
-
     }
 }

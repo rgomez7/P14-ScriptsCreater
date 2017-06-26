@@ -11,7 +11,7 @@ namespace ScriptsCreater
 {
     class Acciones
     {
-        public string version = "1.1.4";
+        public string version = "1.1.6";
 
         public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {
@@ -58,6 +58,25 @@ namespace ScriptsCreater
             catch (Exception ex)
             {
                 return "NO";
+            }
+            return "OK";
+        }
+
+        public string comprobarDir(string ruta)
+        {
+
+            try
+            {
+                if (Directory.Exists(ruta) == false)
+                {
+                    DirectoryInfo di = Directory.CreateDirectory(ruta);
+                }
+
+            }
+            catch
+            {
+                MessageBox.Show("Error, no existe la ruta '"  + ruta + "' y no se puede crear.", "Error ruta ficheros", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                return "KO";
             }
             return "OK";
         }
@@ -252,7 +271,7 @@ namespace ScriptsCreater
                         dtfic.Rows.Add(lin, cods, orden++);
                         lon = 0;
                     }
-                    else if (lin.ToLower().Contains("insert into #tmp") && lon == 1)
+                    else if ((lin.ToLower().Contains("insert into #tmp_keys") && lon == 1) || (lin.ToLower().Contains("insert into #tmp_q") && lon == 1))
                     {
                         //En este caso, si encontramos la linea de insert en la tabla Temporal
                         //Generamos la última linea de Query y cerramos la grabación
