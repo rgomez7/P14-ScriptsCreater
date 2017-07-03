@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Consultas.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -96,6 +97,7 @@
     <Compile Include="ScriptComun.cs" />
     <Compile Include="ScriptDS.cs" />
     <Compile Include="ScriptDM.cs" />
+    <Compile Include="ScriptGen_MF_STG.cs" />
     <Compile Include="ScriptHist.cs" />
     <Compile Include="ScriptIntegridad.cs" />
     <Compile Include="ScriptLectorCSV.cs" />

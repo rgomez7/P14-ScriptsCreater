@@ -322,6 +322,10 @@ namespace ScriptsCreater
             {
                 file.WriteLine("        origen varchar(10) NOT NULL,");
             }
+            else if (tiposcript == "extraccion")
+            {
+                file.WriteLine("        SYS_CHANGE_OPERATION char(1),");
+            }
             i = 0;
             coma = ",";
             if (tiposcript == "historificacion")
@@ -336,7 +340,14 @@ namespace ScriptsCreater
                         {
                             coma = "";
                         }
-                        file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + coma) ;
+                        if (j[2].Contains("#"))
+                        {
+                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + coma);
+                        }
+                        else
+                        {
+                            file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + coma);
+                        }
                     }
                 }
             }
@@ -374,7 +385,14 @@ namespace ScriptsCreater
                         //}
                         #endregion Comprobar tipo campo COMENTADO
 
-                        tipodato = " NOT NULL";
+                        if (tiposcript == "extraccion")
+                        {
+                            tipodato = "";
+                        }
+                        else
+                        {
+                            tipodato = " NOT NULL";
+                        }
                         file.WriteLine("        " + j[0].ToString() + " " + j[1].ToString() + tipodato + coma);
                     }
                 }
@@ -397,8 +415,11 @@ namespace ScriptsCreater
             file.WriteLine("    SELECT constraint_name FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS");
             file.WriteLine("    WHERE table_schema = '" + schema + "'");
             file.WriteLine("        AND table_name = '" + tab + "'");
-            file.WriteLine("        --Comentar la siguiente linea para borrar todas las Constraint, sino solo se borran aquellas que no sean Primary Key--");
-            file.WriteLine("        AND CONSTRAINT_TYPE != 'PRIMARY KEY'");
+            if (tiposcript != "extraccion")
+            {
+                file.WriteLine("        --Comentar la siguiente linea para borrar todas las Constraint, sino solo se borran aquellas que no sean Primary Key--");
+                file.WriteLine("        AND CONSTRAINT_TYPE != 'PRIMARY KEY'");
+            }
             file.WriteLine("    OPEN @cursor");
             file.WriteLine("    FETCH NEXT FROM @cursor INTO @constraint");
             file.WriteLine("    WHILE @@FETCH_STATUS = 0");
@@ -416,32 +437,42 @@ namespace ScriptsCreater
 
             #region Borrado Indices
             //Borramos Indices
-            file.WriteLine("--Drop all non-clustered index");
-            file.WriteLine("USE " + bd);
-            file.WriteLine("GO");
-            file.WriteLine("DECLARE @ncindex nvarchar(128)");
-            file.WriteLine("DECLARE @cursor CURSOR");
-            file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
-            file.WriteLine("BEGIN");
-            file.WriteLine("    SET @cursor = CURSOR FOR");
-            file.WriteLine("    SELECT name FROM " + bd + ".dbo.SYSINDEXES");
-            file.WriteLine("    WHERE id = OBJECT_ID('" + tab + "')");
-            file.WriteLine("        AND indid > 1 AND indid < 255 ");
-            file.WriteLine("        AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");
-            file.WriteLine("    ORDER BY indid DESC");
-            file.WriteLine("    OPEN @cursor");
-            file.WriteLine("    FETCH NEXT FROM @cursor INTO @ncindex");
-            file.WriteLine("    WHILE @@FETCH_STATUS = 0");
-            file.WriteLine("    BEGIN");
-            file.WriteLine("        SET @sqlcmd = 'DROP INDEX ' + @ncindex + ' ON " + bd + "." + schema + "." + tab + "'");
-            file.WriteLine("        EXEC (@sqlcmd)");
-            file.WriteLine("        FETCH NEXT FROM @cursor INTO @ncindex");
-            file.WriteLine("    END");
-            file.WriteLine("END");
-            file.WriteLine("CLOSE @cursor");
-            file.WriteLine("DEALLOCATE @cursor");
-            file.WriteLine("GO");
-            file.WriteLine("");
+            if (tiposcript != "extraccion")
+            {
+                file.WriteLine("--Drop all non-clustered index");
+                file.WriteLine("USE " + bd);
+                file.WriteLine("GO");
+                file.WriteLine("");
+                file.WriteLine("DECLARE @pk varchar(200) = ''");
+                file.WriteLine("--Comentar la siguiente select de variable para borrar todos los non-clustered index, sino solo se borran aquellos que no sean Primary Key--");
+                file.WriteLine("SELECT @pk = constraint_name FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS");
+                file.WriteLine("    WHERE table_schema = '" + schema + "' AND table_name = '" + tab + "' AND CONSTRAINT_TYPE = 'PRIMARY KEY'");
+                file.WriteLine("");
+                file.WriteLine("DECLARE @ncindex nvarchar(128)");
+                file.WriteLine("DECLARE @cursor CURSOR");
+                file.WriteLine("DECLARE @sqlcmd nvarchar(max)");
+                file.WriteLine("BEGIN");
+                file.WriteLine("    SET @cursor = CURSOR FOR");
+                file.WriteLine("    SELECT name FROM " + bd + ".dbo.SYSINDEXES");
+                file.WriteLine("    WHERE id = OBJECT_ID('" + tab + "')");
+                file.WriteLine("        AND indid > 1 AND indid < 255 ");
+                file.WriteLine("        AND INDEXPROPERTY(id, name, 'IsStatistics') = 0");
+                file.WriteLine("        AND name != @pk");
+                file.WriteLine("    ORDER BY indid DESC");
+                file.WriteLine("    OPEN @cursor");
+                file.WriteLine("    FETCH NEXT FROM @cursor INTO @ncindex");
+                file.WriteLine("    WHILE @@FETCH_STATUS = 0");
+                file.WriteLine("    BEGIN");
+                file.WriteLine("        SET @sqlcmd = 'DROP INDEX ' + @ncindex + ' ON " + bd + "." + schema + "." + tab + "'");
+                file.WriteLine("        EXEC (@sqlcmd)");
+                file.WriteLine("        FETCH NEXT FROM @cursor INTO @ncindex");
+                file.WriteLine("    END");
+                file.WriteLine("END");
+                file.WriteLine("CLOSE @cursor");
+                file.WriteLine("DEALLOCATE @cursor");
+                file.WriteLine("GO");
+                file.WriteLine("");
+            }
             #endregion Borrado Indices
 
             #region Quitar Valores NULL
@@ -519,21 +550,21 @@ namespace ScriptsCreater
                     ValorDato = "";
                     file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
                     if (tiposcript == "maestro")
-                        {
-                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato );
-                        }
+                    {
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato);
+                    }
                     else if (j[2].ToString() == "#" || j[3].ToString() == "#")
-                        {
-                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato );
-                        }
-                    else if (tiposcript == "historificacion")
+                    {
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato);
+                    }
+                    else if (tiposcript == "historificacion" || tiposcript == "extraccion")
                     {
                         file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " " + ValorDato);
                     }
                     else
-                        {
-                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato );
-                        }
+                    {
+                        file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato);
+                    }
                     file.WriteLine("GO");
                 }
             }
@@ -543,7 +574,7 @@ namespace ScriptsCreater
                 ValorDato = "";
                 if (claveAuto == true)
                 {
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog","") + "')");
+                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog", "") + "')");
                     file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int " + ValorDato);
                     file.WriteLine("GO");
                 }
@@ -552,6 +583,12 @@ namespace ScriptsCreater
                 file.WriteLine("GO");
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_tipo_operacion')");
                 file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_tipo_operacion varchar(15) NOT NULL" + ValorDato);
+                file.WriteLine("GO");
+            }
+            else if (tiposcript == "extraccion")
+            {
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='SYS_CHANGE_OPERATION')");
+                file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD SYS_CHANGE_OPERATION char(1) " + ValorDato);
                 file.WriteLine("GO");
             }
             file.WriteLine("");
@@ -575,6 +612,10 @@ namespace ScriptsCreater
             else if (tiposcript == "maestro")
             {
                 file.WriteLine("        AND column_name NOT IN ('" + clave + "'," + campos + ",'origen')");
+            }
+            else if (tiposcript == "extraccion")
+            {
+                file.WriteLine("        AND column_name NOT IN ('id_" + tab + "'," + campos + ",'SYS_CHANGE_OPERATION')");
             }
             else
             {
@@ -606,11 +647,20 @@ namespace ScriptsCreater
                     i++;
                     if (!j[0].Contains("#"))
                     {
-                        if (tiposcript == "historificacion")
+                        if (tiposcript == "historificacion" || tiposcript == "extraccion")
                         {
-                            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
-                            file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() );
-                            file.WriteLine("GO");
+                            if (j[2].Contains("#"))
+                            {
+                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                                file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                                file.WriteLine("GO");
+                            }
+                            else
+                            {
+                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                                file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString());
+                                file.WriteLine("GO");
+                            }
                         }
                         else
                         {
@@ -635,6 +685,12 @@ namespace ScriptsCreater
                     file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN ctct_tipo_operacion varchar(15) NOT NULL");
                     file.WriteLine("GO");
                 }
+                else if (tiposcript == "extraccion")
+                {
+                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='SYS_CHANGE_OPERATION')");
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN SYS_CHANGE_OPERATION char(1)");
+                    file.WriteLine("GO");
+                }
                 file.WriteLine("");
             }
             #endregion Adjuntamos Tipos Campos
@@ -652,6 +708,10 @@ namespace ScriptsCreater
                 else if (tiposcript == "dm")
                 {
                     file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY CLUSTERED (" + clave + ")");
+                }
+                else if (tiposcript == "extraccion")
+                {
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY CLUSTERED (" + campospk + ")");
                 }
                 else
                 {
@@ -680,8 +740,12 @@ namespace ScriptsCreater
                     }
                 }
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_unique') ");
-                file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campospk.Replace("'","") + ") INCLUDE (" + clave + ")");
+                file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campospk.Replace("'", "") + ") INCLUDE (" + clave + ")");
                 file.WriteLine("");
+            }
+            else if (tiposcript == "extraccion")
+            { 
+                //No se genera index
             }
             else
             {
@@ -720,6 +784,12 @@ namespace ScriptsCreater
                 file_exec.WriteLine("--Ver estado Precondiciones");
                 file_exec.WriteLine("SELECT estado_precondicion FROM dbn1_norm_dhyf.audit.tbn1_precondiciones_carga_dwh WHERE bd = '" + sp_bd + "' AND esquema = '" + sp_sch + "' AND objeto = '" + sp + "'");
                 file_exec.WriteLine("");
+            }
+            if (tabla.Contains("_tracelog"))
+            {
+                file_exec.WriteLine("-------------------------------------------------------------------");
+                file_exec.WriteLine("--Borrar table historificación");
+                file_exec.WriteLine("--DROP TABLE " + tabla);
             }
             file_exec.WriteLine("-------------------------------------------------------------------");
             file_exec.WriteLine("--Pasos de Ejecución");

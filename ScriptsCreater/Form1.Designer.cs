@@ -33,9 +33,10 @@
             this.btnBuscar = new System.Windows.Forms.Button();
             this.txSalida = new System.Windows.Forms.TextBox();
             this.txFile = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lbl_file = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.rbLectorCSV = new System.Windows.Forms.RadioButton();
             this.rbHist = new System.Windows.Forms.RadioButton();
             this.rbIntegridad = new System.Windows.Forms.RadioButton();
             this.rbDSDM = new System.Windows.Forms.RadioButton();
@@ -55,7 +56,9 @@
             this.cb_IndexCS = new System.Windows.Forms.CheckBox();
             this.cb_ChangeTrack = new System.Windows.Forms.CheckBox();
             this.cb_CreateTable = new System.Windows.Forms.CheckBox();
-            this.rbLectorCSV = new System.Windows.Forms.RadioButton();
+            this.rb_tabMF_STG = new System.Windows.Forms.RadioButton();
+            this.txBBDD = new System.Windows.Forms.TextBox();
+            this.rb_CSV_MF_STG = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.gbDSDM.SuspendLayout();
             this.gbHist.SuspendLayout();
@@ -64,7 +67,7 @@
             // 
             // btnScript
             // 
-            this.btnScript.Location = new System.Drawing.Point(793, 215);
+            this.btnScript.Location = new System.Drawing.Point(852, 266);
             this.btnScript.Name = "btnScript";
             this.btnScript.Size = new System.Drawing.Size(86, 48);
             this.btnScript.TabIndex = 9;
@@ -74,7 +77,7 @@
             // 
             // btnBuscar
             // 
-            this.btnBuscar.Location = new System.Drawing.Point(804, 11);
+            this.btnBuscar.Location = new System.Drawing.Point(863, 11);
             this.btnBuscar.Name = "btnBuscar";
             this.btnBuscar.Size = new System.Drawing.Size(75, 23);
             this.btnBuscar.TabIndex = 8;
@@ -86,7 +89,7 @@
             // 
             this.txSalida.Location = new System.Drawing.Point(123, 52);
             this.txSalida.Name = "txSalida";
-            this.txSalida.Size = new System.Drawing.Size(659, 22);
+            this.txSalida.Size = new System.Drawing.Size(720, 22);
             this.txSalida.TabIndex = 7;
             // 
             // txFile
@@ -94,17 +97,17 @@
             this.txFile.Location = new System.Drawing.Point(123, 12);
             this.txFile.Name = "txFile";
             this.txFile.ReadOnly = true;
-            this.txFile.Size = new System.Drawing.Size(659, 22);
+            this.txFile.Size = new System.Drawing.Size(495, 22);
             this.txFile.TabIndex = 6;
             // 
-            // label1
+            // lbl_file
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 15);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(101, 17);
-            this.label1.TabIndex = 10;
-            this.label1.Text = "CSV a generar";
+            this.lbl_file.AutoSize = true;
+            this.lbl_file.Location = new System.Drawing.Point(9, 15);
+            this.lbl_file.Name = "lbl_file";
+            this.lbl_file.Size = new System.Drawing.Size(101, 17);
+            this.lbl_file.TabIndex = 10;
+            this.lbl_file.Text = "CSV a generar";
             // 
             // label2
             // 
@@ -117,6 +120,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.rb_CSV_MF_STG);
+            this.groupBox1.Controls.Add(this.rb_tabMF_STG);
             this.groupBox1.Controls.Add(this.rbLectorCSV);
             this.groupBox1.Controls.Add(this.rbHist);
             this.groupBox1.Controls.Add(this.rbIntegridad);
@@ -124,10 +129,22 @@
             this.groupBox1.Controls.Add(this.rbMaestro);
             this.groupBox1.Location = new System.Drawing.Point(12, 96);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(221, 167);
+            this.groupBox1.Size = new System.Drawing.Size(221, 218);
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Tipo Script";
+            // 
+            // rbLectorCSV
+            // 
+            this.rbLectorCSV.AutoSize = true;
+            this.rbLectorCSV.Location = new System.Drawing.Point(24, 134);
+            this.rbLectorCSV.Name = "rbLectorCSV";
+            this.rbLectorCSV.Size = new System.Drawing.Size(148, 21);
+            this.rbLectorCSV.TabIndex = 4;
+            this.rbLectorCSV.TabStop = true;
+            this.rbLectorCSV.Text = "Lector CSV UNION";
+            this.rbLectorCSV.UseVisualStyleBackColor = true;
+            this.rbLectorCSV.CheckedChanged += new System.EventHandler(this.rbLectorCSV_CheckedChanged);
             // 
             // rbHist
             // 
@@ -179,7 +196,7 @@
             // 
             // btRuta
             // 
-            this.btRuta.Location = new System.Drawing.Point(804, 51);
+            this.btRuta.Location = new System.Drawing.Point(863, 51);
             this.btRuta.Name = "btRuta";
             this.btRuta.Size = new System.Drawing.Size(75, 23);
             this.btRuta.TabIndex = 13;
@@ -194,9 +211,9 @@
             this.gbDSDM.Controls.Add(this.rb_DSDM_DS);
             this.gbDSDM.Controls.Add(this.rb_DSDM_All);
             this.gbDSDM.Controls.Add(this.rb_DSDM_T);
-            this.gbDSDM.Location = new System.Drawing.Point(252, 96);
+            this.gbDSDM.Location = new System.Drawing.Point(472, 96);
             this.gbDSDM.Name = "gbDSDM";
-            this.gbDSDM.Size = new System.Drawing.Size(221, 167);
+            this.gbDSDM.Size = new System.Drawing.Size(221, 218);
             this.gbDSDM.TabIndex = 14;
             this.gbDSDM.TabStop = false;
             this.gbDSDM.Text = "DS - DM";
@@ -205,7 +222,7 @@
             // cbIncremental
             // 
             this.cbIncremental.AutoSize = true;
-            this.cbIncremental.Location = new System.Drawing.Point(19, 140);
+            this.cbIncremental.Location = new System.Drawing.Point(19, 185);
             this.cbIncremental.Name = "cbIncremental";
             this.cbIncremental.Size = new System.Drawing.Size(103, 21);
             this.cbIncremental.TabIndex = 4;
@@ -265,9 +282,9 @@
             this.gbHist.Controls.Add(this.cb_ClaveAuto);
             this.gbHist.Controls.Add(this.rb_Directorio);
             this.gbHist.Controls.Add(this.rb_Archivo);
-            this.gbHist.Location = new System.Drawing.Point(250, 96);
+            this.gbHist.Location = new System.Drawing.Point(245, 96);
             this.gbHist.Name = "gbHist";
-            this.gbHist.Size = new System.Drawing.Size(221, 167);
+            this.gbHist.Size = new System.Drawing.Size(221, 218);
             this.gbHist.TabIndex = 15;
             this.gbHist.TabStop = false;
             this.gbHist.Text = "Historificación";
@@ -278,7 +295,7 @@
             this.cb_ClaveAuto.AutoSize = true;
             this.cb_ClaveAuto.Checked = true;
             this.cb_ClaveAuto.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_ClaveAuto.Location = new System.Drawing.Point(19, 140);
+            this.cb_ClaveAuto.Location = new System.Drawing.Point(21, 185);
             this.cb_ClaveAuto.Name = "cb_ClaveAuto";
             this.cb_ClaveAuto.Size = new System.Drawing.Size(156, 21);
             this.cb_ClaveAuto.TabIndex = 4;
@@ -312,7 +329,7 @@
             this.gbAcciones.Controls.Add(this.cb_IndexCS);
             this.gbAcciones.Controls.Add(this.cb_ChangeTrack);
             this.gbAcciones.Controls.Add(this.cb_CreateTable);
-            this.gbAcciones.Location = new System.Drawing.Point(512, 96);
+            this.gbAcciones.Location = new System.Drawing.Point(699, 96);
             this.gbAcciones.Name = "gbAcciones";
             this.gbAcciones.Size = new System.Drawing.Size(239, 111);
             this.gbAcciones.TabIndex = 16;
@@ -354,30 +371,51 @@
             this.cb_CreateTable.Text = "Create Table Comentado";
             this.cb_CreateTable.UseVisualStyleBackColor = true;
             // 
-            // rbLectorCSV
+            // rb_tabMF_STG
             // 
-            this.rbLectorCSV.AutoSize = true;
-            this.rbLectorCSV.Location = new System.Drawing.Point(24, 134);
-            this.rbLectorCSV.Name = "rbLectorCSV";
-            this.rbLectorCSV.Size = new System.Drawing.Size(148, 21);
-            this.rbLectorCSV.TabIndex = 4;
-            this.rbLectorCSV.TabStop = true;
-            this.rbLectorCSV.Text = "Lector CSV UNION";
-            this.rbLectorCSV.UseVisualStyleBackColor = true;
-            this.rbLectorCSV.CheckedChanged += new System.EventHandler(this.rbLectorCSV_CheckedChanged);
+            this.rb_tabMF_STG.AutoSize = true;
+            this.rb_tabMF_STG.Location = new System.Drawing.Point(24, 161);
+            this.rb_tabMF_STG.Name = "rb_tabMF_STG";
+            this.rb_tabMF_STG.Size = new System.Drawing.Size(133, 21);
+            this.rb_tabMF_STG.TabIndex = 5;
+            this.rb_tabMF_STG.TabStop = true;
+            this.rb_tabMF_STG.Text = "Table MF a STG";
+            this.rb_tabMF_STG.UseVisualStyleBackColor = true;
+            this.rb_tabMF_STG.CheckedChanged += new System.EventHandler(this.rb_tabMF_STG_CheckedChanged);
+            // 
+            // txBBDD
+            // 
+            this.txBBDD.Location = new System.Drawing.Point(624, 12);
+            this.txBBDD.Name = "txBBDD";
+            this.txBBDD.Size = new System.Drawing.Size(219, 22);
+            this.txBBDD.TabIndex = 17;
+            this.txBBDD.Visible = false;
+            // 
+            // rb_CSV_MF_STG
+            // 
+            this.rb_CSV_MF_STG.AutoSize = true;
+            this.rb_CSV_MF_STG.Location = new System.Drawing.Point(24, 188);
+            this.rb_CSV_MF_STG.Name = "rb_CSV_MF_STG";
+            this.rb_CSV_MF_STG.Size = new System.Drawing.Size(124, 21);
+            this.rb_CSV_MF_STG.TabIndex = 6;
+            this.rb_CSV_MF_STG.TabStop = true;
+            this.rb_CSV_MF_STG.Text = "CSV MF a STG";
+            this.rb_CSV_MF_STG.UseVisualStyleBackColor = true;
+            this.rb_CSV_MF_STG.CheckedChanged += new System.EventHandler(this.rb_CSV_MF_STG_CheckedChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(891, 275);
-            this.Controls.Add(this.gbAcciones);
-            this.Controls.Add(this.gbHist);
+            this.ClientSize = new System.Drawing.Size(952, 326);
+            this.Controls.Add(this.txBBDD);
             this.Controls.Add(this.gbDSDM);
+            this.Controls.Add(this.gbHist);
+            this.Controls.Add(this.gbAcciones);
             this.Controls.Add(this.btRuta);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lbl_file);
             this.Controls.Add(this.btnScript);
             this.Controls.Add(this.btnBuscar);
             this.Controls.Add(this.txSalida);
@@ -405,7 +443,7 @@
         private System.Windows.Forms.Button btnBuscar;
         private System.Windows.Forms.TextBox txSalida;
         private System.Windows.Forms.TextBox txFile;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lbl_file;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton rbDSDM;
@@ -428,6 +466,9 @@
         private System.Windows.Forms.CheckBox cb_CreateTable;
         private System.Windows.Forms.CheckBox cb_IndexCS;
         private System.Windows.Forms.RadioButton rbLectorCSV;
+        private System.Windows.Forms.RadioButton rb_tabMF_STG;
+        private System.Windows.Forms.TextBox txBBDD;
+        private System.Windows.Forms.RadioButton rb_CSV_MF_STG;
     }
 }
 

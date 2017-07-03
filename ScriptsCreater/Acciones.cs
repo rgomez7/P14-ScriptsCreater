@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace ScriptsCreater
 {
     class Acciones
     {
-        public string version = "1.1.6";
+        public string version = "1.1.8";
 
         public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {
@@ -151,6 +152,7 @@ namespace ScriptsCreater
             DataTable dt;
             int cab = 0;
             string valordatos = "";
+            int errorFilter = 0;
 
             foreach (string d in csvData)
             {
@@ -174,21 +176,44 @@ namespace ScriptsCreater
             else
             {
                 dt = dtCSV(csvData, cab, true);
+                try
+                {
+                    int codigo = dt.Columns.IndexOf("filter");
+                }
+                catch
+                {
+                    errorFilter = 1;
+                }
 
                 foreach (DataRow dr in dt.Rows)
                 {
                     valordatos = "";
 
-                    valordatos = dr.ItemArray[dt.Columns.IndexOf("campo")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("tipo")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("tablasid")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("sid")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("clave")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("dim")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("campocruce")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("siddim")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("autosid")].ToString() + ";" +
-                        dr.ItemArray[dt.Columns.IndexOf("filter")].ToString();
+                    if (errorFilter == 1)
+                    {
+                        valordatos = dr.ItemArray[dt.Columns.IndexOf("campo")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("tipo")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("tablasid")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("sid")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("clave")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("dim")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("campocruce")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("siddim")].ToString().TrimEnd() + ";" +
+                            dr.ItemArray[dt.Columns.IndexOf("autosid")].ToString().TrimEnd();
+                    }
+                    else
+                    {
+                        valordatos = dr.ItemArray[dt.Columns.IndexOf("campo")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("tipo")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("tablasid")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("sid")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("clave")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("dim")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("campocruce")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("siddim")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("autosid")].ToString().TrimEnd() + ";" +
+                           dr.ItemArray[dt.Columns.IndexOf("filter")].ToString().TrimEnd();
+                    }
 
                     Array.Resize(ref csv, csv.Length + 1);
                     csv[csv.Length - 1] = valordatos;
@@ -501,6 +526,43 @@ namespace ScriptsCreater
                 Array.Resize(ref csv, 0);
             }
             return csv;
+        }
+
+        // C#
+        public DataTable conexion(string cadena, string consulta)
+        {
+            string[] datos = new string[0];
+            SqlConnection conn = new SqlConnection();
+            SqlDataAdapter da;
+            DataTable dt = new DataTable();
+            // TODO: Modify the connection string and include any
+            // additional required properties for your database.
+            conn.ConnectionString = cadena;
+            try
+            {
+                conn.Open();
+
+                da = new SqlDataAdapter(consulta, conn);
+                da.Fill(dt);
+
+                conn.Close();
+
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("No se ha podido conectar. \r\n" + ex.ToString() , "Error conexión", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                return null;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+        public string cadena(string bd)
+        {
+            return "data source=P0VBDDMFES.bizkaiko.aldundia;initial catalog=" + bd + ";user id=vistas;password=vistas";
         }
     }
 }

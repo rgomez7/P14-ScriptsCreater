@@ -30,28 +30,36 @@ namespace ScriptsCreater
             string dev = "";
             string[] csv2 = new string[0];
 
-            foreach (string d in csv)
+            try
             {
-                string[] j = d.Split(new Char[] { ';' });
-                if (j[0].Contains("#nombre"))
+                foreach (string d in csv)
                 {
-                    bd = j[2];
-                    tab = j[1];
-                    clave = j[3];
-                }
-                else if (!j[0].Contains("#"))
-                {
-                    campos = campos + "'" + j[0] + "',";
-                    if (j[4] == "#")
+                    string[] j = d.Split(new Char[] { ';' });
+                    if (j[0].Contains("#nombre"))
                     {
-                        campospk = campospk + "t_" + j[0] + ",";
+                        bd = j[2];
+                        tab = j[1];
+                        clave = j[3];
                     }
-                    Array.Resize(ref csv2, csv2.Length + 1);
-                    csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";";
+                    else if (!j[0].Contains("#"))
+                    {
+                        campos = campos + "'" + j[0] + "',";
+                        if (j[4] == "#")
+                        {
+                            campospk = campospk + "t_" + j[0] + ",";
+                        }
+                        Array.Resize(ref csv2, csv2.Length + 1);
+                        csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";";
+                    }
                 }
+                campos = campos.Substring(0, campos.Length - 1);
+                campospk = campospk.Substring(0, campospk.Length - 1);
             }
-            campos = campos.Substring(0, campos.Length - 1);
-            campospk = campospk.Substring(0, campospk.Length - 1);
+            catch (Exception ex2)
+            {
+                MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error PK en archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                return "NO";
+            }
             //Si no tenemos valor clave, lo generamos
             clave = "id_" + tab;
             if (claveAuto == true)
@@ -60,7 +68,7 @@ namespace ScriptsCreater
             }
 
             //Asignamos nombre al nombrearchivo
-            if (bd.Contains("dmr") || tab.Contains("dm"))
+            if (bd.Contains("dmr") || tab.Contains("_dm_"))
             {
                 tipobd = "dimensional";
                 schema = "dmr";
@@ -74,7 +82,7 @@ namespace ScriptsCreater
                 tipobd = "staging";
                 schema = "stg";
             }
-            else if (bd.Contains("norm") || tab.Contains("ds"))
+            else if (bd.Contains("norm") || tab.Contains("_ds_"))
             {
                 tipobd = "normalizado";
                 schema = "norm";

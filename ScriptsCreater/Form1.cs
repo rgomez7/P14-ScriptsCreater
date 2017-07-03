@@ -20,6 +20,7 @@ namespace ScriptsCreater
         ScriptDM dm = new ScriptDM();
         ScriptHist sh = new ScriptHist();
         ScriptLectorCSV lec = new ScriptLectorCSV();
+        ScriptGen_MF_STG mf_stg = new ScriptGen_MF_STG();
 
         public Form1()
         {
@@ -29,6 +30,8 @@ namespace ScriptsCreater
         private void Form1_Load(object sender, EventArgs e)
         {
             this.Text = "Generador Script v." + cr.version;
+            txFile.Width = txSalida.Width;
+            txBBDD.Visible = false;
         }
 
         //Esto es para el boton de seleción de archivos
@@ -75,6 +78,10 @@ namespace ScriptsCreater
                     cb_ChangeTrack.Checked = false;
                     cb_ChangeTrack.Visible = true;
                     cb_IndexCS.Visible = false;
+                    txFile.ReadOnly = true;
+                    btnBuscar.Enabled = true;
+                    txFile.Width = txSalida.Width;
+                    txBBDD.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("ds"))
                 {
@@ -86,6 +93,10 @@ namespace ScriptsCreater
                     cb_ChangeTrack.Checked = true;
                     cb_ChangeTrack.Visible = true;
                     cb_IndexCS.Visible = false;
+                    txFile.ReadOnly = true;
+                    btnBuscar.Enabled = true;
+                    txFile.Width = txSalida.Width;
+                    txBBDD.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("int"))
                 {
@@ -95,6 +106,10 @@ namespace ScriptsCreater
                     gbAcciones.Visible = false;
                     cb_ChangeTrack.Visible = false;
                     cb_IndexCS.Visible = false;
+                    txFile.ReadOnly = true;
+                    btnBuscar.Enabled = true;
+                    txFile.Width = txSalida.Width;
+                    txBBDD.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("his"))
                 {
@@ -107,6 +122,10 @@ namespace ScriptsCreater
                     cb_ChangeTrack.Checked = true;
                     cb_ChangeTrack.Visible = true;
                     cb_IndexCS.Visible = false;
+                    txFile.ReadOnly = true;
+                    btnBuscar.Enabled = true;
+                    txFile.Width = txSalida.Width;
+                    txBBDD.Visible = false;
                 }
             }
         }
@@ -312,6 +331,65 @@ namespace ScriptsCreater
                     }
                 }
 
+                // Generación de Scripts y CSV de extracción desde tabla de MF
+                else if (rb_tabMF_STG.Checked == true)
+                {
+                    string linegen;
+                    string datosScript = "";
+                    string nombreCSV = "";
+                    string camposPK = "";
+                    string nombreBD = "";
+                    int activoCT = 0;
+
+                    nombreBD = txBBDD.Text;
+                    
+                    linegen = mf_stg.createtable(txFile.Text, ruta, ref arcScript, ref camposPK, ref nombreBD, ref activoCT);
+                    datosScript = datosScript + "\n\r" + arcScript;
+
+                    if (activoCT == 0)
+                    {
+                        linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK, nombreBD, "Pre");
+                        datosScript = datosScript + "\n\r" + arcScript;
+                        linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK, nombreBD, "Pro");
+                        datosScript = datosScript + "\n\r" + arcScript;
+                    }
+
+                    linegen = mf_stg.gencsv(txFile.Text, ruta, ref arcScript, camposPK);
+                    datosScript = datosScript + "\n\r" + arcScript;
+                    nombreCSV = arcScript;
+                    linegen = mf_stg.createtable_ext(nombreCSV, ruta, ref arcScript);
+                    datosScript = datosScript + "\n\r" + arcScript;
+                    linegen = mf_stg.createSP_ext(nombreCSV, ruta, ref arcScript);
+                    datosScript = datosScript + "\n\r" + arcScript;
+                    linegen = mf_stg.createSnippert_ext(nombreCSV, ruta, ref arcScript);
+                    datosScript = datosScript + "\n\r" + arcScript;
+
+                    if (linegen == "OK")
+                    {
+                        txBBDD.Text = nombreBD;
+                        MessageBox.Show("Fichero generado en " + ruta + datosScript, "Fichero generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+
+                //Generación de Script extracción desde CSV
+                else if (rb_CSV_MF_STG.Checked == true)
+                {
+                    string linegen;
+                    string datosScript = "";
+                    
+                    linegen = mf_stg.createtable_ext(archivo, rutaorigen, ref arcScript);
+                    datosScript = datosScript + "\n\r" + arcScript;
+                    linegen = mf_stg.createSP_ext(archivo, rutaorigen, ref arcScript);
+                    datosScript = datosScript + "\n\r" + arcScript;
+                    linegen = mf_stg.createSnippert_ext(archivo, rutaorigen, ref arcScript);
+                    datosScript = datosScript + "\n\r" + arcScript;
+
+                    if (linegen == "OK")
+                    {
+                        MessageBox.Show("Fichero generado en " + ruta + datosScript, "Fichero generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+
                 //Si no seleccionas ningún Tipo Script
                 else
                 {
@@ -329,6 +407,11 @@ namespace ScriptsCreater
             gbAcciones.Visible = false;
             cb_ChangeTrack.Visible = false;
             cb_IndexCS.Visible = false;
+            txFile.ReadOnly = true;
+            lbl_file.Text = "CSV a generar";
+            btnBuscar.Enabled = true;
+            txFile.Width = txSalida.Width;
+            txBBDD.Visible = false;
         }
 
         private void rbMaestro_CheckedChanged(object sender, EventArgs e)
@@ -340,6 +423,11 @@ namespace ScriptsCreater
             cb_ChangeTrack.Checked = false;
             cb_ChangeTrack.Visible = true;
             cb_IndexCS.Visible = false;
+            txFile.ReadOnly = true;
+            lbl_file.Text = "CSV a generar";
+            btnBuscar.Enabled = true;
+            txFile.Width = txSalida.Width;
+            txBBDD.Visible = false;
         }
 
         private void rbHist_CheckedChanged(object sender, EventArgs e)
@@ -352,6 +440,11 @@ namespace ScriptsCreater
             cb_ChangeTrack.Checked = true;
             cb_ChangeTrack.Visible = true;
             cb_IndexCS.Visible = false;
+            txFile.ReadOnly = true;
+            lbl_file.Text = "CSV a generar";
+            btnBuscar.Enabled = true;
+            txFile.Width = txSalida.Width;
+            txBBDD.Visible = false;
         }
 
         private void rbDSDM_CheckedChanged(object sender, EventArgs e)
@@ -363,6 +456,11 @@ namespace ScriptsCreater
             cb_ChangeTrack.Checked = true;
             cb_ChangeTrack.Visible = true;
             cb_IndexCS.Visible = false;
+            txFile.ReadOnly = true;
+            lbl_file.Text = "CSV a generar";
+            btnBuscar.Enabled = true;
+            txFile.Width = txSalida.Width;
+            txBBDD.Visible = false;
         }
 
         private void rbLectorCSV_CheckedChanged(object sender, EventArgs e)
@@ -374,8 +472,44 @@ namespace ScriptsCreater
             cb_ChangeTrack.Checked = false;
             cb_ChangeTrack.Visible = false;
             cb_IndexCS.Visible = false;
+            txFile.ReadOnly = true;
+            lbl_file.Text = "CSV a generar";
+            btnBuscar.Enabled = true;
+            txFile.Width = txSalida.Width;
+            txBBDD.Visible = false;
         }
 
+        private void rb_tabMF_STG_CheckedChanged(object sender, EventArgs e)
+        {
+            gbDSDM.Visible = false;
+            gbHist.Visible = false;
+            gbAcciones.Visible = false;
+            cb_ChangeTrack.Text = "Change Tracking Comentado";
+            cb_ChangeTrack.Checked = false;
+            cb_ChangeTrack.Visible = false;
+            cb_IndexCS.Visible = false;
+            txFile.ReadOnly = false;
+            lbl_file.Text = "Tabla de MF:";
+            btnBuscar.Enabled = false;
+            txFile.Width = txFile.Width - txBBDD.Width - 2;
+            txBBDD.Visible = true;
+        }
+
+        private void rb_CSV_MF_STG_CheckedChanged(object sender, EventArgs e)
+        {
+            gbDSDM.Visible = false;
+            gbHist.Visible = false;
+            gbAcciones.Visible = false;
+            cb_ChangeTrack.Text = "Change Tracking Comentado";
+            cb_ChangeTrack.Checked = false;
+            cb_ChangeTrack.Visible = false;
+            cb_IndexCS.Visible = false;
+            txFile.ReadOnly = false;
+            lbl_file.Text = "CSV a generar";
+            btnBuscar.Enabled = true;
+            txFile.Width = txSalida.Width;
+            txBBDD.Visible = false;
+        }
 
         private void rb_DSDM_T_CheckedChanged(object sender, EventArgs e)
         {
@@ -398,6 +532,5 @@ namespace ScriptsCreater
         }
 
         #endregion
-
     }
 }

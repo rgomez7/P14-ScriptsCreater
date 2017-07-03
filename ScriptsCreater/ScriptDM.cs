@@ -716,8 +716,8 @@ namespace ScriptsCreater
                                 campos = campos + "'" + j[0].ToString() + "',";
                                 if (j[2].ToString() == "#" && j[3].Length > 0)
                                 {
-                                    //file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
-                                    file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString() + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
+                                    file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
+                                    //file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString() + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
                                 }
                                 else if (j[3].Length > 0)
                                 {
@@ -753,8 +753,8 @@ namespace ScriptsCreater
                             if (j[2].ToString() == "#")
                             {
                                 i = 0;
-                                //file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + " AS tbn1_" + prefijo_tab + j[0].ToString().Replace("id", ""));
-                                file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString() + " AS tbn1_" + prefijo_tab + j[0].ToString());
+                                file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + " AS tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_"));
+                                //file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString() + " AS tbn1_" + prefijo_tab + j[0].ToString());
                                 foreach (string h in csv)
                                 {
                                     string[] k = h.Split(new Char[] { ';' });
@@ -762,13 +762,13 @@ namespace ScriptsCreater
                                     {
                                         if (i == 0)
                                         {
-                                            //claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
-                                            claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                            claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                            //claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
                                         }
                                         else
                                         {
-                                            //claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
-                                            claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                            claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                            //claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
                                         }
                                         i++;
                                     }
@@ -789,8 +789,8 @@ namespace ScriptsCreater
                             string[] j = d.Split(new Char[] { ';' });
                             if (j[2].ToString() == "#" && j[3].Length > 0)
                             {
-                                //file.WriteLine("                 tbn1_" + prefijo_tab + j[0].ToString().ToLower().Replace("id", "") + "." + j[0].ToString() + coma);
-                                file.WriteLine("                 tbn1_" + prefijo_tab + j[0].ToString().ToLower() + "." + j[0].ToString() + coma);
+                                file.WriteLine("                 tbn1_" + prefijo_tab + j[0].ToString().ToLower().Replace("id_", "_") + "." + j[0].ToString() + coma);
+                                //file.WriteLine("                 tbn1_" + prefijo_tab + j[0].ToString().ToLower() + "." + j[0].ToString() + coma);
                                 i++;
                             }
                             else if (j[3].Length > 0)
@@ -957,8 +957,8 @@ namespace ScriptsCreater
                             campos = campos + "'" + j[0].ToString() + "',";
                             if (j[2].ToString() == "#" && j[3].Length > 0)
                             {
-                                //file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
-                                file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString() + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
+                                file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
+                                //file.WriteLine("            tbn1_" + prefijo_tab + j[0].ToString() + "." + j[0].ToString() + " AS " + j[0].ToString() + coma);
                             }
                             else if (j[3].Length > 0)
                             {
@@ -980,8 +980,8 @@ namespace ScriptsCreater
                         if (j[2].ToString() == "#")
                         {
                             i = 0;
-                            //file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + " AS tbn1_" + prefijo_tab + j[0].ToString().Replace("id", ""));
-                            file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString() + " AS tbn1_" + prefijo_tab + j[0].ToString());
+                            file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + " AS tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_"));
+                            //file.WriteLine("        INNER JOIN " + bd + ".dbo.tbn1_" + prefijo_tab + j[0].ToString() + " AS tbn1_" + prefijo_tab + j[0].ToString());
                             foreach (string h in csv)
                             {
                                 string[] k = h.Split(new Char[] { ';' });
@@ -989,13 +989,13 @@ namespace ScriptsCreater
                                 {
                                     if (i == 0)
                                     {
-                                        //claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
-                                        claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                        claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                        //claveDim = claveDim + "(tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
                                     }
                                     else
                                     {
-                                        //claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id", "") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
-                                        claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                        claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString().Replace("id_", "_") + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
+                                        //claveDim = claveDim + "AND (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " = t." + k[0].ToString() + " OR (tbn1_" + prefijo_tab + j[0].ToString() + "." + k[0].ToString() + " IS NULL AND t." + k[0].ToString() + " IS NULL))";
                                     }
                                     i++;
                                 }
@@ -1016,7 +1016,7 @@ namespace ScriptsCreater
                         string[] j = d.Split(new Char[] { ';' });
                         if (j[2].ToString() == "#" && j[3].Length > 0)
                         {
-                            file.WriteLine("        tbn1_" + prefijo_tab + j[0].ToString().ToLower().Replace("id", "") + "." + j[0].ToString() + coma);
+                            file.WriteLine("        tbn1_" + prefijo_tab + j[0].ToString().ToLower().Replace("id_", "_") + "." + j[0].ToString() + coma);
                             i++;
                         }
                         else if (j[3].Length > 0)
