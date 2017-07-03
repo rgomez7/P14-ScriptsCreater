@@ -39,7 +39,8 @@ namespace ScriptsCreater
 
             //MONTAR SCRIPTS
             string nombretab = "tbn1" + table.Substring(4, 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
-            string fecar = table.Substring(2, 6).ToLower() + "_fecar";
+            //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
+            string fecar = componer_fecar(table, datosColumnas);
             nombrearchivo = "Script staging_" + nombretab + "_tablastg.sql";
             string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
 
@@ -233,7 +234,8 @@ namespace ScriptsCreater
 
             //MONTAR SCRIPTS
             string nombretab = "tbn1" + table.Substring(4, 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
-            string fecar = table.Substring(2, 6).ToLower() + "_fecar";
+            //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
+            string fecar = componer_fecar(table, datosColumnas);
             nombrearchivo = nombretab + ".csv";
             string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
 
@@ -413,8 +415,8 @@ namespace ScriptsCreater
                     }
                 }
             }
-            campos = campos.Substring(0, campos.Length - 2);
-            camposPK = camposPK.Substring(0, camposPK.Length - 2);
+            campos = campos.Substring(0, campos.Length - 1);
+            camposPK = camposPK.Substring(0, camposPK.Length - 1);
             string[] campos2 = campos.Split(',');
             string[] camposPK2 = camposPK.Split(',');
 
@@ -551,7 +553,7 @@ namespace ScriptsCreater
                 }
             }
 
-            nombrearchivo = "Snippet_var_SSIS__" + nombretab + ".txt";
+            nombrearchivo = "Snippet_var_SSIS_" + nombretab + ".txt";
             string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
 
             if (a.comprobarDir(ruta) == "OK")
@@ -725,6 +727,49 @@ namespace ScriptsCreater
                 return "NO";
             }
 
+        }
+
+        private string componer_fecar(string table, DataTable campos)
+        {
+            string prefijo = table.Substring(2, 6).ToLower() + "_";
+            
+            foreach (DataRow dr in campos.Rows)
+            {
+                if (!dr.ItemArray[0].ToString().Contains("#"))
+                {
+                    string valorCampo = valorCampo = dr.ItemArray[0].ToString().ToLower();
+                    if (valorCampo.Contains("_"))
+                    {
+                        string[] valor = valorCampo.Split('_');
+                        prefijo = valor[0] + "_";
+                    }
+                    //Otras opción de generar el prefijo
+                    else if (valorCampo.IndexOf(table.Substring(2, 6).ToLower()) == 0)
+                    {
+                        prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(2, 6).ToLower()), 6);
+                    }
+                    else if (valorCampo.IndexOf(table.Substring(3, 5).ToLower()) == 0)
+                    {
+                        prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(3, 5).ToLower()), 5);
+                    }
+                    else if (valorCampo.IndexOf(table.Substring(4, 4).ToLower()) == 0)
+                    {
+                        prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(4, 4).ToLower()), 4);
+                    }
+                    else if (valorCampo.IndexOf(table.Substring(5, 3).ToLower()) == 0)
+                    {
+                        prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(5, 3).ToLower()), 3);
+                    }
+                    else if (valorCampo.IndexOf(table.Substring(6, 2).ToLower()) == 0)
+                    {
+                        prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(6, 2).ToLower()), 2);
+                    }
+                    break;
+                }
+
+            }
+
+            return prefijo + "fecar";
         }
     }
 }
