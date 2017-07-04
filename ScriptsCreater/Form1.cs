@@ -342,32 +342,41 @@ namespace ScriptsCreater
                     int activoCT = 0;
 
                     nombreBD = txBBDD.Text;
-                    
-                    linegen = mf_stg.createtable(txFile.Text, ruta, ref arcScript, ref camposPK, ref nombreBD, ref activoCT);
-                    datosScript = datosScript + "\n\r" + arcScript;
 
-                    if (activoCT == 0)
+                    int existetab = mf_stg.ExisteTabla(txFile.Text, ref nombreBD);
+
+                    if (existetab == 1)
                     {
-                        linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK, nombreBD, "Pre");
+                        linegen = mf_stg.createtable(txFile.Text, ruta, ref arcScript, ref camposPK, nombreBD, ref activoCT);
                         datosScript = datosScript + "\n\r" + arcScript;
-                        linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK, nombreBD, "Pro");
+
+                        if (activoCT == 0)
+                        {
+                            linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK, nombreBD, "Pre");
+                            datosScript = datosScript + "\n\r" + arcScript;
+                            linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK, nombreBD, "Pro");
+                            datosScript = datosScript + "\n\r" + arcScript;
+                        }
+
+                        linegen = mf_stg.gencsv(txFile.Text, ruta, ref arcScript, camposPK);
                         datosScript = datosScript + "\n\r" + arcScript;
+                        nombreCSV = arcScript;
+                        linegen = mf_stg.createtable_ext(nombreCSV, ruta, ref arcScript);
+                        datosScript = datosScript + "\n\r" + arcScript;
+                        linegen = mf_stg.createSP_ext(nombreCSV, ruta, ref arcScript);
+                        datosScript = datosScript + "\n\r" + arcScript;
+                        linegen = mf_stg.createSnippert_ext(nombreCSV, ruta, ref arcScript);
+                        datosScript = datosScript + "\n\r" + arcScript;
+
+                        if (linegen == "OK")
+                        {
+                            txBBDD.Text = nombreBD;
+                            MessageBox.Show("Fichero generado en " + ruta + datosScript, "Fichero generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
-
-                    linegen = mf_stg.gencsv(txFile.Text, ruta, ref arcScript, camposPK);
-                    datosScript = datosScript + "\n\r" + arcScript;
-                    nombreCSV = arcScript;
-                    linegen = mf_stg.createtable_ext(nombreCSV, ruta, ref arcScript);
-                    datosScript = datosScript + "\n\r" + arcScript;
-                    linegen = mf_stg.createSP_ext(nombreCSV, ruta, ref arcScript);
-                    datosScript = datosScript + "\n\r" + arcScript;
-                    linegen = mf_stg.createSnippert_ext(nombreCSV, ruta, ref arcScript);
-                    datosScript = datosScript + "\n\r" + arcScript;
-
-                    if (linegen == "OK")
+                    else
                     {
-                        txBBDD.Text = nombreBD;
-                        MessageBox.Show("Fichero generado en " + ruta + datosScript, "Fichero generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("No existe la tabla " + txFile.Text + " en la BBDD " + nombreBD, "Tabla no existe en BBDD", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
 

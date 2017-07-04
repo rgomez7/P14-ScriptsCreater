@@ -15,14 +15,24 @@ namespace ScriptsCreater
         Consultas c = new Consultas();
         ScriptComun sc = new ScriptComun();
 
-        public string createtable(string table, string ruta, ref string nombrearchivo, ref string camposPK, ref string bd, ref int activoCT)
+
+        public int ExisteTabla(string table, ref string bd)
         {
-            activoCT = 1;
-            //TBMFPH46
+
             if (bd.ToString() == "")
             {
                 bd = "DB" + table.Substring(2, 2);
             }
+            string cadena = a.cadena(bd);
+            DataTable dt = a.conexion(cadena, c.ComprobarTabla(table));
+
+            return Convert.ToInt16(dt.Rows[0].ItemArray[0]);
+        }
+        
+        public string createtable(string table, string ruta, ref string nombrearchivo, ref string camposPK, string bd, ref int activoCT)
+        {
+            activoCT = 1;
+
             string cadena = a.cadena(bd);
             string[] lineas = new string[0];
             string valorcampo = "";
@@ -32,7 +42,7 @@ namespace ScriptsCreater
             string camposPK2 = "";
             string camposPK3 = "";
             
-            DataTable datosColumnas = a.conexion(cadena, "SELECT column_name, is_nullable, data_type, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + table + "'");
+            DataTable datosColumnas = a.conexion(cadena, c.Columns(table));
             //DataTable datosClaves = a.conexion(cadena, "EXEC sp_helpindex N'DB2PROD." + table + "'  ");
             DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves("DB2PROD." + table));
             DataTable datosExtended = a.conexion(cadena, c.PropiedadesExtendidas("DB2PROD", table));
@@ -243,7 +253,7 @@ namespace ScriptsCreater
             {
                 try
                 {
-                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
+                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
 
                     csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", "#nombre_DS", nombretab.Replace("tbn1", ""), "dbn1_stg_dhyf", "", "", "", "", "", "", "");
                     file.WriteLine(csvRow);
@@ -344,7 +354,7 @@ namespace ScriptsCreater
             {
                 try
                 {
-                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
+                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -397,6 +407,7 @@ namespace ScriptsCreater
             string schema = "extracciones_tmp";
             string campos = "";
             string camposPK= "";
+            int i = 0;
 
             foreach (string v in valorescsv)
             {
@@ -427,7 +438,7 @@ namespace ScriptsCreater
             {
                 try
                 {
-                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
+                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -461,15 +472,33 @@ namespace ScriptsCreater
                     file.WriteLine("");
                     file.WriteLine("    UPDATE destino");
                     file.WriteLine("    SET");
+                    i = 0;
                     foreach (string c in campos2)
                     {
-                        file.WriteLine("        destino." + c + " = actu." + c);
+                        i++;
+                        if (campos2.Length == i)
+                        {
+                            file.WriteLine("        destino." + c + " = actu." + c);
+                        }
+                        else
+                        {
+                            file.WriteLine("        destino." + c + " = actu." + c + ",");
+                        }
                     }
                     file.WriteLine("    FROM dbo." + nombretab + " destino");
                     file.WriteLine("    INNER JOIN actualizaciones actu ON");
+                    i = 0;
                     foreach (string c in camposPK2)
                     {
-                        file.WriteLine("        destino." + c + " = actu." + c);
+                        i++;
+                        if (camposPK2.Length == i)
+                        {
+                            file.WriteLine("        destino." + c + " = actu." + c);
+                        }
+                        else
+                        {
+                            file.WriteLine("        destino." + c + " = actu." + c + " AND ");
+                        }
                     }
                     file.WriteLine("");
 
@@ -483,9 +512,18 @@ namespace ScriptsCreater
                     file.WriteLine("    DELETE destino");
                     file.WriteLine("    FROM dbo." + nombretab + " destino");
                     file.WriteLine("    INNER JOIN borrados actu ON");
+                    i = 0;
                     foreach (string c in camposPK2)
                     {
-                        file.WriteLine("        destino." + c + " = actu." + c);
+                        i++;
+                        if (camposPK2.Length == i)
+                        {
+                            file.WriteLine("        destino." + c + " = actu." + c);
+                        }
+                        else
+                        {
+                            file.WriteLine("        destino." + c + " = actu." + c + " AND");
+                        }
                     }
                     file.WriteLine("");
 
@@ -501,15 +539,33 @@ namespace ScriptsCreater
                     file.WriteLine("    INSERT INTO dbo." + nombretab);
                     file.WriteLine("        (" + campos + ")");
                     file.WriteLine("    SELECT");
+                    i = 0;
                     foreach (string c in campos2)
                     {
-                        file.WriteLine("        tmp." + c);
+                        i++;
+                        if (campos2.Length == i)
+                        {
+                            file.WriteLine("        tmp." + c);
+                        }
+                        else
+                        {
+                            file.WriteLine("        tmp." + c + ",");
+                        }
                     }
                     file.WriteLine("    FROM inserciones ins");
                     file.WriteLine("    INNER JOIN " + schema + "." + nombretab + "_tmp tmp  ON");
+                    i = 0;
                     foreach (string c in camposPK2)
                     {
-                        file.WriteLine("        ins." + c + " = tmp." + c);
+                        i++;
+                        if (camposPK2.Length == i)
+                        {
+                            file.WriteLine("        ins." + c + " = tmp." + c);
+                        }
+                        else
+                        {
+                            file.WriteLine("        ins." + c + " = tmp." + c + " AND");
+                        }
                     }
                     file.WriteLine("    WHERE   sys_change_operation = 'I'");
                     file.WriteLine("");
@@ -560,7 +616,7 @@ namespace ScriptsCreater
             {
                 try
                 {
-                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
+                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
 
                     file.WriteLine(Convert.ToChar(34) + ", CAST(t.SYS_CHANGE_OPERATION AS CHAR(1)) AS SYS_CHANGE_OPERATION");
                     file.WriteLine("     FROM  (SELECT ct.SYS_CHANGE_OPERATION");
@@ -709,6 +765,9 @@ namespace ScriptsCreater
 
                     file.WriteLine("SET @sql = 'USE[DB' + UPPER(@bbdd) +'] GRANT VIEW CHANGE TRACKING ON ' + UPPER(@esquema) + '.TB' + UPPER(@bbdd) + UPPER(@tabla) + ' TO ' + UPPER(@grantview)");
                     file.WriteLine("exec(@sql)");
+                    file.WriteLine("");
+
+                    file.WriteLine("GO");
                     file.WriteLine("");
 
                     file.Close();
