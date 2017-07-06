@@ -29,7 +29,7 @@ namespace ScriptsCreater
             return Convert.ToInt16(dt.Rows[0].ItemArray[0]);
         }
         
-        public string createtable(string table, string ruta, ref string nombrearchivo, ref string camposPK, string bd, ref int activoCT)
+        public string createtable_stgFinal(string table, string ruta, ref string nombrearchivo, ref string camposPK, string bd, ref int activoCT)
         {
             activoCT = 1;
 
@@ -316,7 +316,7 @@ namespace ScriptsCreater
             }
         }
 
-        public string createtable_ext(string csv, string ruta, ref string nombrearchivo)
+        public string createtable_extraccion(string csv, string ruta, ref string nombrearchivo)
         {
             string[] lineas = new string[0];
             string nombretab = "";
@@ -397,7 +397,7 @@ namespace ScriptsCreater
             }
         }
 
-        public string createSP_ext(string csv, string ruta, ref string nombrearchivo)
+        public string createSP_extraccion(string csv, string ruta, ref string nombrearchivo)
         {
             string[] lineas = new string[0];
             string nombretab = "";
@@ -590,7 +590,7 @@ namespace ScriptsCreater
             }
         }
 
-        public string createSnippert_ext(string csv, string ruta, ref string nombrearchivo)
+        public string createSnippet_ext(string csv, string ruta, ref string nombrearchivo)
         {
             string[] lineas = new string[0];
             string nombretab = "";
@@ -628,7 +628,7 @@ namespace ScriptsCreater
                         {                            
                             if (datos[4].Contains("#"))
                             {
-                                file.WriteLine("               ,ct." + datos[0]);
+                                file.WriteLine("               ,ct." + datos[0].ToUpper());
                             }
                             else
                             {
@@ -636,7 +636,7 @@ namespace ScriptsCreater
                                 { }
                                 else
                                 { 
-                                file.WriteLine("               ,origen." + datos[0]);
+                                file.WriteLine("               ,origen." + datos[0].ToUpper());
                                 }
                             }
                         }
@@ -653,11 +653,11 @@ namespace ScriptsCreater
                             {
                                 if (i == 0)
                                 { 
-                                file.WriteLine("                 ct." + datos[0] + " = origen." + datos[0]);
+                                file.WriteLine("                 ct." + datos[0].ToUpper() + " = origen." + datos[0].ToUpper());
                                 }
                                 else
                                 {
-                                    file.WriteLine("                 AND ct." + datos[0] + " = origen." + datos[0]);
+                                    file.WriteLine("                 AND ct." + datos[0].ToUpper() + " = origen." + datos[0].ToUpper());
                                 }
                                 i++;
                             }

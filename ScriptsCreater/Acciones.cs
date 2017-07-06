@@ -12,7 +12,7 @@ namespace ScriptsCreater
 {
     class Acciones
     {
-        public string version = "1.1.8";
+        public string version = "1.1.9";
 
         public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {
@@ -563,6 +563,10 @@ namespace ScriptsCreater
         public string cadena(string bd)
         {
             return "data source=P0VBDDMFES.bizkaiko.aldundia;initial catalog=" + bd + ";user id=vistas;password=vistas";
+        }
+        public string cadenad(string bd)
+        {
+            return "data source=D1VBDDBI.bizkaiko.aldundia;initial catalog=" + bd + ";user id=dwhdesa;password=desarrollo";
         }
     }
 }

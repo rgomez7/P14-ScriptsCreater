@@ -387,7 +387,14 @@ namespace ScriptsCreater
 
                         if (tiposcript == "extraccion")
                         {
-                            tipodato = "";
+                            if (campospk.Contains(j[0].ToString()))
+                            {
+                                tipodato = " NOT NULL";
+                            }
+                            else
+                            {
+                                tipodato = "";
+                            }
                         }
                         else
                         {
@@ -557,9 +564,20 @@ namespace ScriptsCreater
                     {
                         file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato);
                     }
-                    else if (tiposcript == "historificacion" || tiposcript == "extraccion")
+                    else if (tiposcript == "historificacion" )
                     {
                         file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " " + ValorDato);
+                    }
+                    else if (tiposcript == "extraccion")
+                    {
+                        if (campospk.Contains(j[0].ToString()))
+                        {
+                            file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato);
+                        }
+                        else
+                        {
+                            file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " " + ValorDato);
+                        }
                     }
                     else
                     {
@@ -647,9 +665,24 @@ namespace ScriptsCreater
                     i++;
                     if (!j[0].Contains("#"))
                     {
-                        if (tiposcript == "historificacion" || tiposcript == "extraccion")
+                        if (tiposcript == "historificacion")
                         {
                             if (j[2].Contains("#"))
+                            {
+                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                                file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
+                                file.WriteLine("GO");
+                            }
+                            else
+                            {
+                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                                file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString());
+                                file.WriteLine("GO");
+                            }
+                        }
+                        else if (tiposcript == "extraccion")
+                        {
+                            if (campospk.Contains(j[0].ToString()))
                             {
                                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
                                 file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
