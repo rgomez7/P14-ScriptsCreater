@@ -38,6 +38,8 @@ namespace ScriptsCreater
             string valorcampo = "";
             int valorpk = 0;
 
+            string error = "";
+
             string camposPK1 = "";
             string camposPK2 = "";
             string camposPK3 = "";
@@ -149,20 +151,24 @@ namespace ScriptsCreater
                         file.WriteLine("/*------PROBLEMAS PK-------*/");
                         file.WriteLine("/*-------------------------*/");
                         file.WriteLine("");
+                        error = error + "\n\r//** " + table + " PROBLEMAS PK**\\" + "\n\r";
                     }
                     else
                     {
                         if (camposPK1 != "")
                         {
                             camposPK = camposPK1;
+                            error = error + "\n\r//** " + table + " PK generada sobre Primary Key**\\" + "\n\r";
                         }
                         else if (camposPK2 != "")
                         {
                             camposPK = camposPK2;
+                            error = error + "\n\r//** " + table + " PK generada sobre Cluster e Index único**\\" + "\n\r";
                         }
                         else if (camposPK3 != "")
                         {
                             camposPK = camposPK3;
+                            error = error + "\n\r//** " + table + " PK generada sobre Index único**\\" + "\n\r";
                         }
                         camposPK = camposPK.Substring(0, camposPK.Length - 2);
                         file.WriteLine("ALTER TABLE dbo." + nombretab + " ADD CONSTRAINT PK_" + nombretab);
@@ -210,7 +216,7 @@ namespace ScriptsCreater
                     DataTable datosCT = a.conexion(cadena, c.ChangeTrackingActivo(table));
                     if (datosCT.Rows.Count == 0)
                     {
-                        nombrearchivo = "//** " + table + " No tiene CHANGE_TRACKING ACTIVO**\\" + "\n\r" + nombrearchivo;
+                        error = error + "\n\r//** " + table + " No tiene CHANGE_TRACKING ACTIVO**\\" + "\n\r" ;
                         activoCT = 0;
                     }
                 }
@@ -220,6 +226,7 @@ namespace ScriptsCreater
                     return "NO";
                 }
 
+                nombrearchivo = error + "\n\r" + nombrearchivo;
                 return "OK";
             }
             else
@@ -815,9 +822,17 @@ namespace ScriptsCreater
                     {
                         prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(4, 4).ToLower()), 4);
                     }
+                    else if (valorCampo.IndexOf(table.Substring(4, 3).ToLower()) == 0)
+                    {
+                        prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(4, 3).ToLower()), 3);
+                    }
                     else if (valorCampo.IndexOf(table.Substring(5, 3).ToLower()) == 0)
                     {
                         prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(5, 3).ToLower()), 3);
+                    }
+                    else if (valorCampo.IndexOf(table.Substring(4, 2).ToLower()) == 0)
+                    {
+                        prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(4, 2).ToLower()), 2);
                     }
                     else if (valorCampo.IndexOf(table.Substring(6, 2).ToLower()) == 0)
                     {

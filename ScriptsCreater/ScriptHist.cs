@@ -292,7 +292,7 @@ namespace ScriptsCreater
                     file.WriteLine("            BEGIN");
                     file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
                     file.WriteLine("                DECLARE @id_warning_1 int");
-                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bbdd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
+                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
                     file.WriteLine("            END");
                     file.WriteLine("            ELSE");
                     file.WriteLine("            BEGIN");
@@ -364,10 +364,12 @@ namespace ScriptsCreater
             string dev = "";
             string campos = "";
             string campospk = "";
+            string error = "";
             string clave = "";
             string valorcampo = "";
             string[] lineas = new string[0];
             string[] csv = new string[0];
+            bool auto = true;
             int i = 0;
 
             DataTable dtColumns = a.conexion(a.cadenad(bbdd), c.Columns(tab));
@@ -380,35 +382,41 @@ namespace ScriptsCreater
             {
                 if (Convert.ToBoolean(dr.ItemArray[4]) == true)
                 {
-                    campospk = campospk + dr.ItemArray[0].ToString() + ", ";
+                    campospk = campospk + dr.ItemArray[9].ToString() + ", ";
                 }
             }
             campospk = campospk.Substring(0, campospk.Length - 2);
-            
+
             //Agregamos campos a variable
             foreach (DataRow dr in dtColumns.Rows)
             {
-                campos = campos + dr.ItemArray[0].ToString() + ", ";
+                campos = campos + "'" + dr.ItemArray[0].ToString() + "', ";
+
+                //Comprobamos si tiene autonumerico
+                if (Convert.ToBoolean(dr.ItemArray[6]) == true)
+                {
+                    auto = false;
+                }
 
                 //Valor del Campo
                 if (dr.ItemArray[2].ToString().ToLower().Contains("char"))
                 {
                     if (dr.ItemArray[3].ToString() == "-1")
                     {
-                        valorcampo = " varchar(max) not null";
+                        valorcampo = " varchar(max)";
                     }
                     else
                     {
-                        valorcampo = " varchar(" + dr.ItemArray[3].ToString() + ") not null";
+                        valorcampo = " varchar(" + dr.ItemArray[3].ToString() + ")";
                     }
                 }
                 else if (dr.ItemArray[2].ToString().ToLower() == "numeric" || dr.ItemArray[2].ToString().ToLower() == "decimal")
                 {
-                    valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + "(" + dr.ItemArray[4].ToString() + ", " + dr.ItemArray[5].ToString() + ") not null";
+                    valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + "(" + dr.ItemArray[4].ToString() + ", " + dr.ItemArray[5].ToString() + ")";
                 }
                 else
                 {
-                    valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + " not null";
+                    valorcampo = " " + dr.ItemArray[2].ToString().ToLower() ;
                 }
 
                 //Montamos CSV
@@ -471,7 +479,6 @@ namespace ScriptsCreater
                 //Escribimos en el fichero
                 try
                 {
-
                     StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
                     StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
@@ -492,6 +499,7 @@ namespace ScriptsCreater
                     if (dtCT.Rows[0].ItemArray[0].ToString() == "0")
                     {
                         file.WriteLine("--------------------------------------");
+                        error = error + "\n\r//** " + tab + " No tiene CHANGE_TRACKING ACTIVO**\\" + "\n\r";
                     }
                     else
                     {
@@ -516,7 +524,7 @@ namespace ScriptsCreater
                     file.WriteLine("--Begin table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("");
 
-                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion");
+                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, auto, "historificacion");
 
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");
@@ -617,7 +625,7 @@ namespace ScriptsCreater
                     file.WriteLine("            BEGIN");
                     file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
                     file.WriteLine("                DECLARE @id_warning_1 int");
-                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bbdd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
+                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
                     file.WriteLine("            END");
                     file.WriteLine("            ELSE");
                     file.WriteLine("            BEGIN");
@@ -664,6 +672,14 @@ namespace ScriptsCreater
                     return "NO";
                 }
 
+                if (error == "") 
+                {
+                    nombrearchivo = "\n\r" + nombrearchivo;
+                }
+                else
+                {
+                    nombrearchivo = "\n\r" + error + "\n\r" + nombrearchivo;
+                }
                 return "OK";
             }
             else

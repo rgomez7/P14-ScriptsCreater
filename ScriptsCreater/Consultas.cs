@@ -10,7 +10,8 @@ namespace ScriptsCreater
     {
         public string Columns(string tabla)
         {
-            return "SELECT column_name, is_nullable, data_type, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tabla + "'";
+            return "SELECT column_name, is_nullable, data_type, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, columnproperty ( object_id (TABLE_NAME), column_name, 'IsIdentity') as es_identity "+
+                "FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tabla + "'";
         }
 
         public string ColumnsClaves(string tabla)
@@ -34,7 +35,7 @@ namespace ScriptsCreater
 
         public string ChangeTrackingActivo(string tabla)
         {
-            return "SELECT 1 as Activo FROM sys.change_tracking_tables tt " +
+            return "SELECT Count(1) as Activo FROM sys.change_tracking_tables tt " +
                         "INNER JOIN sys.objects obj ON obj.object_id = tt.object_id " +
                         "WHERE obj.name = '" + tabla + "'";
         }

@@ -294,9 +294,9 @@ namespace ScriptsCreater
                             }
                             else
                             {
-                                if (txFile.ToString().Contains(";"))
+                                if (txFile.Text.ToString().Contains(";"))
                                 {
-                                    tablas = txFile.ToString().Split(';');
+                                    tablas = txFile.Text.ToString().Split(';');
                                 }
                                 else
                                 {
@@ -365,87 +365,89 @@ namespace ScriptsCreater
                             }
                         }
                     }
-                }
 
-                //Opción generación Script con Union ALL de los campos
-                else if (rbLectorCSV.Checked == true)
-                {
-                    csv = cr.leerCSV(archivo, rutaorigen);
-                    string linegen = lec.selectUnion(archivo, csv, ruta, ref arcScript);
-
-                    if (linegen == "OK")
+                    //Opción generación Script con Union ALL de los campos
+                    else if (rbLectorCSV.Checked == true)
                     {
-                        MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
+                        csv = cr.leerCSV(archivo, rutaorigen);
+                        string linegen = lec.selectUnion(archivo, csv, ruta, ref arcScript);
 
-                // Generación de Scripts y CSV de extracción desde tabla de MF
-                else if (rb_tabMF_STG.Checked == true)
-                {
-                    string linegen;
-                    string datosScript = "";
-                    string nombreCSV = "";
-                    string camposPK = "";
-                    string nombreBD = "";
-                    int activoCT = 0;
-
-                    nombreBD = txBBDD.Text;
-
-                    int existetab = mf_stg.ExisteTabla(txFile.Text, ref nombreBD);
-
-                    if (existetab == 1)
-                    {
-                        linegen = mf_stg.createtable_stgFinal(txFile.Text, ruta, ref arcScript, ref camposPK, nombreBD, ref activoCT);
-                        datosScript = datosScript + "\n\r" + arcScript;
-
-                        if (activoCT == 0)
+                        if (linegen == "OK")
                         {
-                            linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pre");
-                            datosScript = datosScript + "\n\r" + arcScript;
-                            linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pro");
-                            datosScript = datosScript + "\n\r" + arcScript;
+                            MessageBox.Show("Ficheros generados en " + ruta + "\n\r" + arcScript, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
+                    }
 
-                        linegen = mf_stg.gencsv(txFile.Text, ruta, ref arcScript, camposPK);
+                    // Generación de Scripts y CSV de extracción desde tabla de MF
+                    else if (rb_tabMF_STG.Checked == true)
+                    {
+                        string linegen;
+                        string datosScript = "";
+                        string nombreCSV = "";
+                        string camposPK = "";
+                        string nombreBD = "";
+                        int activoCT = 0;
+
+                        nombreBD = txBBDD.Text;
+
+                        int existetab = mf_stg.ExisteTabla(txFile.Text, ref nombreBD);
+
+                        if (existetab == 1)
+                        {
+                            linegen = mf_stg.createtable_stgFinal(txFile.Text, ruta, ref arcScript, ref camposPK, nombreBD, ref activoCT);
+                            datosScript = datosScript + "\n\r" + arcScript;
+
+                            if (activoCT == 0)
+                            {
+                                linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pre");
+                                datosScript = datosScript + "\n\r" + arcScript;
+                                linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pro");
+                                datosScript = datosScript + "\n\r" + arcScript;
+                            }
+
+                            linegen = mf_stg.gencsv(txFile.Text, ruta, ref arcScript, camposPK);
+                            datosScript = datosScript + "\n\r" + arcScript;
+                            nombreCSV = arcScript;
+                            linegen = mf_stg.createtable_extraccion(nombreCSV, ruta, ref arcScript);
+                            datosScript = datosScript + "\n\r" + arcScript;
+                            linegen = mf_stg.createSP_extraccion(nombreCSV, ruta, ref arcScript);
+                            datosScript = datosScript + "\n\r" + arcScript;
+                            linegen = mf_stg.createSnippet_ext(nombreCSV, ruta, ref arcScript);
+                            datosScript = datosScript + "\n\r" + arcScript;
+
+                            if (linegen == "OK")
+                            {
+                                txBBDD.Text = nombreBD;
+                                MessageBox.Show("Fichero generado en " + ruta + datosScript, "Fichero generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("No existe la tabla " + txFile.Text + " en la BBDD " + nombreBD, "Tabla no existe en BBDD", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+
+                    //Generación de Script extracción desde CSV
+                    else if (rb_CSV_MF_STG.Checked == true)
+                    {
+                        string linegen;
+                        string datosScript = "";
+
+                        linegen = mf_stg.createtable_extraccion(archivo, rutaorigen, ref arcScript);
                         datosScript = datosScript + "\n\r" + arcScript;
-                        nombreCSV = arcScript;
-                        linegen = mf_stg.createtable_extraccion(nombreCSV, ruta, ref arcScript);
+                        linegen = mf_stg.createSP_extraccion(archivo, rutaorigen, ref arcScript);
                         datosScript = datosScript + "\n\r" + arcScript;
-                        linegen = mf_stg.createSP_extraccion(nombreCSV, ruta, ref arcScript);
-                        datosScript = datosScript + "\n\r" + arcScript;
-                        linegen = mf_stg.createSnippet_ext(nombreCSV, ruta, ref arcScript);
+                        linegen = mf_stg.createSnippet_ext(archivo, rutaorigen, ref arcScript);
                         datosScript = datosScript + "\n\r" + arcScript;
 
                         if (linegen == "OK")
                         {
-                            txBBDD.Text = nombreBD;
                             MessageBox.Show("Fichero generado en " + ruta + datosScript, "Fichero generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
-                    else
-                    {
-                        MessageBox.Show("No existe la tabla " + txFile.Text + " en la BBDD " + nombreBD, "Tabla no existe en BBDD", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+
                 }
 
-                //Generación de Script extracción desde CSV
-                else if (rb_CSV_MF_STG.Checked == true)
-                {
-                    string linegen;
-                    string datosScript = "";
-                    
-                    linegen = mf_stg.createtable_extraccion(archivo, rutaorigen, ref arcScript);
-                    datosScript = datosScript + "\n\r" + arcScript;
-                    linegen = mf_stg.createSP_extraccion(archivo, rutaorigen, ref arcScript);
-                    datosScript = datosScript + "\n\r" + arcScript;
-                    linegen = mf_stg.createSnippet_ext(archivo, rutaorigen, ref arcScript);
-                    datosScript = datosScript + "\n\r" + arcScript;
-
-                    if (linegen == "OK")
-                    {
-                        MessageBox.Show("Fichero generado en " + ruta + datosScript, "Fichero generado", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
 
                 //Si no seleccionas ningún Tipo Script
                 else
