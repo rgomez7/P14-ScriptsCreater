@@ -51,27 +51,27 @@
             this.rb_DSDM_All = new System.Windows.Forms.RadioButton();
             this.rb_DSDM_T = new System.Windows.Forms.RadioButton();
             this.gbHist = new System.Windows.Forms.GroupBox();
-            this.cb_ClaveAuto = new System.Windows.Forms.CheckBox();
-            this.rb_Directorio = new System.Windows.Forms.RadioButton();
+            this.pnl_Hist_CSV = new System.Windows.Forms.Panel();
             this.rb_Archivo = new System.Windows.Forms.RadioButton();
+            this.rb_Directorio = new System.Windows.Forms.RadioButton();
+            this.cb_ClaveAuto = new System.Windows.Forms.CheckBox();
+            this.rb_Hist_CSV = new System.Windows.Forms.RadioButton();
+            this.rb_Hist_Tabla = new System.Windows.Forms.RadioButton();
             this.gbAcciones = new System.Windows.Forms.GroupBox();
             this.cb_IndexCS = new System.Windows.Forms.CheckBox();
             this.cb_ChangeTrack = new System.Windows.Forms.CheckBox();
             this.cb_CreateTable = new System.Windows.Forms.CheckBox();
             this.txBBDD = new System.Windows.Forms.TextBox();
-            this.rb_Hist_CSV = new System.Windows.Forms.RadioButton();
-            this.rb_Hist_Tabla = new System.Windows.Forms.RadioButton();
-            this.pnl_Hist_CSV = new System.Windows.Forms.Panel();
             this.groupBox1.SuspendLayout();
             this.gbDSDM.SuspendLayout();
             this.gbHist.SuspendLayout();
-            this.gbAcciones.SuspendLayout();
             this.pnl_Hist_CSV.SuspendLayout();
+            this.gbAcciones.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnScript
             // 
-            this.btnScript.Location = new System.Drawing.Point(852, 266);
+            this.btnScript.Location = new System.Drawing.Point(852, 270);
             this.btnScript.Name = "btnScript";
             this.btnScript.Size = new System.Drawing.Size(86, 48);
             this.btnScript.TabIndex = 9;
@@ -143,10 +143,10 @@
             this.rb_CSV_MF_STG.AutoSize = true;
             this.rb_CSV_MF_STG.Location = new System.Drawing.Point(24, 188);
             this.rb_CSV_MF_STG.Name = "rb_CSV_MF_STG";
-            this.rb_CSV_MF_STG.Size = new System.Drawing.Size(124, 21);
+            this.rb_CSV_MF_STG.Size = new System.Drawing.Size(180, 21);
             this.rb_CSV_MF_STG.TabIndex = 6;
             this.rb_CSV_MF_STG.TabStop = true;
-            this.rb_CSV_MF_STG.Text = "CSV MF a STG";
+            this.rb_CSV_MF_STG.Text = "Extracción a STG (CSV)";
             this.rb_CSV_MF_STG.UseVisualStyleBackColor = true;
             this.rb_CSV_MF_STG.CheckedChanged += new System.EventHandler(this.rb_CSV_MF_STG_CheckedChanged);
             // 
@@ -155,10 +155,10 @@
             this.rb_tabMF_STG.AutoSize = true;
             this.rb_tabMF_STG.Location = new System.Drawing.Point(24, 161);
             this.rb_tabMF_STG.Name = "rb_tabMF_STG";
-            this.rb_tabMF_STG.Size = new System.Drawing.Size(133, 21);
+            this.rb_tabMF_STG.Size = new System.Drawing.Size(189, 21);
             this.rb_tabMF_STG.TabIndex = 5;
             this.rb_tabMF_STG.TabStop = true;
-            this.rb_tabMF_STG.Text = "Table MF a STG";
+            this.rb_tabMF_STG.Text = "Extracción a STG (Tabla)";
             this.rb_tabMF_STG.UseVisualStyleBackColor = true;
             this.rb_tabMF_STG.CheckedChanged += new System.EventHandler(this.rb_tabMF_STG_CheckedChanged);
             // 
@@ -318,17 +318,26 @@
             this.gbHist.Text = "Historificación";
             this.gbHist.Visible = false;
             // 
-            // cb_ClaveAuto
+            // pnl_Hist_CSV
             // 
-            this.cb_ClaveAuto.AutoSize = true;
-            this.cb_ClaveAuto.Checked = true;
-            this.cb_ClaveAuto.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_ClaveAuto.Location = new System.Drawing.Point(21, 104);
-            this.cb_ClaveAuto.Name = "cb_ClaveAuto";
-            this.cb_ClaveAuto.Size = new System.Drawing.Size(156, 21);
-            this.cb_ClaveAuto.TabIndex = 4;
-            this.cb_ClaveAuto.Text = "Clave Autonumerico";
-            this.cb_ClaveAuto.UseVisualStyleBackColor = true;
+            this.pnl_Hist_CSV.Controls.Add(this.rb_Archivo);
+            this.pnl_Hist_CSV.Controls.Add(this.rb_Directorio);
+            this.pnl_Hist_CSV.Controls.Add(this.cb_ClaveAuto);
+            this.pnl_Hist_CSV.Location = new System.Drawing.Point(0, 81);
+            this.pnl_Hist_CSV.Name = "pnl_Hist_CSV";
+            this.pnl_Hist_CSV.Size = new System.Drawing.Size(215, 131);
+            this.pnl_Hist_CSV.TabIndex = 7;
+            // 
+            // rb_Archivo
+            // 
+            this.rb_Archivo.AutoSize = true;
+            this.rb_Archivo.Location = new System.Drawing.Point(21, 16);
+            this.rb_Archivo.Name = "rb_Archivo";
+            this.rb_Archivo.Size = new System.Drawing.Size(163, 21);
+            this.rb_Archivo.TabIndex = 0;
+            this.rb_Archivo.TabStop = true;
+            this.rb_Archivo.Text = "Archivo seleccionado";
+            this.rb_Archivo.UseVisualStyleBackColor = true;
             // 
             // rb_Directorio
             // 
@@ -341,16 +350,41 @@
             this.rb_Directorio.Text = "Todos Archivos directorio";
             this.rb_Directorio.UseVisualStyleBackColor = true;
             // 
-            // rb_Archivo
+            // cb_ClaveAuto
             // 
-            this.rb_Archivo.AutoSize = true;
-            this.rb_Archivo.Location = new System.Drawing.Point(21, 16);
-            this.rb_Archivo.Name = "rb_Archivo";
-            this.rb_Archivo.Size = new System.Drawing.Size(163, 21);
-            this.rb_Archivo.TabIndex = 0;
-            this.rb_Archivo.TabStop = true;
-            this.rb_Archivo.Text = "Archivo seleccionado";
-            this.rb_Archivo.UseVisualStyleBackColor = true;
+            this.cb_ClaveAuto.AutoSize = true;
+            this.cb_ClaveAuto.Checked = true;
+            this.cb_ClaveAuto.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_ClaveAuto.Location = new System.Drawing.Point(21, 104);
+            this.cb_ClaveAuto.Name = "cb_ClaveAuto";
+            this.cb_ClaveAuto.Size = new System.Drawing.Size(156, 21);
+            this.cb_ClaveAuto.TabIndex = 4;
+            this.cb_ClaveAuto.Text = "Clave Autonumerico";
+            this.cb_ClaveAuto.UseVisualStyleBackColor = true;
+            // 
+            // rb_Hist_CSV
+            // 
+            this.rb_Hist_CSV.AutoSize = true;
+            this.rb_Hist_CSV.Location = new System.Drawing.Point(12, 52);
+            this.rb_Hist_CSV.Name = "rb_Hist_CSV";
+            this.rb_Hist_CSV.Size = new System.Drawing.Size(107, 21);
+            this.rb_Hist_CSV.TabIndex = 6;
+            this.rb_Hist_CSV.TabStop = true;
+            this.rb_Hist_CSV.Text = "Fichero CSV";
+            this.rb_Hist_CSV.UseVisualStyleBackColor = true;
+            this.rb_Hist_CSV.CheckedChanged += new System.EventHandler(this.rb_Hist_CSV_CheckedChanged);
+            // 
+            // rb_Hist_Tabla
+            // 
+            this.rb_Hist_Tabla.AutoSize = true;
+            this.rb_Hist_Tabla.Location = new System.Drawing.Point(12, 25);
+            this.rb_Hist_Tabla.Name = "rb_Hist_Tabla";
+            this.rb_Hist_Tabla.Size = new System.Drawing.Size(119, 21);
+            this.rb_Hist_Tabla.TabIndex = 5;
+            this.rb_Hist_Tabla.TabStop = true;
+            this.rb_Hist_Tabla.Text = "Nombre Tabla";
+            this.rb_Hist_Tabla.UseVisualStyleBackColor = true;
+            this.rb_Hist_Tabla.CheckedChanged += new System.EventHandler(this.rb_Hist_Tabla_CheckedChanged);
             // 
             // gbAcciones
             // 
@@ -407,45 +441,11 @@
             this.txBBDD.TabIndex = 17;
             this.txBBDD.Visible = false;
             // 
-            // rb_Hist_CSV
-            // 
-            this.rb_Hist_CSV.AutoSize = true;
-            this.rb_Hist_CSV.Location = new System.Drawing.Point(12, 52);
-            this.rb_Hist_CSV.Name = "rb_Hist_CSV";
-            this.rb_Hist_CSV.Size = new System.Drawing.Size(107, 21);
-            this.rb_Hist_CSV.TabIndex = 6;
-            this.rb_Hist_CSV.TabStop = true;
-            this.rb_Hist_CSV.Text = "Fichero CSV";
-            this.rb_Hist_CSV.UseVisualStyleBackColor = true;
-            this.rb_Hist_CSV.CheckedChanged += new System.EventHandler(this.rb_Hist_CSV_CheckedChanged);
-            // 
-            // rb_Hist_Tabla
-            // 
-            this.rb_Hist_Tabla.AutoSize = true;
-            this.rb_Hist_Tabla.Location = new System.Drawing.Point(12, 25);
-            this.rb_Hist_Tabla.Name = "rb_Hist_Tabla";
-            this.rb_Hist_Tabla.Size = new System.Drawing.Size(119, 21);
-            this.rb_Hist_Tabla.TabIndex = 5;
-            this.rb_Hist_Tabla.TabStop = true;
-            this.rb_Hist_Tabla.Text = "Nombre Tabla";
-            this.rb_Hist_Tabla.UseVisualStyleBackColor = true;
-            this.rb_Hist_Tabla.CheckedChanged += new System.EventHandler(this.rb_Hist_Tabla_CheckedChanged);
-            // 
-            // pnl_Hist_CSV
-            // 
-            this.pnl_Hist_CSV.Controls.Add(this.rb_Archivo);
-            this.pnl_Hist_CSV.Controls.Add(this.rb_Directorio);
-            this.pnl_Hist_CSV.Controls.Add(this.cb_ClaveAuto);
-            this.pnl_Hist_CSV.Location = new System.Drawing.Point(0, 81);
-            this.pnl_Hist_CSV.Name = "pnl_Hist_CSV";
-            this.pnl_Hist_CSV.Size = new System.Drawing.Size(215, 131);
-            this.pnl_Hist_CSV.TabIndex = 7;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(952, 326);
+            this.ClientSize = new System.Drawing.Size(952, 327);
             this.Controls.Add(this.txBBDD);
             this.Controls.Add(this.gbDSDM);
             this.Controls.Add(this.gbHist);
@@ -468,10 +468,10 @@
             this.gbDSDM.PerformLayout();
             this.gbHist.ResumeLayout(false);
             this.gbHist.PerformLayout();
-            this.gbAcciones.ResumeLayout(false);
-            this.gbAcciones.PerformLayout();
             this.pnl_Hist_CSV.ResumeLayout(false);
             this.pnl_Hist_CSV.PerformLayout();
+            this.gbAcciones.ResumeLayout(false);
+            this.gbAcciones.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
