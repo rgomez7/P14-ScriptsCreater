@@ -30,6 +30,7 @@ namespace ScriptsCreater
         private void Form1_Load(object sender, EventArgs e)
         {
             this.Text = "Generador Script v." + cr.version;
+            //this.Text = "";
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
         }
@@ -471,6 +472,7 @@ namespace ScriptsCreater
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
+            gbAcciones.Visible = true;
         }
 
         private void rbMaestro_CheckedChanged(object sender, EventArgs e)
@@ -487,6 +489,7 @@ namespace ScriptsCreater
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
+            gbAcciones.Visible = true;
         }
 
         private void rbHist_CheckedChanged(object sender, EventArgs e)
@@ -504,7 +507,8 @@ namespace ScriptsCreater
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            rb_Hist_CSV.Checked = true;
+            rb_Hist_Tabla.Checked = true;
+            gbAcciones.Visible = false;
         }
 
         private void rbDSDM_CheckedChanged(object sender, EventArgs e)
@@ -521,6 +525,7 @@ namespace ScriptsCreater
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
+            gbAcciones.Visible = true;
         }
 
         private void rbLectorCSV_CheckedChanged(object sender, EventArgs e)
@@ -537,6 +542,7 @@ namespace ScriptsCreater
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
+            gbAcciones.Visible = false;
         }
 
         private void rb_tabMF_STG_CheckedChanged(object sender, EventArgs e)
@@ -553,6 +559,7 @@ namespace ScriptsCreater
             btnBuscar.Enabled = false;
             txFile.Width = txFile.Width - txBBDD.Width - 2;
             txBBDD.Visible = true;
+            gbAcciones.Visible = false;
         }
 
         private void rb_CSV_MF_STG_CheckedChanged(object sender, EventArgs e)
@@ -569,6 +576,7 @@ namespace ScriptsCreater
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
+            gbAcciones.Visible = false;
         }
 
         private void rb_Hist_Tabla_CheckedChanged(object sender, EventArgs e)

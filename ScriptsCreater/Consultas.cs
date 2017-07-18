@@ -44,5 +44,10 @@ namespace ScriptsCreater
         {
             return "SELECT count(id) as contador FROM sysobjects WHERE type = 'U' AND name = '" + tabla + "'";
         }
+
+        public string ComprobarTL(string tabla)
+        {
+            return "SELECT count(1) as contador FROM sys.tables WHERE name = '" + tabla + "_tracelog'";
+        }
     }
 }

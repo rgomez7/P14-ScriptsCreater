@@ -178,7 +178,10 @@ namespace ScriptsCreater
                 dt = dtCSV(csvData, cab, true);
                 try
                 {
-                    int codigo = dt.Columns.IndexOf("filter");
+                    if (dt.Columns.IndexOf("filter") == -1)
+                    {
+                        errorFilter = 1;
+                    }
                 }
                 catch
                 {
@@ -199,7 +202,7 @@ namespace ScriptsCreater
                             dr.ItemArray[dt.Columns.IndexOf("dim")].ToString().TrimEnd() + ";" +
                             dr.ItemArray[dt.Columns.IndexOf("campocruce")].ToString().TrimEnd() + ";" +
                             dr.ItemArray[dt.Columns.IndexOf("siddim")].ToString().TrimEnd() + ";" +
-                            dr.ItemArray[dt.Columns.IndexOf("autosid")].ToString().TrimEnd();
+                            dr.ItemArray[dt.Columns.IndexOf("autosid")].ToString().TrimEnd() + ";";
                     }
                     else
                     {

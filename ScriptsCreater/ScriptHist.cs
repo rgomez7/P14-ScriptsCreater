@@ -375,7 +375,7 @@ namespace ScriptsCreater
             DataTable dtColumns = a.conexion(a.cadenad(bbdd), c.Columns(tab));
             DataTable dtClaves = a.conexion(a.cadenad(bbdd), c.ColumnsClaves("dbo." + tab));
             DataTable dtCT = a.conexion(a.cadenad(bbdd), c.ChangeTrackingActivo(tab));
-
+            DataTable dtTLActivado = a.conexion(a.cadenad("dbn1_hist_dhyf"), c.ComprobarTL(tab));
 
             //Agregamos los campos PK a
             foreach (DataRow dr in dtClaves.Rows)
@@ -466,6 +466,12 @@ namespace ScriptsCreater
             {
                 tipobbdd = "";
                 schema = "";
+            }
+
+            //Comprobarmos si YA tiene TL generado
+            if (dtTLActivado.Rows[0].ItemArray[0].ToString() == "1")
+            {
+                error = error + "\n\r//** " + tab + " Tiene TRACELOG GENERADO**\\" + "\n\r";
             }
 
             nombrearchivo = "Script TL " + tipobbdd + "_" + tab + "_tracelog_TL.sql";
@@ -625,7 +631,7 @@ namespace ScriptsCreater
                     file.WriteLine("            BEGIN");
                     file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
                     file.WriteLine("                DECLARE @id_warning_1 int");
-                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
+                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
                     file.WriteLine("            END");
                     file.WriteLine("            ELSE");
                     file.WriteLine("            BEGIN");

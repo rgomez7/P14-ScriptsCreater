@@ -128,9 +128,9 @@
             this.groupBox1.Controls.Add(this.rb_tabMF_STG);
             this.groupBox1.Controls.Add(this.rbLectorCSV);
             this.groupBox1.Controls.Add(this.rbHist);
+            this.groupBox1.Controls.Add(this.rbMaestro);
             this.groupBox1.Controls.Add(this.rbIntegridad);
             this.groupBox1.Controls.Add(this.rbDSDM);
-            this.groupBox1.Controls.Add(this.rbMaestro);
             this.groupBox1.Location = new System.Drawing.Point(12, 96);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(221, 218);
@@ -141,7 +141,7 @@
             // rb_CSV_MF_STG
             // 
             this.rb_CSV_MF_STG.AutoSize = true;
-            this.rb_CSV_MF_STG.Location = new System.Drawing.Point(24, 188);
+            this.rb_CSV_MF_STG.Location = new System.Drawing.Point(19, 108);
             this.rb_CSV_MF_STG.Name = "rb_CSV_MF_STG";
             this.rb_CSV_MF_STG.Size = new System.Drawing.Size(180, 21);
             this.rb_CSV_MF_STG.TabIndex = 6;
@@ -153,7 +153,7 @@
             // rb_tabMF_STG
             // 
             this.rb_tabMF_STG.AutoSize = true;
-            this.rb_tabMF_STG.Location = new System.Drawing.Point(24, 161);
+            this.rb_tabMF_STG.Location = new System.Drawing.Point(19, 79);
             this.rb_tabMF_STG.Name = "rb_tabMF_STG";
             this.rb_tabMF_STG.Size = new System.Drawing.Size(189, 21);
             this.rb_tabMF_STG.TabIndex = 5;
@@ -165,7 +165,7 @@
             // rbLectorCSV
             // 
             this.rbLectorCSV.AutoSize = true;
-            this.rbLectorCSV.Location = new System.Drawing.Point(24, 134);
+            this.rbLectorCSV.Location = new System.Drawing.Point(19, 135);
             this.rbLectorCSV.Name = "rbLectorCSV";
             this.rbLectorCSV.Size = new System.Drawing.Size(148, 21);
             this.rbLectorCSV.TabIndex = 4;
@@ -177,7 +177,7 @@
             // rbHist
             // 
             this.rbHist.AutoSize = true;
-            this.rbHist.Location = new System.Drawing.Point(25, 79);
+            this.rbHist.Location = new System.Drawing.Point(19, 52);
             this.rbHist.Name = "rbHist";
             this.rbHist.Size = new System.Drawing.Size(117, 21);
             this.rbHist.TabIndex = 3;
@@ -189,7 +189,7 @@
             // rbIntegridad
             // 
             this.rbIntegridad.AutoSize = true;
-            this.rbIntegridad.Location = new System.Drawing.Point(25, 52);
+            this.rbIntegridad.Location = new System.Drawing.Point(19, 161);
             this.rbIntegridad.Name = "rbIntegridad";
             this.rbIntegridad.Size = new System.Drawing.Size(92, 21);
             this.rbIntegridad.TabIndex = 2;
@@ -201,7 +201,7 @@
             // rbDSDM
             // 
             this.rbDSDM.AutoSize = true;
-            this.rbDSDM.Location = new System.Drawing.Point(25, 107);
+            this.rbDSDM.Location = new System.Drawing.Point(19, 25);
             this.rbDSDM.Name = "rbDSDM";
             this.rbDSDM.Size = new System.Drawing.Size(74, 21);
             this.rbDSDM.TabIndex = 1;
@@ -213,7 +213,7 @@
             // rbMaestro
             // 
             this.rbMaestro.AutoSize = true;
-            this.rbMaestro.Location = new System.Drawing.Point(25, 25);
+            this.rbMaestro.Location = new System.Drawing.Point(19, 188);
             this.rbMaestro.Name = "rbMaestro";
             this.rbMaestro.Size = new System.Drawing.Size(87, 21);
             this.rbMaestro.TabIndex = 0;
