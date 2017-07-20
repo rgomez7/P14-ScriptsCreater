@@ -394,11 +394,6 @@ namespace ScriptsCreater
             {
                 campos = campos + "'" + dr.ItemArray[0].ToString() + "', ";
 
-                //Comprobamos si tiene autonumerico
-                if (Convert.ToBoolean(dr.ItemArray[6]) == true)
-                {
-                    auto = false;
-                }
 
                 //Valor del Campo
                 if (dr.ItemArray[2].ToString().ToLower().Contains("char"))
