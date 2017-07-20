@@ -49,5 +49,16 @@ namespace ScriptsCreater
         {
             return "SELECT count(1) as contador FROM sys.tables WHERE name = '" + tabla + "_tracelog'";
         }
+
+        public string ComprobarSP(string sp)
+        {
+            return "SELECT name FROM sys.objects WHERE type = 'P' and name = '" + sp + "' " +
+                    " UNION " +
+                   "SELECT name FROM sys.objects WHERE type = 'P' and name = '" + sp + "_ssis'"+
+                   " UNION " +
+                   "SELECT name FROM sys.objects WHERE type = 'P' and name = '" + sp.Replace("mae_", "maestro_") + "' " +
+                   " UNION " +
+                   "SELECT name FROM sys.objects WHERE type = 'P' and name = '" + sp.Replace("mae_", "maestro_") + "_ssis'";
+        }
     }
 }

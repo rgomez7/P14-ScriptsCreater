@@ -126,11 +126,11 @@ namespace ScriptsCreater
                 {
 
                     StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
-                    StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
+                    //StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
-                    file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
-                    file_exec.WriteLine("GO");
-                    sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, false, true);
+                    //file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                    //file_exec.WriteLine("GO");
+                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, false, true);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -338,7 +338,7 @@ namespace ScriptsCreater
                     #endregion "Stored Procedure"
 
                     file.Close();
-                    file_exec.Close();
+                    //file_exec.Close();
                 }
                 catch (Exception ex)
                 {
@@ -355,9 +355,9 @@ namespace ScriptsCreater
             }
         }
 
-        public string hist_tabla(string tab, string bbdd, ref string nombrearchivo, string ruta)
+        public string hist_tabla(string tab, string bbdd, ref string nombrearchivo, ref DataTable dtSP, string ruta)
         {
-            string nombrearchivoexec = "";
+            //string nombrearchivoexec = "";
             string tipobbdd = "";
             string schema = "";
             string schema_sp = "stg";
@@ -367,11 +367,13 @@ namespace ScriptsCreater
             string error = "";
             string clave = "";
             string valorcampo = "";
+            string nombreSP = "";
             string[] lineas = new string[0];
             string[] csv = new string[0];
-            bool auto = true;
+            string valorReplace = "|";
             int i = 0;
-
+            DataRow newSP = dtSP.NewRow();
+           
             DataTable dtColumns = a.conexion(a.cadenad(bbdd), c.Columns(tab));
             DataTable dtClaves = a.conexion(a.cadenad(bbdd), c.ColumnsClaves("dbo." + tab));
             DataTable dtCT = a.conexion(a.cadenad(bbdd), c.ChangeTrackingActivo(tab));
@@ -445,7 +447,7 @@ namespace ScriptsCreater
             {
                 clave = "";
             }
-            
+
             //Asignamos nombre al nombrearchivo
             if (bbdd.Contains("dmr"))
             {
@@ -468,14 +470,50 @@ namespace ScriptsCreater
                 schema = "";
             }
 
+            if (tab.Contains("mae_"))
+            {
+                tipobbdd = "maestro";
+            }
+
+            //Incluimos el tbn1 para reemplazarlo al generar el SP
+            if (tab.Substring(4, 1) == "_")
+            {
+                valorReplace = tab.Substring(0, 5);
+            }
+            else
+            {
+                valorReplace = tab.Substring(0, 4);
+            }
+
+            //Comprobamos si existe SP
+            nombreSP = tipobbdd + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
+            string valorSP = "spn1_cargar_" + nombreSP;
+
+            DataTable dtComprobarSP = a.conexion(a.cadenad("dbn1_stg_dhyf"), c.ComprobarSP(valorSP));
+
+            if (dtComprobarSP.Rows.Count > 0)
+            {
+                newSP["SP"] = dtComprobarSP.Rows[0].ItemArray[0].ToString();
+            }
+            else
+            {
+                newSP["SP"] = "OJO!!! " + valorSP;
+            }
+            newSP["SP_TL"] = "spn1_cargar_tracelog_" + tipobbdd + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
+
             //Comprobarmos si YA tiene TL generado
             if (dtTLActivado.Rows[0].ItemArray[0].ToString() == "1")
             {
                 error = error + "\n\r//** " + tab + " Tiene TRACELOG GENERADO**\\" + "\n\r";
+                newSP["TL_gen"] = "OK";
+            }
+            else
+            {
+                newSP["TL_gen"] = "";
             }
 
-            nombrearchivo = "Script TL " + tipobbdd + "_" + tab + "_tracelog_TL.sql";
-            nombrearchivoexec = "Exec TL " + tipobbdd + "_" + tab + "_tracelog_TL.sql";
+            nombrearchivo = "Script TL " + nombreSP + "_tracelog_TL.sql";
+            //nombrearchivoexec = "Exec TL " + tipobbdd + "_" + tab + "_tracelog_TL.sql";
             //nombrearchivo = nombrearchivo.Replace("xxx", tipobbdd);
             string fichero = ruta + nombrearchivo;
             dev = a.comprobarficheros(ref lineas, fichero, 1);
@@ -486,11 +524,11 @@ namespace ScriptsCreater
                 try
                 {
                     StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
-                    StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
+                    //StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
 
-                    file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
-                    file_exec.WriteLine("GO");
-                    sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, false, true);
+                    //file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+                    //file_exec.WriteLine("GO");
+                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, false, true);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -506,22 +544,17 @@ namespace ScriptsCreater
                     {
                         file.WriteLine("--------------------------------------");
                         error = error + "\n\r//** " + tab + " No tiene CHANGE_TRACKING ACTIVO**\\" + "\n\r";
+                        newSP["CT"] = "OK";
                     }
                     else
                     {
-                        file.WriteLine("/*--------------------------------------");
+                        //file.WriteLine("/*--------------------------------------");
+                        newSP["CT"] = "";
                     }
                     file.WriteLine("--Begin Add Change Tracking -> " + tab);
                     string ctp = sc.changetracking(file, tab, bbdd, "dbo", "act");
                     file.WriteLine("--Begin Add Change Tracking -> " + tab);
-                    if (dtCT.Rows[0].ItemArray[0].ToString() == "0")
-                    {
-                        file.WriteLine("--------------------------------------");
-                    }
-                    else
-                    {
-                        file.WriteLine("--------------------------------------*/");
-                    }
+                    file.WriteLine("--------------------------------------*/");
                     file.WriteLine("");
 
                     //Create Table
@@ -530,7 +563,7 @@ namespace ScriptsCreater
                     file.WriteLine("--Begin table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("");
 
-                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, auto, "historificacion");
+                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion");
 
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");
@@ -538,21 +571,22 @@ namespace ScriptsCreater
                     file.WriteLine("");
 
                     #region "Stored Procedure"
+
                     //SP Creamos SP
                     file.WriteLine("");
                     file.WriteLine("--//Stored Procedure");
                     file.WriteLine("USE dbn1_hist_dhyf");
                     file.WriteLine("GO");
-                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                    file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab);
+                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + nombreSP + "' AND ROUTINE_TYPE = 'PROCEDURE')");
+                    file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP);
                     file.WriteLine("GO");
                     file.WriteLine("");
-                    file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "(@p_id_carga int) AS");
+                    file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP + "(@p_id_carga int) AS");
                     file.WriteLine("BEGIN");
                     file.WriteLine("");
 
                     //SP Cabecera
-                    string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, true, true);
+                    string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + nombreSP, true, true);
 
                     //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
                     string sp_inc = sc.regSP_Incremental(file);
@@ -573,7 +607,7 @@ namespace ScriptsCreater
                     //SP Carga Incremental
                     file.WriteLine("--- Inicio Bloque Carga Incremental");
                     file.WriteLine("");
-                    file.WriteLine("            SELECT " + campospk.Replace("t_", "") + ", sys_change_operation");
+                    file.WriteLine("            SELECT " + campospk + ", sys_change_operation");
                     file.WriteLine("            INTO #CT_TMP");
                     file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + tab + ",@ct_" + schema + "_inicial) as CT");
                     file.WriteLine("");
@@ -669,8 +703,11 @@ namespace ScriptsCreater
                     file.WriteLine("");
                     #endregion "Stored Procedure"
 
+                    //Agregamos el registro a DT
+                    dtSP.Rows.Add(newSP);
+
                     file.Close();
-                    file_exec.Close();
+                    //file_exec.Close();
                 }
                 catch (Exception ex)
                 {
@@ -694,6 +731,50 @@ namespace ScriptsCreater
                 return "NO";
             }
         }
+
+        public string csv_precondiciones(DataTable dtSP, string bd, string ruta)
+        {
+            string[] lineas = new string[0];
+
+            string csvRow;
+
+            string nombrearchivo = "Precondiciones.csv";
+            string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
+
+            if (a.comprobarDir(ruta) == "OK")
+            {
+                try
+                {
+                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
+
+                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", "BD", "ESQUEMA", "OBJETO", "BD_PRECONDICION", "ESQUEMA_PRECONDICION", "OBJETO_PRECONDICION", "ESTADO_PRECONDICION", "FECHA_INICIO_PRECONDICION", "FECHA_FIN_PRECONDICION", "BLOQUE", "GENERA_CT", "TRACELOG_GENERADO");
+                    file.WriteLine(csvRow);
+                   
+                    foreach (DataRow dr in dtSP.Rows)
+                    {
+
+                        csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", bd, "dbo", dr.ItemArray[0].ToString(), "dbn1_hist_dhyf", "stg", dr.ItemArray[1].ToString(), "PDTE", "19000101", "19000101", "HISTORIFICACION", dr.ItemArray[2].ToString(), dr.ItemArray[3].ToString());
+                        file.WriteLine(csvRow);
+                       
+                    }
+
+                    file.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al escribir en archivo CSV " + nombrearchivo, "Error escritura archivo CSV", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                    return "NO";
+                }
+
+                return "OK";
+            }
+            else
+            {
+                MessageBox.Show("No se ha podido generar el fichero CSV " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero CSV", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                return "NO";
+            }
+        }
+
     }
 }
 

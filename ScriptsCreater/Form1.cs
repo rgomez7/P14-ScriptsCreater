@@ -281,6 +281,12 @@ namespace ScriptsCreater
                     {
                         string fichero = "";
                         string linegen = "OK";
+                        DataTable dtSP = new DataTable("Object_SP");
+                        dtSP.Columns.Add("SP", typeof(String));
+                        dtSP.Columns.Add("SP_TL", typeof(String));
+                        dtSP.Columns.Add("CT", typeof(String));
+                        dtSP.Columns.Add("TL_gen", typeof(String));
+                        
                         string[] tablas;
                         //Para leer desde tabla
                         if (rb_Hist_Tabla.Checked == true)
@@ -307,9 +313,11 @@ namespace ScriptsCreater
 
                                 foreach (string tab in tablas)
                                 {
-                                    linegen = sh.hist_tabla(tab, txBBDD.Text.ToString(), ref arcScript, ruta);
+                                    linegen = sh.hist_tabla(tab, txBBDD.Text.ToString(), ref arcScript, ref dtSP, ruta);
                                     fichero = fichero + "\n\r" + arcScript;
                                 }
+                                //Generar archivo carga precondiciones
+                                linegen = sh.csv_precondiciones(dtSP, txBBDD.Text.ToString(), ruta);
 
                                 //Si todo es correcto
                                 if (linegen == "OK")
