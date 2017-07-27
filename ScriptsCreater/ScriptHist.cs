@@ -367,6 +367,7 @@ namespace ScriptsCreater
             string error = "";
             string clave = "";
             string valorcampo = "";
+            string valorClave = "";
             string nombreSP = "";
             string[] lineas = new string[0];
             string[] csv = new string[0];
@@ -394,7 +395,6 @@ namespace ScriptsCreater
             {
                 campos = campos + "'" + dr.ItemArray[0].ToString() + "', ";
 
-
                 //Valor del Campo
                 if (dr.ItemArray[2].ToString().ToLower().Contains("char"))
                 {
@@ -416,16 +416,29 @@ namespace ScriptsCreater
                     valorcampo = " " + dr.ItemArray[2].ToString().ToLower() ;
                 }
 
-                //Montamos CSV
-                Array.Resize(ref csv, csv.Length + 1);
-                if (campospk.Contains(dr.ItemArray[0].ToString()))
+                //Comprobamos si el valor PK coincide con el valor del campo
+                valorClave = "";
+                if (campospk.Contains(",") == true)
                 {
-                    csv[csv.Length - 1] = dr.ItemArray[0].ToString() + ";" + valorcampo + ";#;";
+                    foreach (string valorpk in campospk.Split(','))
+                    {
+                        if (valorpk.ToLower().Trim() == dr.ItemArray[0].ToString().ToLower())
+                        {
+                            valorClave = "#";
+                        }
+                    }
                 }
                 else
                 {
-                    csv[csv.Length - 1] = dr.ItemArray[0].ToString() + ";" + valorcampo + ";;";
+                    if (campospk.ToLower().Trim() == dr.ItemArray[0].ToString().ToLower())
+                    {
+                        valorClave = "#";
+                    }
                 }
+
+                //Montamos CSV
+                Array.Resize(ref csv, csv.Length + 1);
+                csv[csv.Length - 1] = dr.ItemArray[0].ToString() + ";" + valorcampo + ";" + valorClave + ";";
             }
             campos = campos.Substring(0, campos.Length - 2);
 

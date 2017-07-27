@@ -16,20 +16,21 @@ namespace ScriptsCreater
         ScriptComun sc = new ScriptComun();
 
 
-        public int ExisteTabla(string table, ref string bd)
+        public int ExisteTabla(string table, string schema, ref string bd)
         {
 
             if (bd.ToString() == "")
             {
                 bd = "DB" + table.Substring(2, 2);
             }
+
             string cadena = a.cadena(bd);
-            DataTable dt = a.conexion(cadena, c.ComprobarTabla(table));
+            DataTable dt = a.conexion(cadena, c.ComprobarTabla(table, schema));
 
             return Convert.ToInt16(dt.Rows[0].ItemArray[0]);
         }
         
-        public string createtable_stgFinal(string table, string ruta, ref string nombrearchivo, ref string camposPK, string bd, ref int activoCT)
+        public string createtable_stgFinal(string table, string schema, string ruta, ref string nombrearchivo, ref string camposPK, string bd, ref int activoCT)
         {
             activoCT = 1;
 
@@ -45,201 +46,208 @@ namespace ScriptsCreater
             string camposPK3 = "";
             
             DataTable datosColumnas = a.conexion(cadena, c.Columns(table));
-            //DataTable datosClaves = a.conexion(cadena, "EXEC sp_helpindex N'DB2PROD." + table + "'  ");
-            DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves("DB2PROD." + table));
-            DataTable datosExtended = a.conexion(cadena, c.PropiedadesExtendidas("DB2PROD", table));
-
-            //MONTAR SCRIPTS
-            string nombretab = "tbn1" + table.Substring(4, 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
-            //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
-            string fecar = componer_fecar(table, datosColumnas);
-            nombrearchivo = "Script staging_" + nombretab + "_tablastg.sql";
-            string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
-
-            if (a.comprobarDir(ruta) == "OK")
+            if (datosColumnas.Rows.Count > 0)
             {
-                try
+                //DataTable datosClaves = a.conexion(cadena, "EXEC sp_helpindex N'" + schema + "." + table + "'  ");
+                DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves(schema + "." + table));
+                DataTable datosExtended = a.conexion(cadena, c.PropiedadesExtendidas(schema + "", table));
+
+                //MONTAR SCRIPTS
+                string nombretab = "tbn1" + table.Substring(4, 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
+                //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
+                string fecar = componer_fecar(table, datosColumnas);
+                nombrearchivo = "Script staging_" + nombretab + "_tablastg.sql";
+                string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
+
+                if (a.comprobarDir(ruta) == "OK")
                 {
-                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
-
-                    file.WriteLine("PRINT '" + nombrearchivo + "'");
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-                    file.WriteLine("--Generado versión vb " + a.version);
-                    file.WriteLine("");
-                    file.WriteLine("USE dbn1_stg_dhyf");
-                    file.WriteLine("GO");
-                    file.WriteLine("SET ANSI_NULLS ON");
-                    file.WriteLine("GO");
-                    file.WriteLine("SET QUOTED_IDENTIFIER ON");
-                    file.WriteLine("GO");
-                    file.WriteLine("SET ANSI_PADDING ON");
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-                    //Borra y crea tabla
-                    file.WriteLine("IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='" + nombretab + "')");
-                    file.WriteLine("DROP TABLE dbo." + nombretab);
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-                    file.WriteLine("");
-                    file.WriteLine("CREATE TABLE dbo." + nombretab + " (");
-                    foreach (DataRow dr in datosColumnas.Rows)
+                    try
                     {
-                        if (dr.ItemArray[2].ToString().ToLower().Contains("char"))
-                        {
-                            if (dr.ItemArray[3].ToString() == "-1")
-                            {
-                                valorcampo = " varchar(max) not null";
-                            }
-                            else
-                            { 
-                                valorcampo = " varchar(" + dr.ItemArray[3].ToString() + ") not null";
-                            }
-                        }
-                        else if (dr.ItemArray[2].ToString().ToLower() == "numeric" || dr.ItemArray[2].ToString().ToLower() == "decimal")
-                        {
-                            valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + "(" + dr.ItemArray[4].ToString() + ", " + dr.ItemArray[5].ToString()  + ") not null";
-                        }
-                        else
-                        {
-                            valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + " not null";
-                        }
+                        StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
 
-                        file.WriteLine("    " + dr.ItemArray[0].ToString().ToLower() + valorcampo + ",");
-                    }
-                    file.WriteLine("    " + fecar + " date not null");
-                    file.WriteLine(") ON [PRIMARY]");
-                    file.WriteLine("WITH (DATA_COMPRESSION=PAGE)");
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-
-                    //PK
-                    camposPK = "";
-                    camposPK1 = "";
-                    camposPK2 = "";
-                    camposPK3 = "";
-                    foreach (DataRow dr in datosClaves.Rows)
-                    {
-                        //Si es primary Key
-                        if (Convert.ToBoolean(dr.ItemArray[4]) == true)
-                        {
-                            camposPK1 = camposPK1 + dr.ItemArray[9].ToString().ToLower() + ", ";
-                        }
-                        //Si es cluster e index único
-                        else if (Convert.ToBoolean(dr.ItemArray[3]) == true && dr.ItemArray[2].ToString().ToUpper() == "CLUSTERED")
-                        {
-                            camposPK2 = camposPK2 + dr.ItemArray[9].ToString().ToLower() + ", ";
-                        }
-                        //Si es index único
-                        else if (Convert.ToBoolean(dr.ItemArray[3]) == true)
-                        {
-                            if (valorpk == 0 )
-                            {
-                                camposPK3 = camposPK3 + dr.ItemArray[9].ToString().ToLower() + ", ";
-                                valorpk = Convert.ToInt32(dr.ItemArray[6]);
-                            }
-                            else if (valorpk == Convert.ToInt32(dr.ItemArray[6]))
-                            {
-                                camposPK3 = camposPK3 + dr.ItemArray[9].ToString().ToLower() + ", ";
-                            }
-                        }
-                    }
-
-                    if (camposPK1.Length == 0 && camposPK2.Length == 0 && camposPK3.Length == 0)
-                    {
-                        file.WriteLine("/*-------------------------*/");
-                        file.WriteLine("/*------PROBLEMAS PK-------*/");
-                        file.WriteLine("/*-------------------------*/");
-                        file.WriteLine("");
-                        error = error + "\n\r//** " + table + " PROBLEMAS PK**\\" + "\n\r";
-                    }
-                    else
-                    {
-                        if (camposPK1 != "")
-                        {
-                            camposPK = camposPK1;
-                            error = error + "\n\r//** " + table + " PK generada sobre Primary Key**\\" + "\n\r";
-                        }
-                        else if (camposPK2 != "")
-                        {
-                            camposPK = camposPK2;
-                            error = error + "\n\r//** " + table + " PK generada sobre Cluster e Index único**\\" + "\n\r";
-                        }
-                        else if (camposPK3 != "")
-                        {
-                            camposPK = camposPK3;
-                            error = error + "\n\r//** " + table + " PK generada sobre Index único**\\" + "\n\r";
-                        }
-                        camposPK = camposPK.Substring(0, camposPK.Length - 2);
-                        file.WriteLine("ALTER TABLE dbo." + nombretab + " ADD CONSTRAINT PK_" + nombretab);
-                        file.WriteLine("    PRIMARY KEY NONCLUSTERED (" + camposPK + ")");
+                        file.WriteLine("PRINT '" + nombrearchivo + "'");
                         file.WriteLine("GO");
                         file.WriteLine("");
-                    }
-
-
-                    //Propiedades Extendidas
-                    file.WriteLine("IF NOT EXISTS (SELECT count(8) AS extprop FROM sys.extended_properties WHERE [major_id] = OBJECT_ID('dbo." + nombretab + "')) ");
-                    file.WriteLine("BEGIN");
-                    foreach (DataRow dr in datosExtended.Rows)
-                    {
-                        if (dr.ItemArray[0].ToString().ToUpper() == "COLUMN")
+                        file.WriteLine("--Generado versión vb " + a.version);
+                        file.WriteLine("");
+                        file.WriteLine("USE dbn1_stg_dhyf");
+                        file.WriteLine("GO");
+                        file.WriteLine("SET ANSI_NULLS ON");
+                        file.WriteLine("GO");
+                        file.WriteLine("SET QUOTED_IDENTIFIER ON");
+                        file.WriteLine("GO");
+                        file.WriteLine("SET ANSI_PADDING ON");
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+                        //Borra y crea tabla
+                        file.WriteLine("IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='" + nombretab + "')");
+                        file.WriteLine("DROP TABLE dbo." + nombretab);
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+                        file.WriteLine("");
+                        file.WriteLine("CREATE TABLE dbo." + nombretab + " (");
+                        foreach (DataRow dr in datosColumnas.Rows)
                         {
-                            file.WriteLine(" EXEC sys.sp_addextendedproperty @name = N'" + dr.ItemArray[2].ToString() + "', @value = N'" + dr.ItemArray[3].ToString().ToUpper() + "' , @level0type = N'SCHEMA',@level0name = N'dbo', @level1type = N'TABLE',@level1name = N'" + nombretab + "', @level2type = N'" + dr.ItemArray[0].ToString().ToUpper() + "',@level2name = N'" + dr.ItemArray[1].ToString().ToLower() + "'");
+                            if (dr.ItemArray[2].ToString().ToLower().Contains("char"))
+                            {
+                                if (dr.ItemArray[3].ToString() == "-1")
+                                {
+                                    valorcampo = " varchar(max) not null";
+                                }
+                                else
+                                {
+                                    valorcampo = " varchar(" + dr.ItemArray[3].ToString() + ") not null";
+                                }
+                            }
+                            else if (dr.ItemArray[2].ToString().ToLower() == "numeric" || dr.ItemArray[2].ToString().ToLower() == "decimal")
+                            {
+                                valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + "(" + dr.ItemArray[4].ToString() + ", " + dr.ItemArray[5].ToString() + ") not null";
+                            }
+                            else
+                            {
+                                valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + " not null";
+                            }
+
+                            file.WriteLine("    " + dr.ItemArray[0].ToString().ToLower() + valorcampo + ",");
                         }
-                        else if (dr.ItemArray[0].ToString().ToUpper() == "TABLE")
+                        file.WriteLine("    " + fecar + " date not null");
+                        file.WriteLine(") ON [PRIMARY]");
+                        file.WriteLine("WITH (DATA_COMPRESSION=PAGE)");
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+
+                        //PK
+                        camposPK = "";
+                        camposPK1 = "";
+                        camposPK2 = "";
+                        camposPK3 = "";
+                        foreach (DataRow dr in datosClaves.Rows)
                         {
-                            file.WriteLine(" EXEC sys.sp_addextendedproperty @name = N'" + dr.ItemArray[2].ToString() + "', @value = N'" + dr.ItemArray[3].ToString().ToUpper() + "' , @level0type = N'SCHEMA',@level0name = N'dbo', @level1type = N'TABLE',@level1name = N'" + nombretab + "'");
+                            //Si es primary Key
+                            if (Convert.ToBoolean(dr.ItemArray[4]) == true)
+                            {
+                                camposPK1 = camposPK1 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                            }
+                            //Si es cluster e index único
+                            else if (Convert.ToBoolean(dr.ItemArray[3]) == true && dr.ItemArray[2].ToString().ToUpper() == "CLUSTERED")
+                            {
+                                camposPK2 = camposPK2 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                            }
+                            //Si es index único
+                            else if (Convert.ToBoolean(dr.ItemArray[3]) == true)
+                            {
+                                if (valorpk == 0)
+                                {
+                                    camposPK3 = camposPK3 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                                    valorpk = Convert.ToInt32(dr.ItemArray[6]);
+                                }
+                                else if (valorpk == Convert.ToInt32(dr.ItemArray[6]))
+                                {
+                                    camposPK3 = camposPK3 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                                }
+                            }
+                        }
+
+                        if (camposPK1.Length == 0 && camposPK2.Length == 0 && camposPK3.Length == 0)
+                        {
+                            file.WriteLine("/*-------------------------*/");
+                            file.WriteLine("/*------PROBLEMAS PK-------*/");
+                            file.WriteLine("/*-------------------------*/");
+                            file.WriteLine("");
+                            error = error + "\n\r//** " + table + " PROBLEMAS PK**\\" + "\n\r";
                         }
                         else
-                        { }
+                        {
+                            if (camposPK1 != "")
+                            {
+                                camposPK = camposPK1;
+                                error = error + "\n\r//** " + table + " PK generada sobre Primary Key**\\" + "\n\r";
+                            }
+                            else if (camposPK2 != "")
+                            {
+                                camposPK = camposPK2;
+                                error = error + "\n\r//** " + table + " PK generada sobre Cluster e Index único**\\" + "\n\r";
+                            }
+                            else if (camposPK3 != "")
+                            {
+                                camposPK = camposPK3;
+                                error = error + "\n\r//** " + table + " PK generada sobre Index único**\\" + "\n\r";
+                            }
+                            camposPK = camposPK.Substring(0, camposPK.Length - 2);
+                            file.WriteLine("ALTER TABLE dbo." + nombretab + " ADD CONSTRAINT PK_" + nombretab);
+                            file.WriteLine("    PRIMARY KEY NONCLUSTERED (" + camposPK + ")");
+                            file.WriteLine("GO");
+                            file.WriteLine("");
+                        }
+
+
+                        //Propiedades Extendidas
+                        file.WriteLine("IF NOT EXISTS (SELECT count(8) AS extprop FROM sys.extended_properties WHERE [major_id] = OBJECT_ID('dbo." + nombretab + "')) ");
+                        file.WriteLine("BEGIN");
+                        foreach (DataRow dr in datosExtended.Rows)
+                        {
+                            if (dr.ItemArray[0].ToString().ToUpper() == "COLUMN")
+                            {
+                                file.WriteLine(" EXEC sys.sp_addextendedproperty @name = N'" + dr.ItemArray[2].ToString() + "', @value = N'" + dr.ItemArray[3].ToString().ToUpper() + "' , @level0type = N'SCHEMA',@level0name = N'dbo', @level1type = N'TABLE',@level1name = N'" + nombretab + "', @level2type = N'" + dr.ItemArray[0].ToString().ToUpper() + "',@level2name = N'" + dr.ItemArray[1].ToString().ToLower() + "'");
+                            }
+                            else if (dr.ItemArray[0].ToString().ToUpper() == "TABLE")
+                            {
+                                file.WriteLine(" EXEC sys.sp_addextendedproperty @name = N'" + dr.ItemArray[2].ToString() + "', @value = N'" + dr.ItemArray[3].ToString().ToUpper() + "' , @level0type = N'SCHEMA',@level0name = N'dbo', @level1type = N'TABLE',@level1name = N'" + nombretab + "'");
+                            }
+                            else
+                            { }
+                        }
+                        file.WriteLine("    EXEC sys.sp_addextendedproperty 'Caption', 'Fecha última carga', 'Schema', 'dbo', 'Table',  '" + nombretab + "', 'Column', '" + fecar + "'");
+                        file.WriteLine("END");
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+
+                        //ADD CT
+                        file.WriteLine("--Add CT");
+                        file.WriteLine("IF NOT EXISTS(");
+                        file.WriteLine("SELECT 1 FROM sys.change_tracking_tables tt");
+                        file.WriteLine("    INNER JOIN sys.objects obj ON obj.object_id = tt.object_id");
+                        file.WriteLine("    WHERE obj.name = '" + nombretab + "' )");
+                        file.WriteLine("ALTER TABLE dbo." + nombretab + " ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED = ON)");
+
+                        file.WriteLine("SET ANSI_PADDING OFF");
+                        file.WriteLine("GO");
+
+                        file.Close();
+
+                        //Comprueba si tiene CT Activo
+                        DataTable datosCT = a.conexion(cadena, c.ChangeTrackingActivo(table));
+                        if (datosCT.Rows.Count == 0)
+                        {
+                            error = error + "\n\r//** " + table + " No tiene CHANGE_TRACKING ACTIVO**\\" + "\n\r";
+                            activoCT = 0;
+                        }
                     }
-                    file.WriteLine("    EXEC sys.sp_addextendedproperty 'Caption', 'Fecha última carga', 'Schema', 'dbo', 'Table',  '" + nombretab + "', 'Column', '" + fecar + "'");
-                    file.WriteLine("END");
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-
-                    //ADD CT
-                    file.WriteLine("--Add CT");
-                    file.WriteLine("IF NOT EXISTS(");
-                    file.WriteLine("SELECT 1 FROM sys.change_tracking_tables tt");
-                    file.WriteLine("    INNER JOIN sys.objects obj ON obj.object_id = tt.object_id");
-                    file.WriteLine("    WHERE obj.name = '" + nombretab + "' )");
-                    file.WriteLine("ALTER TABLE dbo." + nombretab + " ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED = ON)");
-
-                    file.WriteLine("SET ANSI_PADDING OFF");
-                    file.WriteLine("GO");
-
-                    file.Close();
-
-                    //Comprueba si tiene CT Activo
-                    DataTable datosCT = a.conexion(cadena, c.ChangeTrackingActivo(table));
-                    if (datosCT.Rows.Count == 0)
+                    catch (Exception ex)
                     {
-                        error = error + "\n\r//** " + table + " No tiene CHANGE_TRACKING ACTIVO**\\" + "\n\r" ;
-                        activoCT = 0;
+                        MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                        return "NO";
                     }
+
+                    nombrearchivo = error + "\n\r" + nombrearchivo;
+                    return "OK";
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                    MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                     return "NO";
                 }
-
-                nombrearchivo = error + "\n\r" + nombrearchivo;
-                return "OK";
             }
             else
             {
-                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-                return "NO";
+                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no encuentra datos para la tabla indicada", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                return "NO_R";
             }
         }
 
-        public string gencsv(string table, string ruta, ref string nombrearchivo, string camposPK)
+        public string gencsv(string table, string schema, string ruta, ref string nombrearchivo, string camposPK, string bd)
         {
             //TBMFPH46
-            string bd = "DB" + table.Substring(2, 2);
             string cadena = a.cadena(bd);
             string[] lineas = new string[0];
             string valorcampo = "";
@@ -247,7 +255,7 @@ namespace ScriptsCreater
             string csvRow;
 
             DataTable datosColumnas = a.conexion(cadena, "SELECT column_name, is_nullable, data_type, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + table + "'");
-            DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves("DB2PROD." + table));
+            DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves("" + schema + "." + table));
 
             //MONTAR SCRIPTS
             string nombretab = "tbn1" + table.Substring(4, 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
@@ -689,7 +697,7 @@ namespace ScriptsCreater
             }
         }
 
-        public string activarCT_microfocus(string table, string ruta, ref string nombrearchivo, string camposPK, string bd, string tipogen)
+        public string activarCT_microfocus(string table, string schema, string ruta, ref string nombrearchivo, string camposPK, string bd, string tipogen)
         {
             string nombreBD = "";
             if (bd == "")
@@ -724,7 +732,7 @@ namespace ScriptsCreater
                     //Esto es para PROD
                     else if(tipogen.ToLower()=="pro")
                     {
-                        file.WriteLine("Declare @esquema nvarchar(50) = 'DB2PROD'");
+                        file.WriteLine("Declare @esquema nvarchar(50) = '" + schema + "'");
                         file.WriteLine("Declare @grantview nvarchar(50) = 'WEN1JDB0'");
                     }
 

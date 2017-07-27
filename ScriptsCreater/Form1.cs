@@ -395,26 +395,41 @@ namespace ScriptsCreater
                         string nombreCSV = "";
                         string camposPK = "";
                         string nombreBD = "";
+                        string table = "";
+                        string schema = "";
                         int activoCT = 0;
 
                         nombreBD = txBBDD.Text;
 
-                        int existetab = mf_stg.ExisteTabla(txFile.Text, ref nombreBD);
+                        if (txFile.Text.Contains("."))
+                        {
+                            string[] datos = txFile.Text.Split('.');
+                            schema = datos[0];
+                            table = datos[1];
+                        }
+                        else
+                        {
+                            schema = "DB2PROD";
+                            table = txFile.Text;
+                            txFile.Text = "DB2PROD." + txFile.Text;
+                        }
+                        
+                        int existetab = mf_stg.ExisteTabla(table, schema, ref nombreBD);
 
                         if (existetab == 1)
                         {
-                            linegen = mf_stg.createtable_stgFinal(txFile.Text, ruta, ref arcScript, ref camposPK, nombreBD, ref activoCT);
+                            linegen = mf_stg.createtable_stgFinal(table, schema, ruta, ref arcScript, ref camposPK, nombreBD, ref activoCT);
                             datosScript = datosScript + "\n\r" + arcScript;
 
                             if (activoCT == 0)
                             {
-                                linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pre");
+                                linegen = mf_stg.activarCT_microfocus(table, schema, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pre");
                                 datosScript = datosScript + "\n\r" + arcScript;
-                                linegen = mf_stg.activarCT_microfocus(txFile.Text, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pro");
+                                linegen = mf_stg.activarCT_microfocus(table, schema, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pro");
                                 datosScript = datosScript + "\n\r" + arcScript;
                             }
 
-                            linegen = mf_stg.gencsv(txFile.Text, ruta, ref arcScript, camposPK);
+                            linegen = mf_stg.gencsv(table, schema, ruta, ref arcScript, camposPK, nombreBD);
                             datosScript = datosScript + "\n\r" + arcScript;
                             nombreCSV = arcScript;
                             linegen = mf_stg.createtable_extraccion(nombreCSV, ruta, ref arcScript);

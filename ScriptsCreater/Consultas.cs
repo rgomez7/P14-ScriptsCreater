@@ -40,9 +40,10 @@ namespace ScriptsCreater
                         "WHERE obj.name = '" + tabla + "'";
         }
 
-        public string ComprobarTabla(string tabla)
+        public string ComprobarTabla(string tabla, string schema)
         {
-            return "SELECT count(id) as contador FROM sysobjects WHERE type = 'U' AND name = '" + tabla + "'";
+            //return "SELECT count(id) as contador FROM sysobjects WHERE type = 'U' AND name = '" + tabla + "'";
+            return "SELECT count(1) FROM sys.tables as t INNER JOIN sys.schemas as s ON t.schema_id = s.schema_id WHERE t.name = '" + tabla + "' and s.name = '" + schema + "'";
         }
 
         public string ComprobarTL(string tabla)
