@@ -19,15 +19,22 @@ namespace ScriptsCreater
         public int ExisteTabla(string table, string schema, ref string bd)
         {
 
-            if (bd.ToString() == "")
+            try
             {
-                bd = "DB" + table.Substring(2, 2);
+                if (bd.ToString() == "")
+                {
+                    bd = "DB" + table.Substring(2, table.Length - 2);
+                }
+
+                string cadena = a.cadena(bd);
+                DataTable dt = a.conexion(cadena, c.ComprobarTabla(table, schema));
+
+                return Convert.ToInt16(dt.Rows[0].ItemArray[0]);
             }
-
-            string cadena = a.cadena(bd);
-            DataTable dt = a.conexion(cadena, c.ComprobarTabla(table, schema));
-
-            return Convert.ToInt16(dt.Rows[0].ItemArray[0]);
+            catch (Exception ex)
+            {
+                return 0;
+            }
         }
         
         public string createtable_stgFinal(string table, string schema, string ruta, ref string nombrearchivo, ref string camposPK, string bd, ref int activoCT)
@@ -53,7 +60,8 @@ namespace ScriptsCreater
                 DataTable datosExtended = a.conexion(cadena, c.PropiedadesExtendidas(schema + "", table));
 
                 //MONTAR SCRIPTS
-                string nombretab = "tbn1" + table.Substring(4, 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
+                //table.Substring(2, table.Length - 2)
+                string nombretab = "tbn1" + table.Substring(4, table.Length - 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
                 //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
                 string fecar = componer_fecar(table, datosColumnas);
                 nombrearchivo = "Script staging_" + nombretab + "_tablastg.sql";
@@ -258,7 +266,7 @@ namespace ScriptsCreater
             DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves("" + schema + "." + table));
 
             //MONTAR SCRIPTS
-            string nombretab = "tbn1" + table.Substring(4, 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
+            string nombretab = "tbn1" + table.Substring(4, table.Length - 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
             //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
             string fecar = componer_fecar(table, datosColumnas);
             nombrearchivo = nombretab + ".csv";
