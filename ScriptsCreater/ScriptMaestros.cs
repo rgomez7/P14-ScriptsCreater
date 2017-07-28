@@ -40,7 +40,7 @@ namespace ScriptsCreater
                     //Campos clave
                     if (j[2].Contains("#"))
                     {
-                        camposPK = camposPK + "t_" + j[0] + ",";
+                        camposPK = camposPK + "xxx_" + j[0] + ",";
                     }
 
                     //Valores para los campos
@@ -486,7 +486,7 @@ namespace ScriptsCreater
                         campos = campos + "'" + j[0] + "',";
                         if (j[4].ToString() == "#")
                         {
-                            campospk = campospk + "t_" + j[0] + ",";
+                            campospk = campospk + "xxx_" + j[0] + ",";
                         }
                         if (j[9].ToString() == "#")
                         {
@@ -844,7 +844,7 @@ namespace ScriptsCreater
 
                         //SP Registramos los datos en la tabla temporal
                         //SP Comparamos registros para indicar la acción a realizar
-                        file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk + "," + campos.Replace("'", "") + ")");
+                        file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk.Replace("xxx_","t_") + "," + campos.Replace("'", "") + ")");
                         file.WriteLine("        SELECT");
                         file.WriteLine("            rr_mode=");
                         file.WriteLine("                CASE");
@@ -1012,7 +1012,7 @@ namespace ScriptsCreater
                     file.WriteLine("");
 
                     //SP Comparamos registros para indicar la acción a realizar
-                    file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk + "," + campos.Replace("'", "") + ")");
+                    file.WriteLine("        INSERT INTO #tmp_" + tab + " (rr_mode,cc," + clave + ", " + campospk.Replace("xxx_", "t_") + "," + campos.Replace("'", "") + ")");
                     file.WriteLine("        SELECT");
                     file.WriteLine("            rr_mode=");
                     file.WriteLine("                CASE");

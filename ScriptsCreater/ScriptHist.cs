@@ -48,7 +48,7 @@ namespace ScriptsCreater
                         campos = campos + "'" + j[0] + "',";
                         if (j[4] == "#")
                         {
-                            campospk = campospk + "t_" + j[0] + ",";
+                            campospk = campospk + "xxx_" + j[0] + ",";
                         }
                         Array.Resize(ref csv2, csv2.Length + 1);
                         csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";";
@@ -224,7 +224,7 @@ namespace ScriptsCreater
                     //SP Carga Incremental
                     file.WriteLine("--- Inicio Bloque Carga Incremental");
                     file.WriteLine("");
-                    file.WriteLine("            SELECT " + campospk.Replace("t_", "") + ", sys_change_operation");
+                    file.WriteLine("            SELECT " + campospk.Replace("xxx_", "") + ", sys_change_operation");
                     file.WriteLine("            INTO #CT_TMP");
                     file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + cabtab + tab + ",@ct_" + schema + "_inicial) as CT");
                     file.WriteLine("");

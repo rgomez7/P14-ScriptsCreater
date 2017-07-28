@@ -55,7 +55,7 @@ namespace ScriptsCreater
                     campos = campos + "'" + j[0] + "',";
                     if (j[4].ToString() == "#")
                     {
-                        campospk = campospk + "t_" + j[0] + ",";
+                        campospk = campospk + "xxx_" + j[0] + ",";
                     }
                     if (j[9].ToString() == "#")
                     {
