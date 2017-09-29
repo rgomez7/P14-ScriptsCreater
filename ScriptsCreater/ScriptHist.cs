@@ -113,7 +113,7 @@ namespace ScriptsCreater
                 cabtab = archivo.Substring(0, 4);
             }
 
-            nombrearchivo = "Script TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
+            nombrearchivo = "Script TL " + tipobbdd + "_tbn1_" + cabtab + tab + "_tracelog_TL.sql";
             nombrearchivoexec = "Exec TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
             //nombrearchivo = nombrearchivo.Replace("xxx", tipobbdd);
             string fichero = ruta + nombrearchivo;
@@ -369,6 +369,7 @@ namespace ScriptsCreater
             string valorcampo = "";
             string valorClave = "";
             string nombreSP = "";
+            string nombreScript = "";
             string[] lineas = new string[0];
             string[] csv = new string[0];
             string valorReplace = "|";
@@ -495,6 +496,7 @@ namespace ScriptsCreater
 
             //Comprobamos si existe SP
             nombreSP = tipobbdd + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
+            nombreScript = nombreSP;
             string valorSP = "spn1_cargar_" + nombreSP;
 
             DataTable dtComprobarSP = a.conexion(a.cadenad("dbn1_stg_dhyf"), c.ComprobarSP(valorSP));
@@ -520,7 +522,24 @@ namespace ScriptsCreater
                 newSP["TL_gen"] = "";
             }
 
-            nombrearchivo = "Script TL " + nombreSP + "_tracelog_TL.sql";
+            // EF02 29/09/2017
+            // para que aparezca  "Script TL normalizado_tbn1_documentos_iva_tracelog_TL.sql" ...
+            // ... en vez de "Script TL normalizado_documentos_iva_tracelog_TL.sql"
+            if (nombreSP.Contains("normalizado"))
+            {
+                nombreScript = nombreSP.Replace("normalizado", "normalizado_tbn1");
+            }
+            else
+            {
+                if (nombreSP.Contains("dimensional"))
+                {
+                    nombreScript = nombreSP.Replace("dimensional", "dimensional_tbn1");
+                }
+            }
+            ///// fin modif ////////
+
+            //nombrearchivo = "Script TL " + nombreSP + "_tracelog_TL.sql";
+            nombrearchivo = "Script TL " + nombreScript + "_tracelog_TL.sql";
             //nombrearchivoexec = "Exec TL " + tipobbdd + "_" + tab + "_tracelog_TL.sql";
             //nombrearchivo = nombrearchivo.Replace("xxx", tipobbdd);
             string fichero = ruta + nombrearchivo;
