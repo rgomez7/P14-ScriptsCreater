@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ScriptsCreater
+namespace ScriptsCreator
 {
     class ScriptIntegridad
     {
@@ -226,7 +226,7 @@ namespace ScriptsCreater
                     file.Close();
                     file_exec.Close();
                 }
-                catch (Exception ex)
+                catch //(Exception ex)
                 {
                     MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                     return "NO";

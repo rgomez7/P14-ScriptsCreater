@@ -8,11 +8,11 @@ using System.Windows.Forms;
 using System.Data;
 using System.Data.SqlClient;
 
-namespace ScriptsCreator
+namespace ScriptsCreater
 {
     class Acciones
     {
-        public string version = "1.2.3";
+        public string version = "1.2.2";
 
         public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {
@@ -43,7 +43,7 @@ namespace ScriptsCreator
                 }
 
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
                 return "NO";
             }
@@ -56,7 +56,7 @@ namespace ScriptsCreator
             {
                 File.Delete(ruta + nombrearchivo.Replace(".sql", " Copia.sql"));
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
                 return "NO";
             }
@@ -499,7 +499,7 @@ namespace ScriptsCreator
                     }
                 }
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             { }
 
             //Retornamos el DT final

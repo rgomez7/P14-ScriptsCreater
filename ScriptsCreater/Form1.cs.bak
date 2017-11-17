@@ -33,7 +33,6 @@ namespace ScriptsCreator
             //this.Text = "";
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
         }
 
         //Esto es para el boton de seleción de archivos
@@ -84,7 +83,6 @@ namespace ScriptsCreator
                     btnBuscar.Enabled = true;
                     txFile.Width = txSalida.Width;
                     txBBDD.Visible = false;
-                    lbl_bd_microfocus.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("ds"))
                 {
@@ -100,7 +98,6 @@ namespace ScriptsCreator
                     btnBuscar.Enabled = true;
                     txFile.Width = txSalida.Width;
                     txBBDD.Visible = false;
-                    lbl_bd_microfocus.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("int"))
                 {
@@ -114,7 +111,6 @@ namespace ScriptsCreator
                     btnBuscar.Enabled = true;
                     txFile.Width = txSalida.Width;
                     txBBDD.Visible = false;
-                    lbl_bd_microfocus.Visible = false;
                 }
                 else if (archivo.ToLower().Contains("his"))
                 {
@@ -131,7 +127,6 @@ namespace ScriptsCreator
                     btnBuscar.Enabled = true;
                     txFile.Width = txSalida.Width;
                     txBBDD.Visible = false;
-                    lbl_bd_microfocus.Visible = false;
                 }
             }
         }
@@ -500,7 +495,6 @@ namespace ScriptsCreator
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
             gbAcciones.Visible = true;
         }
 
@@ -518,7 +512,6 @@ namespace ScriptsCreator
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
             gbAcciones.Visible = true;
         }
 
@@ -537,7 +530,6 @@ namespace ScriptsCreator
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
             rb_Hist_Tabla.Checked = true;
             gbAcciones.Visible = false;
         }
@@ -556,7 +548,6 @@ namespace ScriptsCreator
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
             gbAcciones.Visible = true;
         }
 
@@ -574,7 +565,6 @@ namespace ScriptsCreator
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
             gbAcciones.Visible = false;
         }
 
@@ -592,7 +582,6 @@ namespace ScriptsCreator
             btnBuscar.Enabled = false;
             txFile.Width = txFile.Width - txBBDD.Width - lbl_bd_microfocus.Width - 5;
             txBBDD.Visible = true;
-            lbl_bd_microfocus.Visible = true;
             gbAcciones.Visible = false;
         }
 
@@ -610,7 +599,6 @@ namespace ScriptsCreator
             btnBuscar.Enabled = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
             gbAcciones.Visible = false;
         }
 
@@ -622,7 +610,6 @@ namespace ScriptsCreator
             txFile.ReadOnly = false;
             txFile.Width = txFile.Width - txBBDD.Width - 2;
             txBBDD.Visible = true;
-            lbl_bd_microfocus.Visible = false;
         }
 
         private void rb_Hist_CSV_CheckedChanged(object sender, EventArgs e)
@@ -633,7 +620,6 @@ namespace ScriptsCreator
             txFile.ReadOnly = true;
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
         }
 
         private void rb_DSDM_T_CheckedChanged(object sender, EventArgs e)
@@ -658,24 +644,6 @@ namespace ScriptsCreator
 
         #endregion
 
-        private void lbl_file_Click(object sender, EventArgs e)
-        {
 
-        }
-
-        private void txBBDD_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txFile_TextChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }

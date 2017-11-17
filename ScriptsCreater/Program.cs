@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 
 
-namespace ScriptsCreater
+namespace ScriptsCreator
 {
     static class Program
     {
