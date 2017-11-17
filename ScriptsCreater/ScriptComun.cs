@@ -638,7 +638,7 @@ namespace ScriptsCreator
             {
                 file.WriteLine("\t\tAND\t\tcolumn_name NOT IN\t(");
                 file.WriteLine("\t\t\t\t\t\t\t\t\t'id_" + tab + "',");
-                file.WriteLine("\t\t\t\t\t\t\t\t\t" + campos + ",");
+                file.WriteLine("\t\t\t\t\t\t\t\t\t" + campos);
                 file.WriteLine("\t\t\t\t\t\t\t\t\t'SYS_CHANGE_OPERATION'");
                 file.WriteLine("\t\t\t\t\t\t\t\t\t)");
             }

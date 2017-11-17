@@ -539,7 +539,7 @@ namespace ScriptsCreator
                     file.WriteLine("\t)");
                     file.WriteLine("\tDELETE\tdestino");
                     file.WriteLine("\tFROM\tdbo." + nombretab + " destino");
-                    file.WriteLine("\t\t\tINNER JOIN  borrados actu");
+                    file.WriteLine("\t\t\tINNER JOIN  borrados borr");
                     i = 0;
                     foreach (string c in camposPK2)
                     {
@@ -547,11 +547,11 @@ namespace ScriptsCreator
                         //if (camposPK2.Length == i)
                         if (i == 1)
                         {
-                            file.WriteLine("\t\t\t\t\tON  destino." + c + " = actu." + c);
+                            file.WriteLine("\t\t\t\t\tON  destino." + c + " = borr." + c);
                         }
                         else
                         {
-                            file.WriteLine("\t\t\t\t\tAND destino." + c + " = actu." + c);
+                            file.WriteLine("\t\t\t\t\tAND destino." + c + " = borr." + c);
                         }
                     }
                     file.WriteLine("");
