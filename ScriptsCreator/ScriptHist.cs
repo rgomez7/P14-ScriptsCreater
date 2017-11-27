@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ScriptsCreater
+namespace ScriptsCreator
 {
     class ScriptHist
     {
@@ -57,7 +57,7 @@ namespace ScriptsCreater
                 campos = campos.Substring(0, campos.Length - 1);
                 campospk = campospk.Substring(0, campospk.Length - 1);
             }
-            catch (Exception ex2)
+            catch //(Exception ex2)
             {
                 MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error PK en archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                 return "NO";
@@ -340,7 +340,7 @@ namespace ScriptsCreater
                     file.Close();
                     //file_exec.Close();
                 }
-                catch (Exception ex)
+                catch //(Exception ex)
                 {
                     MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                     return "NO";
@@ -736,7 +736,7 @@ namespace ScriptsCreater
                     file.Close();
                     //file_exec.Close();
                 }
-                catch (Exception ex)
+                catch //(Exception ex)
                 {
                     MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                     return "NO";
@@ -787,7 +787,7 @@ namespace ScriptsCreater
 
                     file.Close();
                 }
-                catch (Exception ex)
+                catch //(Exception ex)
                 {
                     MessageBox.Show("Error al escribir en archivo CSV " + nombrearchivo, "Error escritura archivo CSV", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                     return "NO";

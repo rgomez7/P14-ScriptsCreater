@@ -57,7 +57,7 @@
     <ManifestCertificateThumbprint>04A1D1A3B6974C4630B5A3494E71E97B7A1B5FDA</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>ScriptsCreater_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>ScriptsCreator_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
