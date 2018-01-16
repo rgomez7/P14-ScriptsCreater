@@ -674,31 +674,42 @@ namespace ScriptsCreator
                     {
                         if (tiposcript == "historificacion")
                         {
+                            //obtener el tipo de dato de la columna (dejando solo el nombre del tipo de dato, sin la longitud/precisión)
+                            string tipoDato = "";
+                            if (j[1].ToString().IndexOf("(") > 0)
+                            {
+                                //tipoDato = j[1].ToString().Remove(j[1].ToString().IndexOf("("));
+                                tipoDato = j[1].ToString().Substring(0, j[1].ToString().IndexOf("(")).Trim();
+                            }
+                            else
+                            {
+                                tipoDato = j[1].ToString().Trim();
+                            }
                             if (j[2].Contains("#"))
                             {
-                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "' AND DATA_TYPE='" + tipoDato + "' AND IS_NULLABLE='NO')");
                                 file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
                                 file.WriteLine("GO");
                             }
                             else
                             {
-                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "' AND DATA_TYPE='" + tipoDato + "' AND IS_NULLABLE='NO')");
                                 file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString());
                                 file.WriteLine("GO");
                             }
                         }
                         else if (tiposcript == "extraccion")
                         {
-                            //obtener el tipo de dato de la columna (dejando solo le nombre del tipo de dato, sin la longitud/precisión)
+                            //obtener el tipo de dato de la columna (dejando solo el nombre del tipo de dato, sin la longitud/precisión)
                             string tipoDato = "";
                             if (j[1].ToString().IndexOf("(") > 0)
                             {
                                 //tipoDato = j[1].ToString().Remove(j[1].ToString().IndexOf("("));
-                                tipoDato = j[1].ToString().Substring(0, j[1].ToString().IndexOf("("));
+                                tipoDato = j[1].ToString().Substring(0, j[1].ToString().IndexOf("(")).Trim();
                             }
                             else
                             {
-                                tipoDato = j[1].ToString();
+                                tipoDato = j[1].ToString().Trim();
                             }
                             if (campospk.Contains(j[0].ToString()))
                             {

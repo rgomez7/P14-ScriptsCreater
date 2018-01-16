@@ -113,7 +113,8 @@ namespace ScriptsCreator
                 cabtab = archivo.Substring(0, 4);
             }
 
-            nombrearchivo = "Script TL " + tipobbdd + "_tbn1_" + cabtab + tab + "_tracelog_TL.sql";
+            //cgs quito tbn1_ porque sobra:    nombrearchivo = "Script TL " + tipobbdd + "_tbn1_" + cabtab + tab + "_tracelog_TL.sql";
+            nombrearchivo = "Script TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
             nombrearchivoexec = "Exec TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
             //nombrearchivo = nombrearchivo.Replace("xxx", tipobbdd);
             string fichero = ruta + nombrearchivo;
