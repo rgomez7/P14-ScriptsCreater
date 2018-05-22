@@ -176,7 +176,20 @@ namespace ScriptsCreator
                     file.WriteLine("--Begin table create/prepare -> " + cabtab + tab + "_tracelog");
                     file.WriteLine("");
 
-                    sc.regTablas(file, "dbn1_hist_dhyf", schema, cabtab + tab + "_tracelog", clave + "_tracelog", campos, campospk, csv2, claveAuto, "historificacion");
+                    string tab_sin_prefijo;
+                    if (tab.Contains("tbn1_"))
+                    {
+                        tab_sin_prefijo = tab.Replace("tbn1_", "");
+                    }
+                    else if (tab.Contains("tbn1"))
+                    {
+                        tab_sin_prefijo = tab.Replace("tbn1", "");
+                    }
+                    else
+                    {
+                        tab_sin_prefijo = tab;
+                    }
+                    sc.regTablas(file, "dbn1_hist_dhyf", schema, cabtab + tab + "_tracelog", clave + "_tracelog", campos, campospk, csv2, claveAuto, "historificacion", tab_sin_prefijo);
 
                     file.WriteLine("--End table create/prepare -> " + cabtab + tab + "_tracelog");
                     if (CreateTable == false)
@@ -591,7 +604,21 @@ namespace ScriptsCreator
                     file.WriteLine("--Begin table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("");
 
-                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion");
+                    string tab_sin_prefijo;
+                    if (tab.Contains("tbn1_"))
+                    {
+                        tab_sin_prefijo = tab.Replace("tbn1_", "");
+                    }
+                    else if (tab.Contains("tbn1"))
+                    {
+                        tab_sin_prefijo = tab.Replace("tbn1", "");
+                    }
+                    else
+                    {
+                        tab_sin_prefijo = tab;
+                    }
+
+                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo);
 
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");
