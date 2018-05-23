@@ -646,31 +646,31 @@ namespace ScriptsCreator
                     }
 
                     sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo);
-
+                    file.WriteLine("GO");
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");
 
-                    file.WriteLine("GO");
+                    file.WriteLine("");
 
                     #region "Stored Procedure"
-                    if (existe_pk)
+                    //SP Creamos SP
+                    file.WriteLine("");
+                    file.WriteLine("--//Stored Procedure");
+                    file.WriteLine("USE dbn1_hist_dhyf");
+                    file.WriteLine("GO");
+                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + nombreSP + "' AND ROUTINE_TYPE = 'PROCEDURE')");
+                    file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP);
+                    file.WriteLine("GO");
+                    file.WriteLine("");
+                    file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP + "(@p_id_carga int) AS");
+                    file.WriteLine("BEGIN");
+                    file.WriteLine("");
+
+                    //SP Cabecera
+                    string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + nombreSP, true, true);
+
+                    if (existe_pk) //si no hay pk, de momento no cargo nada en el SP
                     {
-                        //SP Creamos SP
-                        file.WriteLine("");
-                        file.WriteLine("--//Stored Procedure");
-                        file.WriteLine("USE dbn1_hist_dhyf");
-                        file.WriteLine("GO");
-                        file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + nombreSP + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                        file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP);
-                        file.WriteLine("GO");
-                        file.WriteLine("");
-                        file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP + "(@p_id_carga int) AS");
-                        file.WriteLine("BEGIN");
-                        file.WriteLine("");
-
-                        //SP Cabecera
-                        string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + nombreSP, true, true);
-
                         //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
                         string sp_inc = sc.regSP_Incremental(file);
                         ////////
@@ -778,17 +778,13 @@ namespace ScriptsCreator
                         file.WriteLine("            ct_dmr  = @ct_dmr_final");
                         file.WriteLine("            where procedimiento = @objeto;");
                         file.WriteLine("");
-
-                        //SP Pie
-                        string pie = sc.pieLogSP(file, "historificacion");
-
-                        file.WriteLine("GO");
-                        file.WriteLine("");
                     }
-                    else
-                    {
-                        file.WriteLine("--No hay PK en origen, no genero SP");
-                    }
+                    //SP Pie
+                    string pie = sc.pieLogSP(file, "historificacion");
+
+                    file.WriteLine("GO");
+                    file.WriteLine("");
+
                     #endregion "Stored Procedure"
 
                     //Agregamos el registro a DT
