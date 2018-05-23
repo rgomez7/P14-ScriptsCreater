@@ -23,6 +23,7 @@ namespace ScriptsCreator
             string tab = "";
             string clave = "";
             string campospk = "";
+            bool existe_pk = false;
             string campos = "";
             string tipobbdd = "";
             string schema = "";
@@ -55,7 +56,13 @@ namespace ScriptsCreator
                     }
                 }
                 campos = campos.Substring(0, campos.Length - 1);
-                campospk = campospk.Substring(0, campospk.Length - 1);
+
+                existe_pk = (campospk.Length > 0);
+                if (existe_pk)
+                {
+                    campospk = campospk.Substring(0, campospk.Length - 1);
+                }
+
             }
             catch //(Exception ex2)
             {
@@ -151,9 +158,12 @@ namespace ScriptsCreator
                     {
                         file.WriteLine("/*--------------------------------------");
                     }
-                    file.WriteLine("--Begin Add Change Tracking -> " + cabtab + tab);
-                    string ctp = sc.changetracking(file, cabtab + tab, bbdd, "dbo", "act");
-                    file.WriteLine("--Begin Add Change Tracking -> " + cabtab + tab);
+                    if (existe_pk)
+                    {
+                        file.WriteLine("--Begin Add Change Tracking -> " + cabtab + tab);
+                        string ctp = sc.changetracking(file, cabtab + tab, bbdd, "dbo", "act");
+                        file.WriteLine("--------------------------------------*/");
+                    }
                     if (ChangeTrack == false)
                     {
                         file.WriteLine("--------------------------------------");
@@ -200,155 +210,162 @@ namespace ScriptsCreator
                     {
                         file.WriteLine("--------------------------------------*/");
                     }
-                    file.WriteLine("");
+                    file.WriteLine("GO");
 
                     #region "Stored Procedure"
-                    //SP Creamos SP
-                    file.WriteLine("");
-                    file.WriteLine("--//Stored Procedure");
-                    file.WriteLine("USE dbn1_hist_dhyf");
-                    file.WriteLine("GO");
-                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                    file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab);
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-                    file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "(@p_id_carga int) AS");
-                    file.WriteLine("BEGIN");
-                    file.WriteLine("");
-
-                    //SP Cabecera
-                    string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, true, true);
-
-                    //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
-                    string sp_inc = sc.regSP_Incremental(file);
-                    ////////
-                    file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
-                    file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
-                    file.WriteLine("            WHERE objeto = @objeto;");
-                    file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
-                    file.WriteLine("           SET @fec_procesado = getdate();");
-                    file.WriteLine("");
-                    //////
-                    //SP Etiquetas            
-                    file.WriteLine("---Inicio Bloque común para Incremental y Full");
-                    file.WriteLine("");
-                    file.WriteLine("            IF @es_carga_completa = 0");
-                    file.WriteLine("            BEGIN");
-
-                    //SP Carga Incremental
-                    file.WriteLine("--- Inicio Bloque Carga Incremental");
-                    file.WriteLine("");
-                    file.WriteLine("            SELECT " + campospk.Replace("xxx_", "") + ", sys_change_operation");
-                    file.WriteLine("            INTO #CT_TMP");
-                    file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + cabtab + tab + ",@ct_" + schema + "_inicial) as CT");
-                    file.WriteLine("");
-                    file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                    file.WriteLine("            SELECT");
-                    foreach (string d in csv)
+                    if (existe_pk)
                     {
-                        string[] j = d.Split(new Char[] { ';' });
-                        i++;
-                        if (!j[0].Contains("#"))
+                        //SP Creamos SP
+                        file.WriteLine("");
+                        file.WriteLine("--//Stored Procedure");
+                        file.WriteLine("USE dbn1_hist_dhyf");
+                        file.WriteLine("GO");
+                        file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
+                        file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab);
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+                        file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "(@p_id_carga int) AS");
+                        file.WriteLine("BEGIN");
+                        file.WriteLine("");
+
+                        //SP Cabecera
+                        string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, true, true);
+
+                        //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
+                        string sp_inc = sc.regSP_Incremental(file);
+                        ////////
+                        file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
+                        file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
+                        file.WriteLine("            WHERE objeto = @objeto;");
+                        file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
+                        file.WriteLine("           SET @fec_procesado = getdate();");
+                        file.WriteLine("");
+                        //////
+                        //SP Etiquetas            
+                        file.WriteLine("---Inicio Bloque común para Incremental y Full");
+                        file.WriteLine("");
+                        file.WriteLine("            IF @es_carga_completa = 0");
+                        file.WriteLine("            BEGIN");
+
+                        //SP Carga Incremental
+                        file.WriteLine("--- Inicio Bloque Carga Incremental");
+                        file.WriteLine("");
+                        file.WriteLine("            SELECT " + campospk.Replace("xxx_", "") + ", sys_change_operation");
+                        file.WriteLine("            INTO #CT_TMP");
+                        file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + cabtab + tab + ",@ct_" + schema + "_inicial) as CT");
+                        file.WriteLine("");
+                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                        file.WriteLine("            SELECT");
+                        foreach (string d in csv)
                         {
-                            if (j[4] == "#")
+                            string[] j = d.Split(new Char[] { ';' });
+                            i++;
+                            if (!j[0].Contains("#"))
                             {
-                                file.WriteLine("                ct." + j[0].ToString() + ", ");
+                                if (j[4] == "#")
+                                {
+                                    file.WriteLine("                ct." + j[0].ToString() + ", ");
+                                }
+                                else
+                                {
+                                    file.WriteLine("                s." + j[0].ToString() + ", ");
+                                }
                             }
-                            else
+                        }
+                        if (claveAuto == true)
+                        {
+                            file.WriteLine("                s." + clave + ", ");
+                        }
+                        file.WriteLine("                @fec_procesado,");
+                        file.WriteLine("                CASE ct.sys_change_operation");
+                        file.WriteLine("                    WHEN 'I' then 'INSERT'");
+                        file.WriteLine("                    WHEN 'U' then 'UPDATE'");
+                        file.WriteLine("                    WHEN 'D' then 'DELETE'");
+                        file.WriteLine("                END AS ctct_tipo_operacion");
+                        file.WriteLine("            FROM #CT_TMP ct");
+                        file.WriteLine("            LEFT JOIN " + bbdd + ".dbo." + cabtab + tab + " s");
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (!j[0].Contains("#"))
+                            {
+                                if (j[4] == "#")
+                                {
+                                    if (i == 0)
+                                    {
+                                        file.WriteLine("                ON ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                    }
+                                    else
+                                    {
+                                        file.WriteLine("                    AND ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                    }
+                                    i++;
+                                }
+                            }
+                        }
+                        file.WriteLine("");
+                        file.WriteLine("            SET @rc=@@ROWCOUNT;");
+                        file.WriteLine("");
+                        file.WriteLine("        END");
+                        file.WriteLine("");
+
+                        //SP Carga Full
+                        file.WriteLine("--Inicio Bloque Carga Full");
+                        file.WriteLine("        ELSE");
+                        file.WriteLine("        BEGIN");
+                        file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
+                        file.WriteLine("            BEGIN");
+                        file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
+                        file.WriteLine("                DECLARE @id_warning_1 int");
+                        file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
+                        file.WriteLine("            END");
+                        file.WriteLine("            ELSE");
+                        file.WriteLine("            BEGIN");
+                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                        file.WriteLine("            SELECT");
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            i++;
+                            if (!j[0].Contains("#"))
                             {
                                 file.WriteLine("                s." + j[0].ToString() + ", ");
                             }
                         }
-                    }
-                    if (claveAuto == true)
-                    {
-                        file.WriteLine("                s." + clave + ", ");
-                    }
-                    file.WriteLine("                @fec_procesado,");
-                    file.WriteLine("                CASE ct.sys_change_operation");
-                    file.WriteLine("                    WHEN 'I' then 'INSERT'");
-                    file.WriteLine("                    WHEN 'U' then 'UPDATE'");
-                    file.WriteLine("                    WHEN 'D' then 'DELETE'");
-                    file.WriteLine("                END AS ctct_tipo_operacion");
-                    file.WriteLine("            FROM #CT_TMP ct");
-                    file.WriteLine("            LEFT JOIN " + bbdd + ".dbo." + cabtab + tab + " s");
-                    i = 0;
-                    foreach (string d in csv)
-                    {
-                        string[] j = d.Split(new Char[] { ';' });
-                        if (!j[0].Contains("#"))
+                        if (claveAuto == true)
                         {
-                            if (j[4] == "#")
-                            {
-                                if (i == 0)
-                                {
-                                    file.WriteLine("                ON ct." + j[0].ToString() + " =  s." + j[0].ToString());
-                                }
-                                else
-                                {
-                                    file.WriteLine("                    AND ct." + j[0].ToString() + " =  s." + j[0].ToString());
-                                }
-                                i++;
-                            }
+                            file.WriteLine("                s." + clave + ", ");
                         }
-                    }
-                    file.WriteLine("");
-                    file.WriteLine("            SET @rc=@@ROWCOUNT;");
-                    file.WriteLine("");
-                    file.WriteLine("        END");
-                    file.WriteLine("");
+                        file.WriteLine("                @fec_procesado,");
+                        file.WriteLine("                'INSERT'");
+                        file.WriteLine("            FROM " + bbdd + ".dbo." + cabtab + tab + " s");
+                        file.WriteLine("");
+                        file.WriteLine("                SET @rc=@@ROWCOUNT;");
+                        file.WriteLine("            END");
+                        file.WriteLine("        END");
+                        file.WriteLine("");
 
-                    //SP Carga Full
-                    file.WriteLine("--Inicio Bloque Carga Full");
-                    file.WriteLine("        ELSE");
-                    file.WriteLine("        BEGIN");
-                    file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
-                    file.WriteLine("            BEGIN");
-                    file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
-                    file.WriteLine("                DECLARE @id_warning_1 int");
-                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
-                    file.WriteLine("            END");
-                    file.WriteLine("            ELSE");
-                    file.WriteLine("            BEGIN");
-                    file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                    file.WriteLine("            SELECT");
-                    foreach (string d in csv)
+                        //SP incluimos los nuevos marcadores a la tabla de ct procesado
+                        file.WriteLine("---Fin Bloque común para Incremental y Full");
+                        file.WriteLine("");
+                        file.WriteLine("        update dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
+                        file.WriteLine("            set ct_stg  = @ct_stg_final,");
+                        file.WriteLine("            ct_norm = @ct_norm_final,");
+                        file.WriteLine("            ct_dmr  = @ct_dmr_final");
+                        file.WriteLine("            where procedimiento = @objeto;");
+                        file.WriteLine("");
+
+                        //SP Pie
+                        string pie = sc.pieLogSP(file, "historificacion");
+
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+                    }
+                    else
                     {
-                        string[] j = d.Split(new Char[] { ';' });
-                        i++;
-                        if (!j[0].Contains("#"))
-                        {
-                            file.WriteLine("                s." + j[0].ToString() + ", ");
-                        }
+                        file.WriteLine("--No hay PK en origen, no genero SP");
                     }
-                    if (claveAuto == true)
-                    {
-                        file.WriteLine("                s." + clave + ", ");
-                    }
-                    file.WriteLine("                @fec_procesado,");
-                    file.WriteLine("                'INSERT'");
-                    file.WriteLine("            FROM " + bbdd + ".dbo." + cabtab + tab + " s");
-                    file.WriteLine("");
-                    file.WriteLine("                SET @rc=@@ROWCOUNT;");
-                    file.WriteLine("            END");
-                    file.WriteLine("        END");
-                    file.WriteLine("");
-
-                    //SP incluimos los nuevos marcadores a la tabla de ct procesado
-                    file.WriteLine("---Fin Bloque común para Incremental y Full");
-                    file.WriteLine("");
-                    file.WriteLine("        update dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
-                    file.WriteLine("            set ct_stg  = @ct_stg_final,");
-                    file.WriteLine("            ct_norm = @ct_norm_final,");
-                    file.WriteLine("            ct_dmr  = @ct_dmr_final");
-                    file.WriteLine("            where procedimiento = @objeto;");
-                    file.WriteLine("");
-
-                    //SP Pie
-                    string pie = sc.pieLogSP(file, "historificacion");
-
-                    file.WriteLine("GO");
-                    file.WriteLine("");
                     #endregion "Stored Procedure"
 
                     file.Close();
@@ -378,6 +395,7 @@ namespace ScriptsCreator
             string dev = "";
             string campos = "";
             string campospk = "";
+            bool existe_pk = false;
             string error = "";
             string clave = "";
             string valorcampo = "";
@@ -403,7 +421,14 @@ namespace ScriptsCreator
                     campospk = campospk + dr.ItemArray[9].ToString() + ", ";
                 }
             }
-            campospk = campospk.Substring(0, campospk.Length - 2);
+
+            existe_pk = (campospk.Length > 0);
+
+            if (existe_pk)
+            {
+                campospk = campospk.Substring(0, campospk.Length - 2);
+            }
+
 
             //Agregamos campos a variable
             foreach (DataRow dr in dtColumns.Rows)
@@ -592,10 +617,12 @@ namespace ScriptsCreator
                         //file.WriteLine("/*--------------------------------------");
                         newSP["CT"] = "";
                     }
-                    file.WriteLine("--Begin Add Change Tracking -> " + tab);
-                    string ctp = sc.changetracking(file, tab, bbdd, "dbo", "act");
-                    file.WriteLine("--Begin Add Change Tracking -> " + tab);
-                    file.WriteLine("--------------------------------------*/");
+                    if (existe_pk)
+                    {
+                        file.WriteLine("--Begin Add Change Tracking -> " + tab);
+                        string ctp = sc.changetracking(file, tab, bbdd, "dbo", "act");
+                        file.WriteLine("--------------------------------------*/");
+                    }
                     file.WriteLine("");
 
                     //Create Table
@@ -623,139 +650,145 @@ namespace ScriptsCreator
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");
 
-                    file.WriteLine("");
+                    file.WriteLine("GO");
 
                     #region "Stored Procedure"
-
-                    //SP Creamos SP
-                    file.WriteLine("");
-                    file.WriteLine("--//Stored Procedure");
-                    file.WriteLine("USE dbn1_hist_dhyf");
-                    file.WriteLine("GO");
-                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + nombreSP + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                    file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP);
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-                    file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP + "(@p_id_carga int) AS");
-                    file.WriteLine("BEGIN");
-                    file.WriteLine("");
-
-                    //SP Cabecera
-                    string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + nombreSP, true, true);
-
-                    //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
-                    string sp_inc = sc.regSP_Incremental(file);
-                    ////////
-                    file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
-                    file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
-                    file.WriteLine("            WHERE objeto = @objeto;");
-                    file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
-                    file.WriteLine("           SET @fec_procesado = getdate();");
-                    file.WriteLine("");
-                    //////
-                    //SP Etiquetas            
-                    file.WriteLine("---Inicio Bloque común para Incremental y Full");
-                    file.WriteLine("");
-                    file.WriteLine("            IF @es_carga_completa = 0");
-                    file.WriteLine("            BEGIN");
-
-                    //SP Carga Incremental
-                    file.WriteLine("--- Inicio Bloque Carga Incremental");
-                    file.WriteLine("");
-                    file.WriteLine("            SELECT " + campospk + ", sys_change_operation");
-                    file.WriteLine("            INTO #CT_TMP");
-                    file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + tab + ",@ct_" + schema + "_inicial) as CT");
-                    file.WriteLine("");
-                    file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                    file.WriteLine("            SELECT");
-                    foreach (string d in csv)
+                    if (existe_pk)
                     {
-                        string[] j = d.Split(new Char[] { ';' });
-                        i++;
-                        if (j[2] == "#")
+                        //SP Creamos SP
+                        file.WriteLine("");
+                        file.WriteLine("--//Stored Procedure");
+                        file.WriteLine("USE dbn1_hist_dhyf");
+                        file.WriteLine("GO");
+                        file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + nombreSP + "' AND ROUTINE_TYPE = 'PROCEDURE')");
+                        file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP);
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+                        file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP + "(@p_id_carga int) AS");
+                        file.WriteLine("BEGIN");
+                        file.WriteLine("");
+
+                        //SP Cabecera
+                        string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + nombreSP, true, true);
+
+                        //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
+                        string sp_inc = sc.regSP_Incremental(file);
+                        ////////
+                        file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
+                        file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
+                        file.WriteLine("            WHERE objeto = @objeto;");
+                        file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
+                        file.WriteLine("           SET @fec_procesado = getdate();");
+                        file.WriteLine("");
+                        //////
+                        //SP Etiquetas            
+                        file.WriteLine("---Inicio Bloque común para Incremental y Full");
+                        file.WriteLine("");
+                        file.WriteLine("            IF @es_carga_completa = 0");
+                        file.WriteLine("            BEGIN");
+
+                        //SP Carga Incremental
+                        file.WriteLine("--- Inicio Bloque Carga Incremental");
+                        file.WriteLine("");
+                        file.WriteLine("            SELECT " + campospk + ", sys_change_operation");
+                        file.WriteLine("            INTO #CT_TMP");
+                        file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + tab + ",@ct_" + schema + "_inicial) as CT");
+                        file.WriteLine("");
+                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                        file.WriteLine("            SELECT");
+                        foreach (string d in csv)
                         {
-                            file.WriteLine("                ct." + j[0].ToString() + ", ");
-                        }
-                        else
-                        {
-                            file.WriteLine("                s." + j[0].ToString() + ", ");
-                        }
-                    }
-                    file.WriteLine("                @fec_procesado,");
-                    file.WriteLine("                CASE ct.sys_change_operation");
-                    file.WriteLine("                    WHEN 'I' then 'INSERT'");
-                    file.WriteLine("                    WHEN 'U' then 'UPDATE'");
-                    file.WriteLine("                    WHEN 'D' then 'DELETE'");
-                    file.WriteLine("                END AS ctct_tipo_operacion");
-                    file.WriteLine("            FROM #CT_TMP ct");
-                    file.WriteLine("            LEFT JOIN " + bbdd + ".dbo." + tab + " s");
-                    i = 0;
-                    foreach (string d in csv)
-                    {
-                        string[] j = d.Split(new Char[] { ';' });
-                        if (j[2] == "#")
-                        {
-                            if (i == 0)
+                            string[] j = d.Split(new Char[] { ';' });
+                            i++;
+                            if (j[2] == "#")
                             {
-                                file.WriteLine("                ON ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                file.WriteLine("                ct." + j[0].ToString() + ", ");
                             }
                             else
                             {
-                                file.WriteLine("                    AND ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                file.WriteLine("                s." + j[0].ToString() + ", ");
                             }
-                            i++;
                         }
-                    }
-                    file.WriteLine("");
-                    file.WriteLine("            SET @rc=@@ROWCOUNT;");
-                    file.WriteLine("");
-                    file.WriteLine("        END");
-                    file.WriteLine("");
+                        file.WriteLine("                @fec_procesado,");
+                        file.WriteLine("                CASE ct.sys_change_operation");
+                        file.WriteLine("                    WHEN 'I' then 'INSERT'");
+                        file.WriteLine("                    WHEN 'U' then 'UPDATE'");
+                        file.WriteLine("                    WHEN 'D' then 'DELETE'");
+                        file.WriteLine("                END AS ctct_tipo_operacion");
+                        file.WriteLine("            FROM #CT_TMP ct");
+                        file.WriteLine("            LEFT JOIN " + bbdd + ".dbo." + tab + " s");
+                        i = 0;
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            if (j[2] == "#")
+                            {
+                                if (i == 0)
+                                {
+                                    file.WriteLine("                ON ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                }
+                                else
+                                {
+                                    file.WriteLine("                    AND ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                }
+                                i++;
+                            }
+                        }
+                        file.WriteLine("");
+                        file.WriteLine("            SET @rc=@@ROWCOUNT;");
+                        file.WriteLine("");
+                        file.WriteLine("        END");
+                        file.WriteLine("");
 
-                    //SP Carga Full
-                    file.WriteLine("--Inicio Bloque Carga Full");
-                    file.WriteLine("        ELSE");
-                    file.WriteLine("        BEGIN");
-                    file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + tab + "_tracelog) a WHERE num_registros=0)");
-                    file.WriteLine("            BEGIN");
-                    file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
-                    file.WriteLine("                DECLARE @id_warning_1 int");
-                    file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
-                    file.WriteLine("            END");
-                    file.WriteLine("            ELSE");
-                    file.WriteLine("            BEGIN");
-                    file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                    file.WriteLine("            SELECT");
-                    foreach (string d in csv)
+                        //SP Carga Full
+                        file.WriteLine("--Inicio Bloque Carga Full");
+                        file.WriteLine("        ELSE");
+                        file.WriteLine("        BEGIN");
+                        file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + tab + "_tracelog) a WHERE num_registros=0)");
+                        file.WriteLine("            BEGIN");
+                        file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
+                        file.WriteLine("                DECLARE @id_warning_1 int");
+                        file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
+                        file.WriteLine("            END");
+                        file.WriteLine("            ELSE");
+                        file.WriteLine("            BEGIN");
+                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                        file.WriteLine("            SELECT");
+                        foreach (string d in csv)
+                        {
+                            string[] j = d.Split(new Char[] { ';' });
+                            i++;
+                            file.WriteLine("                s." + j[0].ToString() + ", ");
+                        }
+                        file.WriteLine("                @fec_procesado,");
+                        file.WriteLine("                'INSERT'");
+                        file.WriteLine("            FROM " + bbdd + ".dbo." + tab + " s");
+                        file.WriteLine("");
+                        file.WriteLine("                SET @rc=@@ROWCOUNT;");
+                        file.WriteLine("            END");
+                        file.WriteLine("        END");
+                        file.WriteLine("");
+
+                        //SP incluimos los nuevos marcadores a la tabla de ct procesado
+                        file.WriteLine("---Fin Bloque común para Incremental y Full");
+                        file.WriteLine("");
+                        file.WriteLine("        update dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
+                        file.WriteLine("            set ct_stg  = @ct_stg_final,");
+                        file.WriteLine("            ct_norm = @ct_norm_final,");
+                        file.WriteLine("            ct_dmr  = @ct_dmr_final");
+                        file.WriteLine("            where procedimiento = @objeto;");
+                        file.WriteLine("");
+
+                        //SP Pie
+                        string pie = sc.pieLogSP(file, "historificacion");
+
+                        file.WriteLine("GO");
+                        file.WriteLine("");
+                    }
+                    else
                     {
-                        string[] j = d.Split(new Char[] { ';' });
-                        i++;
-                        file.WriteLine("                s." + j[0].ToString() + ", ");
+                        file.WriteLine("--No hay PK en origen, no genero SP");
                     }
-                    file.WriteLine("                @fec_procesado,");
-                    file.WriteLine("                'INSERT'");
-                    file.WriteLine("            FROM " + bbdd + ".dbo." + tab + " s");
-                    file.WriteLine("");
-                    file.WriteLine("                SET @rc=@@ROWCOUNT;");
-                    file.WriteLine("            END");
-                    file.WriteLine("        END");
-                    file.WriteLine("");
-
-                    //SP incluimos los nuevos marcadores a la tabla de ct procesado
-                    file.WriteLine("---Fin Bloque común para Incremental y Full");
-                    file.WriteLine("");
-                    file.WriteLine("        update dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
-                    file.WriteLine("            set ct_stg  = @ct_stg_final,");
-                    file.WriteLine("            ct_norm = @ct_norm_final,");
-                    file.WriteLine("            ct_dmr  = @ct_dmr_final");
-                    file.WriteLine("            where procedimiento = @objeto;");
-                    file.WriteLine("");
-
-                    //SP Pie
-                    string pie = sc.pieLogSP(file, "historificacion");
-
-                    file.WriteLine("GO");
-                    file.WriteLine("");
                     #endregion "Stored Procedure"
 
                     //Agregamos el registro a DT

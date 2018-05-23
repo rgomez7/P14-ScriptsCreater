@@ -182,7 +182,9 @@ namespace ScriptsCreator
 
         public string changetracking(StreamWriter file, string tab, string bd, string sch, string act_des)
         {
-                //Desactivar CT
+            //
+            
+            //Desactivar CT
             if (act_des == "des")
             {
                 file.WriteLine("--Drop CT");
@@ -308,20 +310,20 @@ namespace ScriptsCreator
             file.WriteLine("(");
             if (clave != "")
             {
-                file.WriteLine("        " + clave + " int IDENTITY(1,1) NOT NULL,");
+                file.WriteLine("\t" + clave + " int IDENTITY(1,1) NOT NULL,");
             }
             if (tiposcript == "historificacion")
             {
                 if (claveAuto == true)
                 {
-                    file.WriteLine("       " + clave.Replace("_tracelog", "") + " int NOT NULL,");
+                    file.WriteLine("\t" + clave.Replace("_tracelog", "") + " int NOT NULL,");
                 }
-                file.WriteLine("        ctct_fec_procesado datetime NOT NULL,");
-                file.WriteLine("        ctct_tipo_operacion varchar(15) NOT NULL,");
+                file.WriteLine("\tctct_fec_procesado datetime NOT NULL,");
+                file.WriteLine("\tctct_tipo_operacion varchar(15) NOT NULL,");
             }
             else if (tiposcript == "maestro")
             {
-                file.WriteLine("        origen varchar(10) NOT NULL,");
+                file.WriteLine("\torigen varchar(10) NOT NULL,");
             }
             else if (tiposcript == "extraccion")
             {
