@@ -823,8 +823,8 @@ namespace ScriptsCreator
             else if (tiposcript == "historificacion") //para cumplir la normativa de nomencaltura y poder ir por vía oficial
             {
                 file.WriteLine("--Create indexes if not exist");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'I1N1hist_" + tab_sin_prefijo + "') ");
-                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX I1N1hist_" + tab_sin_prefijo + " ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'I1n1_hist_dhyf_" + tab_sin_prefijo + "') ");
+                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX I1n1_hist_dhyf_" + tab_sin_prefijo + " ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
             }
             else
             {
