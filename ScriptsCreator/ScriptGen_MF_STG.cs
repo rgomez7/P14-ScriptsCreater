@@ -484,7 +484,7 @@ namespace ScriptsCreator
                     file.WriteLine("\t(");
                     file.WriteLine("\t\tSELECT\t" + campos);
                     file.WriteLine("\t\tFROM\t" + schema + "." + nombretab + "_tmp");
-                    file.WriteLine("\t\tWHERE\tsys_change_operation = 'U'");
+                    file.WriteLine("\t\tWHERE\tsys_change_operation IN ('U','X')");
                     file.WriteLine("\t)");
                     file.WriteLine("\tUPDATE\tdestino");
                     i = 0;
@@ -561,7 +561,7 @@ namespace ScriptsCreator
                     file.WriteLine("\t(");
                     file.WriteLine("\t\tSELECT\t" + camposPK);
                     file.WriteLine("\t\tFROM\t" + schema + "." + nombretab + "_tmp");
-                    file.WriteLine("\t\tWHERE\tsys_change_operation = 'I'");
+                    file.WriteLine("\t\tWHERE\tsys_change_operation IN ('I','X')");
                     file.WriteLine("\t\tEXCEPT");
                     file.WriteLine("\t\tSELECT\t" + camposPK);
                     file.WriteLine("\t\tFROM\tdbo." + nombretab);
@@ -603,7 +603,7 @@ namespace ScriptsCreator
                             file.WriteLine("\t\t\t\t\tAND ins." + c + " = tmp." + c);
                         }
                     }
-                    file.WriteLine("\tWHERE\tsys_change_operation = 'I'");
+                    file.WriteLine("\tWHERE\tsys_change_operation IN ('I','X')");
                     file.WriteLine("");
 
                     file.WriteLine("END");
