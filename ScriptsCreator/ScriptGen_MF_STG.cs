@@ -182,7 +182,7 @@ namespace ScriptsCreator
                                 error = error + "\n\r//** " + table + " PK generada sobre Index único**\\" + "\n\r";
                             }
                             camposPK = camposPK.Substring(0, camposPK.Length - 2);
-                            file.WriteLine("ALTER TABLE dbo." + nombretab + " ADD CONSTRAINT PK_" + nombretab);
+                            file.WriteLine("ALTER TABLE dbo." + nombretab + " ADD CONSTRAINT " + nombretab + "_PK");
                         file.WriteLine("\tPRIMARY KEY (" + camposPK + ")");
                             file.WriteLine("GO");
                             file.WriteLine("");

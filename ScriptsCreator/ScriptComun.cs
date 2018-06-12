@@ -765,30 +765,23 @@ namespace ScriptsCreator
             {
                 file.WriteLine("--Crear PK si no existe");
 
-                if (tiposcript == "historificacion") //para cumplir la normativa de nomencaltura y poder ir por vía oficial
-                {
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG = '" + bd + "' AND TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = '" + tab + "' AND CONSTRAINT_NAME = '" + tab + "_PK" + "' AND CONSTRAINT_TYPE = 'PRIMARY KEY')");
-                }
-                else
-                {
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG = '" + bd + "' AND TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = '" + tab + "' AND CONSTRAINT_NAME = 'PK_" + tab + "' AND CONSTRAINT_TYPE = 'PRIMARY KEY')");
-                }
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_CATALOG = '" + bd + "' AND TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = '" + tab + "' AND CONSTRAINT_NAME = '" + tab + "_PK' AND CONSTRAINT_TYPE = 'PRIMARY KEY')");
 
                 if (tiposcript == "historificacion")
                 {
-                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT " + tab + "_PK" + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("xxx_", "") + ",ctct_fec_procesado)");
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT " + tab + "_PK PRIMARY KEY NONCLUSTERED (" + campospk.Replace("xxx_", "") + ",ctct_fec_procesado)");
                 }
                 else if (tiposcript == "dm")
                 {
-                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY CLUSTERED (" + clave + ")");
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT " + tab + "_PK PRIMARY KEY CLUSTERED (" + clave + ")");
                 }
                 else if (tiposcript == "extraccion")
                 {
-                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY CLUSTERED (" + campospk.Replace("xxx_", "t_") + ")");
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT " + tab + "_PK PRIMARY KEY CLUSTERED (" + campospk.Replace("xxx_", "t_") + ")");
                 }
                 else
                 {
-                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT PK_" + tab + " PRIMARY KEY NONCLUSTERED (" + campospk.Replace("xxx_", "") + ")");
+                    file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ADD CONSTRAINT " + tab + "_PK PRIMARY KEY NONCLUSTERED (" + campospk.Replace("xxx_", "") + ")");
                 }
                 file.WriteLine("GO");
                 file.WriteLine("");
@@ -823,8 +816,8 @@ namespace ScriptsCreator
             else if (tiposcript == "historificacion") //para cumplir la normativa de nomencaltura y poder ir por vía oficial
             {
                 file.WriteLine("--Create indexes if not exist");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'I1n1_hist_dhyf_" + tab_sin_prefijo + "') ");
-                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX I1n1_hist_dhyf_" + tab_sin_prefijo + " ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
+                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'I1N1_hist_dhyf_" + tab_sin_prefijo + "') ");
+                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX I1N1_hist_dhyf_" + tab_sin_prefijo + " ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
             }
             else
             {

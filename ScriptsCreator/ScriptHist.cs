@@ -70,7 +70,7 @@ namespace ScriptsCreator
                 return "NO";
             }
             //Si no tenemos valor clave, lo generamos
-            clave = "id_" + tab;
+            clave = "Idnt_" + tab;
             if (claveAuto == true)
             {
                 campos = campos + ",'" + clave + "'";
@@ -485,11 +485,11 @@ namespace ScriptsCreator
             //Componemos la clave de TL
             if (tab.Contains("tbn1_"))
             {
-                clave = "id_" + tab.Replace("tbn1_", "");
+                clave = "Idnt_" + tab.Replace("tbn1_", "");
             }
             else if (tab.Contains("tbn1"))
             {
-                clave = "id_" + tab.Replace("tbn1", "");
+                clave = "Idnt_" + tab.Replace("tbn1", "");
             }
             else
             {
