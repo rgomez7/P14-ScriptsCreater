@@ -718,6 +718,88 @@ namespace ScriptsCreator
             }
         }
 
+
+
+
+
+
+        public string crearVariableConsulta(string csv, string ruta, ref string nombrearchivo, string bdOrigen)
+        {
+            string[] lineas = new string[0];
+            string nombretab = "";
+            string[] valorescsv = a.leerCSV(csv, ruta);
+            int i = 0;
+            valorescsv = a.ordenarCSV(valorescsv);
+
+            foreach (string v in valorescsv)
+            {
+                if (v.ToLower().Contains("#nombre"))
+                {
+                    string[] datos = v.Split(new Char[] { ';' });
+                    nombretab = "tbn1" + datos[1];
+                }
+            }
+
+            nombrearchivo = nombretab + "_Consulta.txt";
+            string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
+
+            if (a.comprobarDir(ruta) == "OK")
+            {
+                try
+                {
+                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
+
+                    file.WriteLine(Convert.ToChar(34));
+                    file.WriteLine("SELECT");
+
+                    //escribir los campos del csv que se acaba de generar
+                    foreach (string v in valorescsv)
+                    {
+                        string[] datos = v.Split(new Char[] { ';' });
+
+                        if (!datos[0].Contains("#")) //para descartar las cabeceras del csv
+                        {
+                            if (datos[0].EndsWith("fecar")) //el campo fecha de carga tiene un tratamiento especial
+                            {
+                                file.WriteLine("\t" + "\t" + "GETDATE() AS " + datos[0].ToUpper());
+                            }
+                            else
+                            {
+                                file.WriteLine("\t" + "\t" + datos[0].ToUpper() + ",");
+                            }
+                        }
+                    }
+
+                    file.WriteLine("FROM" + "\t" + Convert.ToChar(34) + "+ @[User::TablaConEsquema] + " + Convert.ToChar(34));
+                    file.WriteLine("--filtro si el ejercicio es numérico WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AND YEAR(GETDATE())");
+                    file.WriteLine("--filtro si el ejercicio es varchar  WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN CAST(YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AS VARCHAR(4)) AND CAST(YEAR(GETDATE()) AS VARCHAR(4))");
+                    file.WriteLine("--considerar otros posibles filtros");
+                    file.WriteLine(Convert.ToChar(34));
+
+                    file.Close();
+                }
+                catch //(Exception ex)
+                {
+                    MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                    return "NO";
+                }
+
+                return "OK";
+            }
+            else
+            {
+                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                return "NO";
+            }
+        }
+
+
+
+
+
+
+
+
         public string activarCT_microfocus(string table, string schema, string ruta, ref string nombrearchivo, string camposPK, string bd, string tipogen)
         {
             string nombreBD = "";

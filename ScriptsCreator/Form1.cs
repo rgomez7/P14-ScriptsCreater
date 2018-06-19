@@ -441,7 +441,7 @@ namespace ScriptsCreator
                             datosScript = datosScript + "\n\r" + arcScript;
                             linegen = mf_stg.createSP_extraccion(nombreCSV, ruta, ref arcScript);
                             datosScript = datosScript + "\n\r" + arcScript;
-                            linegen = mf_stg.createSnippet_ext(nombreCSV, ruta, ref arcScript);
+                            linegen = mf_stg.crearVariableConsulta(nombreCSV, ruta, ref arcScript, nombreBD);
                             datosScript = datosScript + "\n\r" + arcScript;
 
                             if (linegen == "OK")
