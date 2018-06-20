@@ -443,6 +443,8 @@ namespace ScriptsCreator
                             datosScript = datosScript + "\n\r" + arcScript;
                             linegen = mf_stg.crearVariableConsulta(nombreCSV, ruta, ref arcScript, nombreBD);
                             datosScript = datosScript + "\n\r" + arcScript;
+                            linegen = mf_stg.crearVariableConsulta_CDC(nombreCSV, ruta, ref arcScript, nombreBD);
+                            datosScript = datosScript + "\n\r" + arcScript;
 
                             if (linegen == "OK")
                             {

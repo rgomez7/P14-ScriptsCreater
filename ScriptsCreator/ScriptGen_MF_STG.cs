@@ -719,16 +719,11 @@ namespace ScriptsCreator
         }
 
 
-
-
-
-
         public string crearVariableConsulta(string csv, string ruta, ref string nombrearchivo, string bdOrigen)
         {
             string[] lineas = new string[0];
             string nombretab = "";
             string[] valorescsv = a.leerCSV(csv, ruta);
-            int i = 0;
             valorescsv = a.ordenarCSV(valorescsv);
 
             foreach (string v in valorescsv)
@@ -771,8 +766,8 @@ namespace ScriptsCreator
                     }
 
                     file.WriteLine("FROM" + "\t" + Convert.ToChar(34) + "+ @[User::TablaConEsquema] + " + Convert.ToChar(34));
-                    file.WriteLine("--filtro si el ejercicio es numérico WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AND YEAR(GETDATE())");
-                    file.WriteLine("--filtro si el ejercicio es varchar  WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN CAST(YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AS VARCHAR(4)) AND CAST(YEAR(GETDATE()) AS VARCHAR(4))");
+                    file.WriteLine("--filtro si el ejercicio es numérico:WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AND YEAR(GETDATE())");
+                    file.WriteLine("--filtro si el ejercicio es varchar:WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN CAST(YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AS VARCHAR(4)) AND CAST(YEAR(GETDATE()) AS VARCHAR(4))");
                     file.WriteLine("--considerar otros posibles filtros");
                     file.WriteLine(Convert.ToChar(34));
 
@@ -794,10 +789,171 @@ namespace ScriptsCreator
         }
 
 
+        public string crearVariableConsulta_CDC(string csv, string ruta, ref string nombrearchivo, string bdOrigen)
+        {
+            string[] lineas = new string[0];
+            string nombretab = "";
+            string[] valorescsv = a.leerCSV(csv, ruta);
+            valorescsv = a.ordenarCSV(valorescsv);
+            int i = 0;//para control de los bucles
+
+            foreach (string v in valorescsv)
+            {
+                if (v.ToLower().Contains("#nombre"))
+                {
+                    string[] datos = v.Split(new Char[] { ';' });
+                    nombretab = "tbn1" + datos[1];
+                }
+            }
+
+            nombrearchivo = nombretab + "_Consulta_CDC.txt";
+            string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
+
+            if (a.comprobarDir(ruta) == "OK")
+            {
+                try
+                {
+                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
+
+                    file.WriteLine(Convert.ToChar(34));
+                    file.WriteLine(";WITH cdc AS");
+                    file.WriteLine("(");
+                    file.WriteLine("\t" + "SELECT DISTINCT --toda la pk o índice único");
+
+                    //cte con los campos de la pk o índice único)
+                    i = 0;
+                    foreach (string v in valorescsv)
+                    {
+                        string[] datos = v.Split(new Char[] { ';' });
+                        
+                        if (!datos[0].Contains("#")) //para descartar las cabeceras del csv
+                        {
+                            if (datos[4].Contains("#")) //para quedarme solo con los campos de la pk o índice único
+                            {
+                                if (i == 0)
+                                {
+                                    file.WriteLine("\t" + "\t" + "\t" + " cdc." + datos[0].ToUpper()); //la primera línea no debe escribir la coma
+                                    i++;
+                                }
+                                else
+                                {
+                                    file.WriteLine("\t" + "\t" + "\t" + ",cdc." + datos[0].ToUpper());
+                                }
+                            }
+                        }
+                    }
+
+                    file.WriteLine("\t" + "FROM" + "\t" + Convert.ToChar(34) + " + @[$Project::initialcatalog_conexion_origen] + " + Convert.ToChar(34) + ".cdc.fn_cdc_get_all_changes_" + Convert.ToChar(34) + " + @[$Project::esquema_conexion_origen] + " + Convert.ToChar(34) + "_" + Convert.ToChar(34) + " + @[User::Tabla] + " + Convert.ToChar(34) + "(convert(varbinary(max), '" + Convert.ToChar(34) + " + @[User::punto_inicial_cdc_extracciones] + " + Convert.ToChar(34) + "', 2), convert(varbinary(max), '" + Convert.ToChar(34) + " + @[User::punto_final_cdc_extracciones]+" + Convert.ToChar(34) + "', 2), 'all') cdc");
+                    file.WriteLine("--filtro si el ejercicio es numérico:" + "\t" +  "WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AND YEAR(GETDATE())");
+                    file.WriteLine("--filtro si el ejercicio es varchar:" + "\t" + "WHERE" + "\t" + "SustituyemePorElCampoEjercicio BETWEEN CAST(YEAR(GETDATE()) - " + Convert.ToChar(34) + " + @[User::Ejercicios] + " + Convert.ToChar(34) + " AS VARCHAR(4)) AND CAST(YEAR(GETDATE()) AS VARCHAR(4))");
+                    file.WriteLine("--considerar otros posibles filtros");
+                    file.WriteLine(")");
+
+                    file.WriteLine("SELECT");
 
 
+                    //cruzar la cte anterior con la tabla origen
+                    i = 0;
+                    foreach (string v in valorescsv)
+                    {
+                        string[] datos = v.Split(new Char[] { ';' });
 
+                        if (!datos[0].Contains("#")) //para descartar las cabeceras del csv
+                        {
+                            //tratamiento del los campos que son parte de la pk o índice único
+                            if (datos[4].Contains("#"))
+                            {
+                                if (i == 0)
+                                {
+                                    file.WriteLine("\t" + "\t" + " cdc." + datos[0].ToUpper()); //la primera línea no debe escribir la coma
+                                    i++;
+                                }
+                                else
+                                {
+                                    file.WriteLine("\t" + "\t" + ",cdc." + datos[0].ToUpper());
+                                }
+                            }
+                            //tratamiento del resto de campos
+                            else
+                            {
+                                if (i == 0)
+                                {
+                                    file.WriteLine("\t" + "\t" + " origen." + datos[0].ToUpper()); //la primera línea no debe escribir la coma
+                                    i++;
+                                }
+                                else
+                                {
+                                    if (datos[0].EndsWith("fecar")) //el campo fecha de carga tiene un tratamiento especial
+                                    {
+                                        file.WriteLine("\t" + "\t" + ",GETDATE() AS " + datos[0].ToUpper());
+                                    }
+                                    else
+                                        file.WriteLine("\t" + "\t" + ",origen." + datos[0].ToUpper());
+                                }
+                            }
+                        }
+                    }
 
+                    //para obtener el tipo de cambio SYS_CHANGE_OPERATION, necesito mirar el primer campo de la pk o índice único
+                    i = 0;
+                    foreach (string v in valorescsv)
+                    {
+                        string[] datos = v.Split(new Char[] { ';' });
+
+                        if (!datos[0].Contains("#")) //para descartar las cabeceras del csv
+                        {
+                            if (datos[4].Contains("#")) //solo lo proceso si es parte de la pk o índice único
+                            {
+                                file.WriteLine(",CASE WHEN origen." + datos[0].ToUpper() + " IS NULL THEN 'D' ELSE 'X' END AS SYS_CHANGE_OPERATION --primer campo de la pk o índice único");
+                                break; //salgo del bucle forecah, porque solo me interesa el primer campo de la pk o índice único
+                            }
+                        }
+                    }
+
+                    file.WriteLine("FROM" + "\t" + "cdc cdc");
+                    file.WriteLine("\t" + "\t" + "LEFT JOIN" + "\t" + Convert.ToChar(34) + " + @[User::TablaConEsquema] +" + Convert.ToChar(34) + " origen");
+
+                    //left join por los campos de la pk o índice único
+                    i = 0;
+                    foreach (string v in valorescsv)
+                    {
+                        string[] datos = v.Split(new Char[] { ';' });
+
+                        if (!datos[0].Contains("#")) //para descartar las cabeceras del csv
+                        {
+                            if (datos[4].Contains("#")) //para quedarme solo con los campos de la pk o índice único
+                            {
+                                if (i == 0)
+                                {
+                                    file.WriteLine("\t" + "\t" + "\t" + "\t" + "ON" + "\t" + "cdc." + datos[0].ToUpper() + " = origen." + datos[0].ToUpper() + " --join por toda la pk o índice único"); //la primera línea de la join
+                                    i++;
+                                }
+                                else
+                                {
+                                    file.WriteLine("\t" + "\t" + "\t" + "\t" + "AND" + "\t" + "cdc." + datos[0].ToUpper() + " = origen." + datos[0].ToUpper()); //la primera línea de la join
+                                }
+                            }
+                        }
+                    }
+
+                    file.WriteLine(Convert.ToChar(34));
+
+                    file.Close();
+                }
+                catch //(Exception ex)
+                {
+                    MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                    return "NO";
+                }
+
+                return "OK";
+            }
+            else
+            {
+                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                return "NO";
+            }
+        }
 
 
         public string activarCT_microfocus(string table, string schema, string ruta, ref string nombrearchivo, string camposPK, string bd, string tipogen)
