@@ -265,8 +265,10 @@ namespace ScriptsCreator
 
             string csvRow;
 
-            DataTable datosColumnas = a.conexion(cadena, "SELECT column_name, is_nullable, data_type, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + table + "'");
+            DataTable datosColumnas = a.conexion(cadena, "SELECT colu.column_name, colu.is_nullable, colu.data_type, colu.CHARACTER_MAXIMUM_LENGTH, colu.NUMERIC_PRECISION, colu.NUMERIC_SCALE, prop.value FROM INFORMATION_SCHEMA.COLUMNS colu LEFT JOIN sys.extended_properties prop ON OBJECT_ID(colu.TABLE_SCHEMA + '.' + colu.TABLE_NAME) = prop.major_id AND colu.ORDINAL_POSITION = prop.minor_id AND prop.name = 'MS_Description' AND prop.class = 1 WHERE TABLE_NAME = '" + table + "'");
             DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves("" + schema + "." + table));
+            DataTable datosTabla = a.conexion(cadena, "SELECT TOP 1 prop.value FROM INFORMATION_SCHEMA.TABLES tabl LEFT JOIN sys.extended_properties prop ON OBJECT_ID(tabl.TABLE_SCHEMA + '.' + tabl.TABLE_NAME) = prop.major_id AND prop.minor_id = 0 AND prop.name = 'MS_Description' AND prop.class = 1 WHERE TABLE_NAME = '" + table + "'");
+            string comentarioTabla = datosTabla.Rows[0].ItemArray[0].ToString();
 
             //MONTAR SCRIPTS
             string nombretab = "tbn1" + table.Substring(4, table.Length - 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
@@ -281,11 +283,11 @@ namespace ScriptsCreator
                 {
                     StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
 
-                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", "#nombre_DS", nombretab.Replace("tbn1", ""), "dbn1_stg_dhyf", "", "", "", "", "", "", "");
+                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", "#nombre_DS", nombretab.Replace("tbn1", ""), "dbn1_stg_dhyf", "", "", "", "", "", "", "", comentarioTabla);
                     file.WriteLine(csvRow);
-                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", "#prefijo_DM", "", "", "", "", "", "", "", "", "");
+                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", "#prefijo_DM", "", "", "", "", "", "", "", "", "", "");
                     file.WriteLine(csvRow);
-                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", "#campo", "Tipo", "TablaSID", "SID", "Clave?", "Dim", "Campocruce", "SIDDim", "AutoSID?", "Filter");
+                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", "#campo", "Tipo", "TablaSID", "SID", "Clave?", "Dim", "Campocruce", "SIDDim", "AutoSID?", "Filter", "MS_Description");
                     file.WriteLine(csvRow);
                     
                     foreach (DataRow dr in datosColumnas.Rows)
@@ -312,17 +314,17 @@ namespace ScriptsCreator
 
                         if (camposPK.Contains(dr.ItemArray[0].ToString().ToLower()))
                         {
-                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "#", "", "", "", "", "");
+                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "#", "", "", "", "", "", dr.ItemArray[10].ToString());
                             file.WriteLine(csvRow);
                         }
                         else
                         {
-                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "", "", "", "", "", "");
+                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "", "", "", "", "", "", dr.ItemArray[10].ToString());
                             file.WriteLine(csvRow);
                         }
                     }
 
-                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", fecar, "date", "", "", "", "", "", "", "", "");
+                    csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", fecar, "date", "", "", "", "", "", "", "", "", "Fecha última carga");
                     file.WriteLine(csvRow);
 
                     file.Close();
