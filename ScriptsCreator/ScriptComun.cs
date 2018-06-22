@@ -421,10 +421,10 @@ namespace ScriptsCreator
                 file.WriteLine("--Añadir las propiedades extendidas de la tabla");
                 if (comentarioTabla != "")
                 {
-                    file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES tabl INNER JOIN sys.extended_properties prop ON OBJECT_ID(tabl.TABLE_SCHEMA + '.' + tabl.TABLE_NAME) = prop.major_id AND prop.minor_id = 0 AND prop.name = 'MS_Description' AND prop.class = 1 WHERE tabl.TABLE_NAME = '" + tab + "')");
-                    file.WriteLine("\t" + "EXEC sys.sp_dropextendedproperty @name = N'MS_Description', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "'");
+                    file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES tabl INNER JOIN " + bd + ".sys.extended_properties prop ON OBJECT_ID('" + bd + ".' + tabl.TABLE_SCHEMA + '.' + tabl.TABLE_NAME) = prop.major_id AND prop.minor_id = 0 AND prop.name = 'MS_Description' AND prop.class = 1 WHERE tabl.TABLE_NAME = '" + tab + "')");
+                    file.WriteLine("\t" + "EXEC " + bd + ".sys.sp_dropextendedproperty @name = N'MS_Description', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "'");
                     file.WriteLine("GO");
-                    file.WriteLine("EXEC sys.sp_addextendedproperty  @name = N'MS_Description', @value = N'" + comentarioTabla + "', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "'");
+                    file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty  @name = N'MS_Description', @value = N'" + comentarioTabla + "', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "'");
                     file.WriteLine("GO");
                     file.WriteLine("");
                     file.WriteLine("");
@@ -470,10 +470,11 @@ namespace ScriptsCreator
             //Borramos Indices
             if (tiposcript != "extraccion")
             {
-                file.WriteLine("--Drop all non-clustered index");
                 file.WriteLine("USE " + bd);
                 file.WriteLine("GO");
                 file.WriteLine("");
+
+                file.WriteLine("--Drop all non-clustered index");
                 file.WriteLine("DECLARE @pk varchar(200) = ''");
                 file.WriteLine("--Comentar la siguiente select de variable para borrar todos los non-clustered index, sino solo se borran aquellos que no sean Primary Key--");
                 file.WriteLine("SELECT @pk = constraint_name FROM " + bd + ".INFORMATION_SCHEMA.TABLE_CONSTRAINTS");
@@ -791,9 +792,9 @@ namespace ScriptsCreator
                     if (!fila[0].Contains("#") && (comentarioColumna != ""))
                     {
                         file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM INFORMATION_SCHEMA.COLUMNS colu INNER JOIN sys.extended_properties prop ON OBJECT_ID(colu.TABLE_SCHEMA +'.' + colu.TABLE_NAME) = prop.major_id AND colu.ORDINAL_POSITION = prop.minor_id AND prop.name = 'MS_Description' AND prop.class = 1 WHERE colu.TABLE_NAME = '" + tab + "' AND colu.COLUMN_NAME = '" + fila[0] + "')");
-                        file.WriteLine("\t" + "EXEC sys.sp_dropextendedproperty @name = N'MS_Description', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "', @level2type = N'COLUMN',@level2name = N'" + fila[0] + "'");
+                        file.WriteLine("\t" + "EXEC " + bd + ".sys.sp_dropextendedproperty @name = N'MS_Description', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "', @level2type = N'COLUMN',@level2name = N'" + fila[0] + "'");
                         file.WriteLine("GO");
-                        file.WriteLine("EXEC sys.sp_addextendedproperty  @name = N'MS_Description', @value = N'" + comentarioColumna + "', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "', @level2type = N'COLUMN',@level2name = N'" + fila[0] + "'");
+                        file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty  @name = N'MS_Description', @value = N'" + comentarioColumna + "', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "', @level2type = N'COLUMN',@level2name = N'" + fila[0] + "'");
                         file.WriteLine("GO");
                     }
                 }

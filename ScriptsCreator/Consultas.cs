@@ -18,7 +18,7 @@ namespace ScriptsCreator
                             "colu.NUMERIC_PRECISION, " +
                             "colu.NUMERIC_SCALE, " +
                             "columnproperty(object_id(colu.TABLE_NAME), colu.column_name, 'IsIdentity') as es_identity, " +
-                            "COALESCE(COALESCE(capt.value, ms_d.value), '') AS comentario, " +
+                            "COALESCE(COALESCE(COALESCE(capt.value, ms_d.value), labe.value), '') AS comentario, " +
                             "colu.ORDINAL_POSITION " +
                    "FROM    INFORMATION_SCHEMA.COLUMNS colu " +
                             "LEFT JOIN sys.extended_properties ms_d " +
@@ -31,6 +31,11 @@ namespace ScriptsCreator
                                     "AND colu.ORDINAL_POSITION = capt.minor_id " +
                                     "AND capt.name = 'Caption' " +
                                     "AND capt.class = 1 " +
+                            "LEFT JOIN sys.extended_properties labe " +
+                                    "ON  OBJECT_ID(colu.TABLE_SCHEMA + '.' + colu.TABLE_NAME) = labe.major_id " +
+                                    "AND colu.ORDINAL_POSITION = labe.minor_id " +
+                                    "AND labe.name = 'Label' " +
+                                    "AND labe.class = 1 " +
                    "WHERE   colu.TABLE_NAME = '" + tabla + "' " +
                    "ORDER BY colu.ORDINAL_POSITION";
         }
