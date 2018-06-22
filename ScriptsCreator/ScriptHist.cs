@@ -414,7 +414,7 @@ namespace ScriptsCreator
             DataTable dtCT = a.conexion(a.cadenad(bbdd), c.ChangeTrackingActivo(tab));
             DataTable dtTLActivado = a.conexion(a.cadenad("dbn1_hist_dhyf"), c.ComprobarTL(tab));
             DataTable datosTabla = a.conexion(a.cadenad(bbdd), c.ComentarioTabla(tab));
-            string descripcionTabla = datosTabla.Rows[0].ToString();
+            string comentarioTabla = datosTabla.Rows[0].ItemArray[0].ToString();
 
             //Agregamos los campos PK a
             foreach (DataRow dr in dtClaves.Rows)
@@ -651,7 +651,7 @@ namespace ScriptsCreator
                         tab_sin_prefijo = tab;
                     }
 
-                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo + "_tracelog", valorComentario);
+                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo + "_tracelog", comentarioTabla);
                     file.WriteLine("GO");
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");
