@@ -204,16 +204,18 @@ namespace ScriptsCreator
                     foreach (DataRow dr in datosExtended.Rows)
                     {
                         if (dr.ItemArray[0].ToString().ToUpper() == "COLUMN") //y después escribir los comentarios de las columnas
-                            {
+                        {
                             file.WriteLine("\tEXEC sys.sp_addextendedproperty @name = N'" + dr.ItemArray[2].ToString() + "', @value = N'" + dr.ItemArray[3].ToString().ToUpper() + "' , @level0type = N'SCHEMA',@level0name = N'dbo', @level1type = N'TABLE',@level1name = N'" + nombretab + "', @level2type = N'" + dr.ItemArray[0].ToString().ToUpper() + "',@level2name = N'" + dr.ItemArray[1].ToString().ToLower() + "'");
-                            }
-                            else
-                            { }
                         }
-                    file.WriteLine("\tEXEC sys.sp_addextendedproperty 'Caption', 'Fecha última carga', 'Schema', 'dbo', 'Table',  '" + nombretab + "', 'Column', '" + fecar + "'");
-                        file.WriteLine("END");
-                        file.WriteLine("GO");
-                        file.WriteLine("");
+                        else
+                        {
+
+                        }
+                    }
+                    file.WriteLine("\tEXEC sys.sp_addextendedproperty 'MS_Description', 'Fecha última carga', 'Schema', 'dbo', 'Table',  '" + nombretab + "', 'Column', '" + fecar + "'");
+                    file.WriteLine("END");
+                    file.WriteLine("GO");
+                    file.WriteLine("");
 
                     //Activar CT
                     file.WriteLine("--Activar CT");
@@ -267,7 +269,7 @@ namespace ScriptsCreator
 
             DataTable datosColumnas = a.conexion(cadena, "SELECT colu.column_name, colu.is_nullable, colu.data_type, colu.CHARACTER_MAXIMUM_LENGTH, colu.NUMERIC_PRECISION, colu.NUMERIC_SCALE, prop.value FROM INFORMATION_SCHEMA.COLUMNS colu LEFT JOIN sys.extended_properties prop ON OBJECT_ID(colu.TABLE_SCHEMA + '.' + colu.TABLE_NAME) = prop.major_id AND colu.ORDINAL_POSITION = prop.minor_id AND prop.name = 'MS_Description' AND prop.class = 1 WHERE TABLE_NAME = '" + table + "'");
             DataTable datosClaves = a.conexion(cadena, c.ColumnsClaves("" + schema + "." + table));
-            DataTable datosTabla = a.conexion(cadena, "SELECT TOP 1 prop.value FROM INFORMATION_SCHEMA.TABLES tabl LEFT JOIN sys.extended_properties prop ON OBJECT_ID(tabl.TABLE_SCHEMA + '.' + tabl.TABLE_NAME) = prop.major_id AND prop.minor_id = 0 AND prop.name = 'MS_Description' AND prop.class = 1 WHERE TABLE_NAME = '" + table + "'");
+            DataTable datosTabla = a.conexion(cadena, c.ComentarioTabla(table));
             string comentarioTabla = datosTabla.Rows[0].ItemArray[0].ToString();
 
             //MONTAR SCRIPTS
@@ -314,12 +316,12 @@ namespace ScriptsCreator
 
                         if (camposPK.Contains(dr.ItemArray[0].ToString().ToLower()))
                         {
-                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "#", "", "", "", "", "", dr.ItemArray[10].ToString());
+                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "#", "", "", "", "", "", dr.ItemArray[6].ToString());
                             file.WriteLine(csvRow);
                         }
                         else
                         {
-                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "", "", "", "", "", "", dr.ItemArray[10].ToString());
+                            csvRow = string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", "", "", "", "", "", "", "", dr.ItemArray[6].ToString());
                             file.WriteLine(csvRow);
                         }
                     }

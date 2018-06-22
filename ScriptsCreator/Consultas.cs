@@ -10,8 +10,29 @@ namespace ScriptsCreator
     {
         public string Columns(string tabla)
         {
-            return "SELECT column_name, is_nullable, data_type, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, columnproperty ( object_id (TABLE_NAME), column_name, 'IsIdentity') as es_identity "+
-                "FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tabla + "'";
+            return "SELECT  DISTINCT " +
+                            "colu.column_name, " +
+                            "colu.is_nullable, " +
+                            "colu.data_type, " +
+                            "colu.CHARACTER_MAXIMUM_LENGTH, " +
+                            "colu.NUMERIC_PRECISION, " +
+                            "colu.NUMERIC_SCALE, " +
+                            "columnproperty(object_id(colu.TABLE_NAME), colu.column_name, 'IsIdentity') as es_identity, " +
+                            "COALESCE(COALESCE(capt.value, ms_d.value), '') AS comentario, " +
+                            "colu.ORDINAL_POSITION " +
+                   "FROM    INFORMATION_SCHEMA.COLUMNS colu " +
+                            "LEFT JOIN sys.extended_properties ms_d " +
+                                    "ON  OBJECT_ID(colu.TABLE_SCHEMA +'.' + colu.TABLE_NAME) = ms_d.major_id " +
+                                    "AND colu.ORDINAL_POSITION = ms_d.minor_id " +
+                                    "AND ms_d.name = 'MS_Description' " +
+                                    "AND ms_d.class = 1 " +
+                            "LEFT JOIN sys.extended_properties capt " +
+                                    "ON  OBJECT_ID(colu.TABLE_SCHEMA + '.' + colu.TABLE_NAME) = capt.major_id " +
+                                    "AND colu.ORDINAL_POSITION = capt.minor_id " +
+                                    "AND capt.name = 'Caption' " +
+                                    "AND capt.class = 1 " +
+                   "WHERE   colu.TABLE_NAME = '" + tabla + "' " +
+                   "ORDER BY colu.ORDINAL_POSITION";
         }
 
         public string ColumnsClaves(string tabla)
@@ -60,6 +81,11 @@ namespace ScriptsCreator
                    "SELECT name FROM sys.objects WHERE type = 'P' and name = '" + sp.Replace("mae_", "maestro_") + "' " +
                    " UNION " +
                    "SELECT name FROM sys.objects WHERE type = 'P' and name = '" + sp.Replace("mae_", "maestro_") + "_ssis'";
+        }
+
+        public string ComentarioTabla(string tabla)
+        {
+            return "SELECT TOP 1 prop.value FROM INFORMATION_SCHEMA.TABLES tabl LEFT JOIN sys.extended_properties prop ON OBJECT_ID(tabl.TABLE_SCHEMA + '.' + tabl.TABLE_NAME) = prop.major_id AND prop.minor_id = 0 AND prop.name = 'MS_Description' AND prop.class = 1 WHERE TABLE_NAME = '" + tabla + "'";
         }
     }
 }

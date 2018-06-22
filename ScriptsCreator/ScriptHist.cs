@@ -120,10 +120,10 @@ namespace ScriptsCreator
                 cabtab = archivo.Substring(0, 4);
             }
 
-            //cgs quito tbn1_ porque sobra:    nombrearchivo = "Script TL " + tipobbdd + "_tbn1_" + cabtab + tab + "_tracelog_TL.sql";
+            //cgs quito tbn1_ porque sobra:    nombrearchivo = "Script TL " + tipoBD + "_tbn1_" + cabtab + tab + "_tracelog_TL.sql";
             nombrearchivo = "Script TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
             nombrearchivoexec = "Exec TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
-            //nombrearchivo = nombrearchivo.Replace("xxx", tipobbdd);
+            //nombrearchivo = nombrearchivo.Replace("xxx", tipoBD);
             string fichero = ruta + nombrearchivo;
             dev = a.comprobarficheros(ref lineas, fichero, 1);
 
@@ -138,7 +138,7 @@ namespace ScriptsCreator
 
                     //file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                     //file_exec.WriteLine("GO");
-                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, false, true);
+                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipoBD + "_" + tab, false, true);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -386,10 +386,10 @@ namespace ScriptsCreator
             }
         }
 
-        public string hist_tabla(string tab, string bbdd, ref string nombrearchivo, ref DataTable dtSP, string ruta)
+        public string Hist_tabla(string tab, string bbdd, ref string nombrearchivo, ref DataTable dtSP, string ruta)
         {
             //string nombrearchivoexec = "";
-            string tipobbdd = "";
+            string tipoBD = "";
             string schema = "";
             string schema_sp = "stg";
             string dev = "";
@@ -398,8 +398,9 @@ namespace ScriptsCreator
             bool existe_pk = false;
             string error = "";
             string clave = "";
-            string valorcampo = "";
+            string valorCampo = "";
             string valorClave = "";
+            string valorComentario = "";
             string nombreSP = "";
             string nombreScript = "";
             string[] lineas = new string[0];
@@ -412,6 +413,8 @@ namespace ScriptsCreator
             DataTable dtClaves = a.conexion(a.cadenad(bbdd), c.ColumnsClaves("dbo." + tab));
             DataTable dtCT = a.conexion(a.cadenad(bbdd), c.ChangeTrackingActivo(tab));
             DataTable dtTLActivado = a.conexion(a.cadenad("dbn1_hist_dhyf"), c.ComprobarTL(tab));
+            DataTable datosTabla = a.conexion(a.cadenad(bbdd), c.ComentarioTabla(tab));
+            string descripcionTabla = datosTabla.Rows[0].ToString();
 
             //Agregamos los campos PK a
             foreach (DataRow dr in dtClaves.Rows)
@@ -440,20 +443,20 @@ namespace ScriptsCreator
                 {
                     if (dr.ItemArray[3].ToString() == "-1")
                     {
-                        valorcampo = " varchar(max)";
+                        valorCampo = " varchar(max)";
                     }
                     else
                     {
-                        valorcampo = " varchar(" + dr.ItemArray[3].ToString() + ")";
+                        valorCampo = " varchar(" + dr.ItemArray[3].ToString() + ")";
                     }
                 }
                 else if (dr.ItemArray[2].ToString().ToLower() == "numeric" || dr.ItemArray[2].ToString().ToLower() == "decimal")
                 {
-                    valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + "(" + dr.ItemArray[4].ToString() + ", " + dr.ItemArray[5].ToString() + ")";
+                    valorCampo = " " + dr.ItemArray[2].ToString().ToLower() + "(" + dr.ItemArray[4].ToString() + ", " + dr.ItemArray[5].ToString() + ")";
                 }
                 else
                 {
-                    valorcampo = " " + dr.ItemArray[2].ToString().ToLower() ;
+                    valorCampo = " " + dr.ItemArray[2].ToString().ToLower() ;
                 }
 
                 //Comprobamos si el valor PK coincide con el valor del campo
@@ -476,9 +479,12 @@ namespace ScriptsCreator
                     }
                 }
 
+                //Valor del Comentario
+                valorComentario = dr.ItemArray[7].ToString();
+
                 //Montamos CSV
                 Array.Resize(ref csv, csv.Length + 1);
-                csv[csv.Length - 1] = dr.ItemArray[0].ToString() + ";" + valorcampo + ";" + valorClave + ";";
+                csv[csv.Length - 1] = dr.ItemArray[0].ToString() + ";" + valorCampo + ";" + valorClave + ";" + valorComentario + ";";
             }
             campos = campos.Substring(0, campos.Length - 2);
 
@@ -499,28 +505,28 @@ namespace ScriptsCreator
             //Asignamos nombre al nombrearchivo
             if (bbdd.Contains("dmr"))
             {
-                tipobbdd = "dimensional";
+                tipoBD = "dimensional";
                 schema = "dmr";
             }
             else if (bbdd.Contains("stg"))
             {
-                tipobbdd = "staging";
+                tipoBD = "staging";
                 schema = "stg";
             }
             else if (bbdd.Contains("norm"))
             {
-                tipobbdd = "normalizado";
+                tipoBD = "normalizado";
                 schema = "norm";
             }
             else
             {
-                tipobbdd = "";
+                tipoBD = "";
                 schema = "";
             }
 
             if (tab.Contains("mae_"))
             {
-                tipobbdd = "maestro";
+                tipoBD = "maestro";
             }
 
             //Incluimos el tbn1 para reemplazarlo al generar el SP
@@ -534,7 +540,7 @@ namespace ScriptsCreator
             }
 
             //Comprobamos si existe SP
-            nombreSP = tipobbdd + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
+            nombreSP = tipoBD + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
             nombreScript = nombreSP;
             string valorSP = "spn1_cargar_" + nombreSP;
 
@@ -548,7 +554,7 @@ namespace ScriptsCreator
             {
                 newSP["SP"] = "OJO!!! " + valorSP;
             }
-            newSP["SP_TL"] = "spn1_cargar_tracelog_" + tipobbdd + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
+            newSP["SP_TL"] = "spn1_cargar_tracelog_" + tipoBD + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
 
             //Comprobarmos si YA tiene TL generado
             if (dtTLActivado.Rows[0].ItemArray[0].ToString() == "1")
@@ -579,8 +585,8 @@ namespace ScriptsCreator
 
             //nombrearchivo = "Script TL " + nombreSP + "_tracelog_TL.sql";
             nombrearchivo = "Script TL " + nombreScript + "_tracelog_TL.sql";
-            //nombrearchivoexec = "Exec TL " + tipobbdd + "_" + tab + "_tracelog_TL.sql";
-            //nombrearchivo = nombrearchivo.Replace("xxx", tipobbdd);
+            //nombrearchivoexec = "Exec TL " + tipoBD + "_" + tab + "_tracelog_TL.sql";
+            //nombrearchivo = nombrearchivo.Replace("xxx", tipoBD);
             string fichero = ruta + nombrearchivo;
             dev = a.comprobarficheros(ref lineas, fichero, 1);
 
@@ -594,7 +600,7 @@ namespace ScriptsCreator
 
                     //file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                     //file_exec.WriteLine("GO");
-                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, false, true);
+                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipoBD + "_" + tab, false, true);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -645,7 +651,7 @@ namespace ScriptsCreator
                         tab_sin_prefijo = tab;
                     }
 
-                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo + "_tracelog");
+                    sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo + "_tracelog", valorComentario);
                     file.WriteLine("GO");
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");

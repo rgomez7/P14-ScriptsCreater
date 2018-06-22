@@ -318,7 +318,7 @@ namespace ScriptsCreator
 
                                 foreach (string tab in tablas)
                                 {
-                                    linegen = sh.hist_tabla(tab, txBBDD.Text.ToString(), ref arcScript, ref dtSP, ruta);
+                                    linegen = sh.Hist_tabla(tab, txBBDD.Text.ToString(), ref arcScript, ref dtSP, ruta);
                                     fichero = fichero + "\n\r" + arcScript;
                                 }
                                 //Generar archivo carga precondiciones

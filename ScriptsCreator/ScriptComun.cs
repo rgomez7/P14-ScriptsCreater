@@ -294,7 +294,7 @@ namespace ScriptsCreator
             return "OK";
         }
 
-        public string regTablas(StreamWriter file, string bd, string schema, string tab, string clave, string campos, string campospk, string[] csv, Boolean claveAuto, string tiposcript, string tab_sin_prefijo = "")
+        public string regTablas(StreamWriter file, string bd, string schema, string tab, string clave, string campos, string campospk, string[] csv, Boolean claveAuto, string tiposcript, string tab_sin_prefijo = "", string comentarioTabla="")
         {
             //Formato string[] CSV a pasar (nombreCampo;valorCampo;# [para campos Clave])
 
@@ -412,7 +412,25 @@ namespace ScriptsCreator
             file.WriteLine("WITH (DATA_COMPRESSION=PAGE)");
             file.WriteLine("GO");
             file.WriteLine("");
+            file.WriteLine("");
             #endregion Create Table
+
+            #region Comentario tabla
+            if (tiposcript == "historificacion" && schema == "stg")
+            {
+                file.WriteLine("--Añadir las propiedades extendidas de la tabla");
+                if (comentarioTabla != "")
+                {
+                    file.WriteLine("IF NOT EXISTS(SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES tabl INNER JOIN sys.extended_properties prop ON OBJECT_ID(tabl.TABLE_SCHEMA + '.' + tabl.TABLE_NAME) = prop.major_id AND prop.minor_id = 0 AND prop.name = 'MS_Description' AND prop.class = 1 WHERE TABLE_NAME = '" + tab + "')");
+                    file.WriteLine("\t" + "EXEC sys.sp_addextendedproperty @name = N'MS_Description', @value = N'" + comentarioTabla + "', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "'");
+                    file.WriteLine("GO");
+                    file.WriteLine("");
+                    file.WriteLine("");
+                }
+            }
+            #endregion Comentario tabla
+
+
 
             #region Borrado Constraint
             //Borramos Constraint
@@ -663,7 +681,7 @@ namespace ScriptsCreator
             file.WriteLine("");
             #endregion Borrado Columnas si no existen CSV
 
-            #region Adjuntamos Tipos Campos
+            #region Ajustamos Tipos Campos
             //Ajustamos tipos de Campos
             if (tiposcript != "maestro")
             {
@@ -757,7 +775,28 @@ namespace ScriptsCreator
                 }
                 file.WriteLine("");
             }
-            #endregion Adjuntamos Tipos Campos
+            #endregion Ajustamos Tipos Campos
+
+
+            #region Comentarios columnas
+            if (tiposcript == "historificacion")
+            {
+                file.WriteLine("--Añadir las propiedades extendidas de las columnas");
+                foreach (string d in csv)
+                {
+                    string[] fila = d.Split(new Char[] { ';' });
+                    string comentarioColumna = fila[3];
+                    if (!fila[0].Contains("#") && (comentarioColumna != ""))
+                    {
+                        file.WriteLine("IF NOT EXISTS(SELECT TOP 1 1 FROM INFORMATION_SCHEMA.COLUMNS colu INNER JOIN sys.extended_properties prop ON OBJECT_ID(colu.TABLE_SCHEMA +'.' + colu.TABLE_NAME) = prop.major_id AND colu.ORDINAL_POSITION = prop.minor_id AND prop.name = 'MS_Description' AND prop.class = 1 WHERE TABLE_NAME = '" + tab + "')");
+                        file.WriteLine("\t" + "EXEC sys.sp_addextendedproperty @name = N'MS_Description', @value = N'" + comentarioColumna + "', @level0type = N'SCHEMA', @level0name = N'" + schema + "', @level1type = N'TABLE', @level1name = N'" + tab + "', @level2type = N'COLUMN',@level2name = N'" + fila[0] + "'");
+                        file.WriteLine("GO");
+                    }
+                }
+                file.WriteLine("");
+            }
+            #endregion Comentarios columnas
+
 
             #region Añadimos PK
             //Añadimos PK siempre que pasemos valor en el parametro "campospk"
