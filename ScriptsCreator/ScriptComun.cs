@@ -716,7 +716,7 @@ namespace ScriptsCreator
                             }
                             else
                             {
-                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "' AND DATA_TYPE='" + tipoDato + "' AND IS_NULLABLE='NO')");
+                                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "' AND DATA_TYPE='" + tipoDato + "' AND IS_NULLABLE='YES')");
                                 file.WriteLine("    ALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString());
                                 file.WriteLine("GO");
                             }

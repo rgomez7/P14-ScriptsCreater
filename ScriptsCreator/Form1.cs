@@ -34,6 +34,10 @@ namespace ScriptsCreator
             txFile.Width = txSalida.Width;
             txBBDD.Visible = false;
             lbl_bd_microfocus.Visible = false;
+            //Oculto por defecto todos los radiobuttons de opciones que van vía clojure
+            gbDSDM.Visible = false;
+            rbIntegridad.Visible = false;
+            rbMaestro.Visible = false;
         }
 
         //Esto es para el boton de seleción de archivos
@@ -89,7 +93,7 @@ namespace ScriptsCreator
                 else if (archivo.ToLower().Contains("ds"))
                 {
                     rbDSDM.Checked = true;
-                    gbDSDM.Visible = true;
+                    //gbDSDM.Visible = true;
                     gbHist.Visible = false;
                     gbAcciones.Visible = true;
                     cb_ChangeTrack.Text = "Change Tracking Comentado";
@@ -281,7 +285,8 @@ namespace ScriptsCreator
                             }
                         }
                     }
-                    //Genera Historificación
+
+                    //Opción Historificación desde tabla
                     else if (rbHist.Checked)
                     {
                         string fichero = "";
@@ -293,84 +298,34 @@ namespace ScriptsCreator
                         dtSP.Columns.Add("TL_gen", typeof(String));
                         
                         string[] tablas;
-                        //Para leer desde tabla
-                        if (rb_Hist_Tabla.Checked == true)
+
+                        if (txBBDD.TextLength == 0)
                         {
-                            if (txBBDD.TextLength == 0)
-                            {
-                                MessageBox.Show("Debe indicar la BBDD donde se encuentran las Tablas origen para generar la Historificación", "Indicar BBDD de Historificación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            }
-                            else if (txFile.TextLength == 0)
-                            {
-                                MessageBox.Show("Debe indicar las Tablas Origen para generar la Historificación", "Indicar Tablas de Historificación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            }
-                            else
-                            {
-                                if (txFile.Text.ToString().Contains(";"))
-                                {
-                                    tablas = txFile.Text.ToString().Split(';');
-                                }
-                                else
-                                {
-                                    tablas = new string[1];
-                                    tablas[0] = txFile.Text.ToString();
-                                }
-
-                                foreach (string tab in tablas)
-                                {
-                                    linegen = sh.Hist_tabla(tab, txBBDD.Text.ToString(), ref arcScript, ref dtSP, ruta);
-                                    fichero = fichero + "\n\r" + arcScript;
-                                }
-                                //Generar archivo carga precondiciones
-                                linegen = sh.csv_precondiciones(dtSP, txBBDD.Text.ToString(), ruta);
-
-                                //Si todo es correcto
-                                if (linegen == "OK")
-                                {
-                                    MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                }
-                            }
+                            MessageBox.Show("Debe indicar la BBDD donde se encuentran las Tablas origen para generar la Historificación", "Indicar BBDD de Historificación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
-                        //Para leer de CSV
-                        else if ( rb_Hist_CSV.Checked == true)
+                        else if (txFile.TextLength == 0)
                         {
-                            //Para un archivo
-                            if (rb_Archivo.Checked == true)
+                            MessageBox.Show("Debe indicar las Tablas Origen para generar la Historificación", "Indicar Tablas de Historificación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                        else
+                        {
+                            if (txFile.Text.ToString().Contains(";"))
                             {
-                                csv = cr.leerCSV(archivo, rutaorigen);
-                                if (csv.Length == 0)
-                                {
-                                    txFile.Text = "";
-                                    txSalida.Text = "";
-                                    MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                                }
-                                else
-                                {
-                                    linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-                                    fichero = fichero + "\n\r" + arcScript;
-                                }
+                                tablas = txFile.Text.ToString().Split(';');
                             }
-                            //Para todos los archivos de la Carpeta
-                            else if (rb_Directorio.Checked == true)
-                            {
-                                txFile.Text = "*.csv";
-                                string[] dirs = Directory.GetFiles(rutaorigen, "*.csv");
-                                foreach (string dir in dirs)
-                                {
-                                    csv = null;
-                                    csv = cr.leerCSV(archivo, rutaorigen);
-
-                                    archivo = dir.Replace(rutaorigen, "");
-
-                                    linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-                                    fichero = fichero + "\n\r" + arcScript;
-                                }
-                            }
-                            //Si no seleccionas ningúna Opción
                             else
                             {
-                                MessageBox.Show("Debe seleccionar una opción Historificación para generar los ficheros", "Generación Ficheros", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                tablas = new string[1];
+                                tablas[0] = txFile.Text.ToString();
                             }
+
+                            foreach (string tab in tablas)
+                            {
+                                linegen = sh.Hist_tabla(tab, txBBDD.Text.ToString(), ref arcScript, ref dtSP, ruta);
+                                fichero = fichero + "\n\r" + arcScript;
+                            }
+                            //Generar archivo carga precondiciones
+                            linegen = sh.csv_precondiciones(dtSP, txBBDD.Text.ToString(), ruta);
 
                             //Si todo es correcto
                             if (linegen == "OK")
@@ -379,6 +334,72 @@ namespace ScriptsCreator
                             }
                         }
                     }
+
+                    //Opción Historificación desde CSV
+                    else if (rbHistCsv.Checked)
+                    {
+                        string fichero = "";
+                        string linegen = "OK";
+                        DataTable dtSP = new DataTable("Object_SP");
+                        dtSP.Columns.Add("SP", typeof(String));
+                        dtSP.Columns.Add("SP_TL", typeof(String));
+                        dtSP.Columns.Add("CT", typeof(String));
+                        dtSP.Columns.Add("TL_gen", typeof(String));
+
+                        //Para un archivo
+                        if (txFile.Text.EndsWith(".csv") == true)
+                        {
+                            csv = cr.leerCSV(archivo, rutaorigen);
+                            if (csv.Length == 0)
+                            {
+                                txFile.Text = "";
+                                txSalida.Text = "";
+                                MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            }
+                            else
+                            {
+                                linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                                fichero = fichero + "\n\r" + arcScript;
+                            }
+                        }
+
+                        //Para todos los archivos de la Carpeta
+                        //else if (txFile.Text.EndsWith("\\") == true)
+                        //{
+                        //    txFile.Text = "*.csv";
+                        //    string[] dirs = Directory.GetFiles(rutaorigen, "*.csv");
+                        //    foreach (string dir in dirs)
+                        //    {
+                        //        csv = null;
+                        //        csv = cr.leerCSV(archivo, rutaorigen);
+                        //
+                        //        archivo = dir.Replace(rutaorigen, "");
+                        //
+                        //        linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                        //        fichero = fichero + "\n\r" + arcScript;
+                        //    }
+                        //}
+                        
+                        //Si no se proporciona ninguna opción correcta
+                        else
+                        {
+                            MessageBox.Show("Solo se admiten ficheros con extensión .csv", "Formato de fichero incorrecto", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            linegen = "Formato de fichero de entrada incorrecto";
+                        }
+
+                        //Si todo es correcto
+                        if (linegen == "OK")
+                        {
+                            MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+
+
+
+
+
+
+
 
                     //Opción generación Script con Union ALL de los campos
                     else if (rbLectorCSV.Checked == true)
@@ -526,27 +547,80 @@ namespace ScriptsCreator
 
         private void rbHist_CheckedChanged(object sender, EventArgs e)
         {
+            lbl_file.Visible = true;
+            lbl_file.Text = "Tablas origen: ";
+            lbl_file.Width = 76;
+
+            txFile.Visible = true;
+            txFile.Enabled = true;
+            txFile.ReadOnly = false;
+            txFile.Width = 389;
+
+            lbl_bd_microfocus.Visible = true;
+            lbl_bd_microfocus.Text = "BD origen: ";
+            lbl_bd_microfocus.Width = 56;
+
+            txBBDD.Visible = true;
+            txBBDD.Enabled = true;
+            txBBDD.Width = 155;
+
+            btnBuscar.Visible = false;
+            btnBuscar.Enabled = false;
+
+            label2.Visible = true;
+
+            txSalida.Visible = true;
+            txSalida.Enabled = true;
+            txSalida.ReadOnly = false;
+            txSalida.Width = 529;
+
+            btRuta.Enabled = true;
+
+            gbHist.Visible = false;
+
+            rb_Hist_Tabla.Visible = false;
+            rb_Hist_Tabla.Enabled = false;
+
+            rb_Hist_CSV.Visible = false;
+            rb_Hist_CSV.Enabled = false;
+
+            rb_Archivo.Visible = false;
+
+            rb_Directorio.Visible = false;
+
+            cb_ClaveAuto.Visible = false;
+
             gbDSDM.Visible = false;
-            gbHist.Visible = true;
-            rb_Archivo.Checked = true;
-            gbAcciones.Visible = true;
-            cb_ChangeTrack.Text = "Change Tracking Comentado";
-            cb_ChangeTrack.Checked = true;
-            cb_ChangeTrack.Visible = true;
-            cb_IndexCS.Visible = false;
-            txFile.ReadOnly = true;
-            lbl_file.Text = "CSV a generar";
-            btnBuscar.Enabled = true;
-            txFile.Width = txSalida.Width;
-            txBBDD.Visible = false;
-            lbl_bd_microfocus.Visible = false;
-            rb_Hist_Tabla.Checked = true;
+
             gbAcciones.Visible = false;
+
+            btnScript.Visible = true;
+            btnScript.Enabled = true;
+            btnScript.Location = new System.Drawing.Point(18,200);
+
+            //gbDSDM.Width = 360;
+            //gbHist.Visible = true;
+            //rb_Archivo.Checked = true;
+            //gbAcciones.Visible = true;
+            //cb_ChangeTrack.Text = "Change Tracking Comentado";
+            //cb_ChangeTrack.Checked = true;
+            //cb_ChangeTrack.Visible = true;
+            //cb_IndexCS.Visible = false;
+            //lbl_file.Text = "CSV a generar";
+            //btnBuscar.Enabled = true;
+            //lbl_bd_microfocus.Visible = true;
+            //lbl_bd_microfocus.Text = "BD origen: ";
+            //lbl_bd_microfocus.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //txFile.ReadOnly = true;
+            //txFile.Width = txFile.Width - txBBDD.Width - lbl_bd_microfocus.Width - 5;
+            //txFile.Visible = true;
+            //txBBDD.Visible = true;
+            //gbAcciones.Visible = false;
         }
 
         private void rbDSDM_CheckedChanged(object sender, EventArgs e)
         {
-            gbDSDM.Visible = true;
+            //gbDSDM.Visible = true;
             gbHist.Visible = false;
             gbAcciones.Visible = true;
             cb_ChangeTrack.Text = "Change Tracking Comentado";
@@ -582,38 +656,111 @@ namespace ScriptsCreator
 
         private void rb_tabMF_STG_CheckedChanged(object sender, EventArgs e)
         {
-            gbDSDM.Visible = false;
-            gbHist.Visible = false;
-            gbAcciones.Visible = false;
-            cb_ChangeTrack.Text = "Change Tracking Comentado";
-            cb_ChangeTrack.Checked = false;
-            cb_ChangeTrack.Visible = false;
-            cb_IndexCS.Visible = false;
+            lbl_file.Visible = true;
+            lbl_file.Text = "Tablas origen: ";
+            lbl_file.Width = 76;
+
+            txFile.Visible = true;
+            txFile.Enabled = true;
             txFile.ReadOnly = false;
-            lbl_file.Text = "Tabla MicroFocus";
-            btnBuscar.Enabled = false;
-            txFile.Width = txFile.Width - txBBDD.Width - lbl_bd_microfocus.Width - 5;
-            txBBDD.Visible = true;
+            txFile.Width = 389;
+
             lbl_bd_microfocus.Visible = true;
+            lbl_bd_microfocus.Text = "BD origen: ";
+            lbl_bd_microfocus.Width = 56;
+
+            txBBDD.Visible = true;
+            txBBDD.Enabled = true;
+            txBBDD.Width = 155;
+
+            btnBuscar.Visible = false;
+            btnBuscar.Enabled = false;
+            btnBuscar.Text = "Buscar";
+
+            label2.Visible = true;
+
+            txSalida.Visible = true;
+            txSalida.Enabled = true;
+            txSalida.ReadOnly = false;
+            txSalida.Width = 529;
+
+            btRuta.Enabled = true;
+
+            gbHist.Visible = false;
+
+            rb_Hist_Tabla.Visible = false;
+            rb_Hist_Tabla.Enabled = false;
+
+            rb_Hist_CSV.Visible = false;
+            rb_Hist_CSV.Enabled = false;
+
+            rb_Archivo.Visible = false;
+
+            rb_Directorio.Visible = false;
+
+            cb_ClaveAuto.Visible = false;
+
+            gbDSDM.Visible = false;
+
             gbAcciones.Visible = false;
+
+            btnScript.Visible = true;
+            btnScript.Enabled = true;
+            btnScript.Location = new System.Drawing.Point(18, 200);
         }
 
         private void rb_CSV_MF_STG_CheckedChanged(object sender, EventArgs e)
         {
-            gbDSDM.Visible = false;
-            gbHist.Visible = false;
-            gbAcciones.Visible = false;
-            cb_ChangeTrack.Text = "Change Tracking Comentado";
-            cb_ChangeTrack.Checked = false;
-            cb_ChangeTrack.Visible = false;
-            cb_IndexCS.Visible = false;
-            txFile.ReadOnly = true;
-            lbl_file.Text = "CSV a generar";
-            btnBuscar.Enabled = true;
-            txFile.Width = txSalida.Width;
-            txBBDD.Visible = false;
+            lbl_file.Visible = true;
+            lbl_file.Text = "CSV origen: ";
+            lbl_file.Width = 76;
+
+            txFile.Visible = true;
+            txFile.Enabled = true;
+            txFile.ReadOnly = false;
+            txFile.Width = 529;
+
             lbl_bd_microfocus.Visible = false;
+            lbl_bd_microfocus.Text = "BD origen: ";
+            lbl_bd_microfocus.Width = 56;
+
+            txBBDD.Visible = false;
+            txBBDD.Enabled = true;
+            txBBDD.Width = 76;
+
+            btnBuscar.Visible = true;
+            btnBuscar.Enabled = true;
+
+            label2.Visible = true;
+
+            txSalida.Visible = true;
+            txSalida.Enabled = true;
+            txSalida.ReadOnly = false;
+            txSalida.Width = 529;
+
+            btRuta.Enabled = true;
+
+            gbHist.Visible = false;
+
+            rb_Hist_Tabla.Visible = false;
+            rb_Hist_Tabla.Enabled = false;
+
+            rb_Hist_CSV.Visible = false;
+            rb_Hist_CSV.Enabled = false;
+
+            rb_Archivo.Visible = false;
+
+            rb_Directorio.Visible = false;
+
+            cb_ClaveAuto.Visible = false;
+
+            gbDSDM.Visible = false;
+
             gbAcciones.Visible = false;
+
+            btnScript.Visible = true;
+            btnScript.Enabled = true;
+            btnScript.Location = new System.Drawing.Point(18, 200);
         }
 
         private void rb_Hist_Tabla_CheckedChanged(object sender, EventArgs e)
@@ -678,6 +825,70 @@ namespace ScriptsCreator
         private void txFile_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void cb_ClaveAuto_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void rbHistCsv_CheckedChanged(object sender, EventArgs e)
+        {
+            lbl_file.Visible = true;
+            lbl_file.Text = "CSV origen: ";
+            lbl_file.Width = 76;
+
+            txFile.Visible = true;
+            txFile.Enabled = true;
+            txFile.ReadOnly = false;
+            txFile.Width = 529;
+
+            lbl_bd_microfocus.Visible = false;
+            lbl_bd_microfocus.Text = "BD origen: ";
+            lbl_bd_microfocus.Width = 56;
+
+            txBBDD.Visible = false;
+            txBBDD.Enabled = true;
+            txBBDD.Width = 76;
+
+            btnBuscar.Visible = true;
+            btnBuscar.Enabled = true;
+
+            label2.Visible = true;
+
+            txSalida.Visible = true;
+            txSalida.Enabled = true;
+            txSalida.ReadOnly = false;
+            txSalida.Width = 529;
+
+            btRuta.Enabled = true;
+
+            gbHist.Visible = false;
+
+            rb_Hist_Tabla.Visible = false;
+            rb_Hist_Tabla.Enabled = false;
+
+            rb_Hist_CSV.Visible = false;
+            rb_Hist_CSV.Enabled = false;
+
+            rb_Archivo.Visible = false;
+
+            rb_Directorio.Visible = false;
+
+            cb_ClaveAuto.Visible = false;
+
+            gbDSDM.Visible = false;
+
+            gbAcciones.Visible = false;
+
+            btnScript.Visible = true;
+            btnScript.Enabled = true;
+            btnScript.Location = new System.Drawing.Point(18, 200);
         }
     }
 }
