@@ -146,7 +146,7 @@ namespace ScriptsCreator
             return csvDataTable;
         }
 
-        public string[] ordenarCSV(string[] csvData)
+        public string[] ordenarCSV(string[] csvData, string tipoCsv = "")
         {
             string[] csv = new string[0];
             DataTable dt;
@@ -192,7 +192,14 @@ namespace ScriptsCreator
                 {
                     valordatos = "";
 
-                    if (errorFilter == 1)
+                    if (tipoCsv == "extraccion")
+                    {
+                        valordatos = dr.ItemArray[dt.Columns.IndexOf("columna")].ToString().TrimEnd() + ";" +
+                                     dr.ItemArray[dt.Columns.IndexOf("tipo")].ToString().TrimEnd() + ";"    +
+                                     dr.ItemArray[dt.Columns.IndexOf("clave")].ToString().TrimEnd() + ";" +
+                                     dr.ItemArray[dt.Columns.IndexOf("comentario")].ToString().TrimEnd() + ";"   ;
+                    }
+                    else if (errorFilter == 1)
                     {
                         valordatos = dr.ItemArray[dt.Columns.IndexOf("campo")].ToString().TrimEnd() + ";" +
                             dr.ItemArray[dt.Columns.IndexOf("tipo")].ToString().TrimEnd() + ";" +

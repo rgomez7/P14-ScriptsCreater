@@ -53,7 +53,7 @@ namespace ScriptsCreator
             {
                 archivoruta = openFileDialog1.FileName;
                 archivo = openFileDialog1.SafeFileName;
-                txFile.Text = archivo;
+                txFile.Text = archivoruta;
                 rutaorigen = archivoruta.Replace(archivo, "");
                 if (txSalida.Text == "")
                 {
@@ -447,13 +447,14 @@ namespace ScriptsCreator
                             linegen = mf_stg.createtable_stgFinal(table, schema, ruta, ref arcScript, ref camposPK, nombreBD, ref activoCT);
                             datosScript = datosScript + "\n\r" + arcScript;
 
-                            if (activoCT == 0)
-                            {
-                                linegen = mf_stg.activarCT_microfocus(table, schema, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pre");
-                                datosScript = datosScript + "\n\r" + arcScript;
-                                linegen = mf_stg.activarCT_microfocus(table, schema, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pro");
-                                datosScript = datosScript + "\n\r" + arcScript;
-                            }
+                           //Obsoleto. Ya no se usa el CT, sino el CDC
+                            //if (activoCT == 0)
+                            //{
+                            //    linegen = mf_stg.activarCT_microfocus(table, schema, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pre");
+                            //    datosScript = datosScript + "\n\r" + arcScript;
+                            //    linegen = mf_stg.activarCT_microfocus(table, schema, ruta, ref arcScript, camposPK.ToUpper(), nombreBD, "Pro");
+                            //    datosScript = datosScript + "\n\r" + arcScript;
+                            //}
 
                             linegen = mf_stg.gencsv(table, schema, ruta, ref arcScript, camposPK, nombreBD);
                             datosScript = datosScript + "\n\r" + arcScript;
@@ -482,6 +483,7 @@ namespace ScriptsCreator
                     //Generación de Script extracción desde CSV
                     else if (rb_CSV_MF_STG.Checked == true)
                     {
+                        string fichero = "";
                         string linegen;
                         string datosScript = "";
 
@@ -489,8 +491,22 @@ namespace ScriptsCreator
                         datosScript = datosScript + "\n\r" + arcScript;
                         linegen = mf_stg.createSP_extraccion(archivo, rutaorigen, ref arcScript);
                         datosScript = datosScript + "\n\r" + arcScript;
-                        linegen = mf_stg.createSnippet_ext(archivo, rutaorigen, ref arcScript);
-                        datosScript = datosScript + "\n\r" + arcScript;
+
+                        if (txFile.Text.EndsWith(".csv") == true)
+                        {
+                            csv = cr.leerCSV(archivo, rutaorigen);
+                            if (csv.Length == 0)
+                            {
+                                txFile.Text = "";
+                                txSalida.Text = "";
+                                MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            }
+                            else
+                            {
+                                linegen = mf_stg.createtable_stgFinal(archivo, rutaorigen, ref arcScript);
+                                fichero = fichero + "\n\r" + arcScript;
+                            }
+                        }
 
                         if (linegen == "OK")
                         {
