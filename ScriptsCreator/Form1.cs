@@ -487,9 +487,9 @@ namespace ScriptsCreator
                         string linegen;
                         string datosScript = "";
 
-                        linegen = mf_stg.createtable_extraccion(archivo, rutaorigen, ref arcScript);
+                        linegen = mf_stg.createtable_extraccion(archivo, rutaorigen, ref arcScript, ruta);
                         datosScript = datosScript + "\n\r" + arcScript;
-                        linegen = mf_stg.createSP_extraccion(archivo, rutaorigen, ref arcScript);
+                        linegen = mf_stg.createSP_extraccion(archivo, rutaorigen, ref arcScript, ruta);
                         datosScript = datosScript + "\n\r" + arcScript;
 
                         if (txFile.Text.EndsWith(".csv") == true)
@@ -503,7 +503,7 @@ namespace ScriptsCreator
                             }
                             else
                             {
-                                linegen = mf_stg.createtable_stgFinal(archivo, rutaorigen, ref arcScript);
+                                linegen = mf_stg.createtable_stgFinal(archivo, rutaorigen, ref arcScript, ruta);
                                 fichero = fichero + "\n\r" + arcScript;
                             }
                         }

@@ -253,7 +253,8 @@ namespace ScriptsCreator
             }
         }
 
-        public string createtable_stgFinal(string csv, string ruta, ref string nombreArchivo)
+        //pendiente de implemetar
+        public string createtable_stgFinal(string csv, string ruta, ref string nombreArchivo, string rutaDestino = "")
         {
             return "OK";
         }
@@ -343,7 +344,7 @@ namespace ScriptsCreator
             }
         }
 
-        public string createtable_extraccion(string csv, string ruta, ref string nombrearchivo)
+        public string createtable_extraccion(string csv, string ruta, ref string nombrearchivo, string rutaDestino = "")
         {
             string[] lineas = new string[0];
             string nombretab = "";
@@ -375,13 +376,20 @@ namespace ScriptsCreator
             }
 
             nombrearchivo = "Script staging_" + nombretab + "_tablatmp.sql";
-            string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
 
-            if (a.comprobarDir(ruta) == "OK")
+            //Si la ruta destino de los ficheros no viene informada, cogemos la misma que la ruta del csv origen
+            if (rutaDestino == "")
+            {
+                rutaDestino = ruta;
+            }
+
+            string dev = a.comprobarficheros(ref lineas, rutaDestino + nombrearchivo, 1);
+
+            if (a.comprobarDir(rutaDestino) == "OK")
             {
                 try
                 {
-                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
+                    StreamWriter file = new StreamWriter(new FileStream(rutaDestino + nombrearchivo, FileMode.Create), Encoding.UTF8);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -408,12 +416,12 @@ namespace ScriptsCreator
             }
             else
             {
-                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return "NO";
             }
         }
 
-        public string createSP_extraccion(string csv, string ruta, ref string nombrearchivo)
+        public string createSP_extraccion(string csv, string ruta, ref string nombrearchivo, string rutaDestino = "")
         {
             string[] lineas = new string[0];
             string nombretab = "";
@@ -448,13 +456,19 @@ namespace ScriptsCreator
             string[] camposPK2 = camposPK.Split(',');
 
             nombrearchivo = "Script staging_" + nombretab + "_sptmp.sql";
-            string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
 
-            if (a.comprobarDir(ruta) == "OK")
+            //Si la ruta destino de los ficheros no viene informada, cogemos la misma que la ruta del csv origen
+            if (rutaDestino == "")
+            {
+                rutaDestino = ruta;
+            }
+            string dev = a.comprobarficheros(ref lineas, rutaDestino + nombrearchivo, 1);
+
+            if (a.comprobarDir(rutaDestino) == "OK")
             {
                 try
                 {
-                    StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
+                    StreamWriter file = new StreamWriter(new FileStream(rutaDestino + nombrearchivo, FileMode.Create), Encoding.UTF8);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
