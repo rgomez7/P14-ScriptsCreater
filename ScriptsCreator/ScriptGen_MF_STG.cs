@@ -37,6 +37,8 @@ namespace ScriptsCreator
             }
         }
         
+
+
         public string createtable_stgFinal(string table, string schema, string ruta, ref string nombrearchivo, ref string camposPK, string bd, ref int activoCT)
         {
             activoCT = 1;
@@ -187,87 +189,8 @@ namespace ScriptsCreator
                             file.WriteLine("");
                         }
 
-
                         //Propiedades Extendidas
-                        string candidatoMSDescriptionTabla = "";
-                        int candidatoMSDescriptionTablaEncontrado = 0;
-                        file.WriteLine("/************************/");
-                        file.WriteLine("/*Propiedades extendidas*/");
-                        file.WriteLine("/************************/");
-                        file.WriteLine("");
-                        foreach (DataRow dr in datosExtended.Rows)
-                        {
-                            //propiedades extendidas de la tabla
-                            if (dr.ItemArray[0].ToString().ToUpper() == "TABLE")
-                            {
-                                if (dr.ItemArray[2].ToString() == "MS_Description")
-                                {
-                                    candidatoMSDescriptionTabla = dr.ItemArray[3].ToString();
-                                    candidatoMSDescriptionTablaEncontrado = 1;
-                                }
-                                else
-                                {
-                                    file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('" + dr.ItemArray[2].ToString() + "', 'schema', 'dbo', 'table', '" + nombretab + "', null, null))");
-                                    file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = null, @level2name = null");
-                                    file.WriteLine("GO");
-                                    file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @value = '" + dr.ItemArray[3].ToString() + "', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "'");
-                                    file.WriteLine("GO\n\r");
-                                    if (candidatoMSDescriptionTablaEncontrado == 0 && dr.ItemArray[3].ToString().StartsWith("[") && dr.ItemArray[3].ToString().Contains("]"))
-                                    {
-                                        candidatoMSDescriptionTabla = dr.ItemArray[3].ToString();
-                                        candidatoMSDescriptionTablaEncontrado = 1;
-                                    }
-                                }
-
-                                //Creo la MS_Description de la tabla a partir del mejor candidato encontrado (esta propiedad no siempre está informada en Origen)
-                                if (candidatoMSDescriptionTabla.Equals(""))
-                                {
-                                    candidatoMSDescriptionTabla = "[NO-MASK][NO-DCP] Tabla " + nombretab;
-                                }
-                                file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + nombretab + "', null, null))");
-                                file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = null, @level2name = null");
-                                file.WriteLine("GO");
-                                file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = '" + candidatoMSDescriptionTabla + "', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "'");
-                                file.WriteLine("GO\n\r");
-                            }
-                            //propiedades extendidas de las columnas
-                            else if (dr.ItemArray[0].ToString().ToUpper() == "COLUMN")
-                            {
-                                file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('" + dr.ItemArray[2].ToString() + "', 'schema', 'dbo', 'table', '" + nombretab + "', 'column', '" + dr.ItemArray[1].ToString().ToLower() + "'))");
-                                file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = 'column', @level2name = '" + dr.ItemArray[1].ToString().ToLower() + "'");
-                                file.WriteLine("GO");
-                                file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @value = '" + dr.ItemArray[3].ToString() + "' , @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = 'column', @level2name = '" + dr.ItemArray[1].ToString().ToLower() + "'");
-                                file.WriteLine("GO\n\r");
-                            }
-                        }
-
-                        //Porpiedades extendidas de la fecar
-                        file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + nombretab + "', 'column', '" + fecar + "'))");
-                        file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = 'column', @level2name = '" + fecar + "'");
-                        file.WriteLine("GO");
-                        file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = '[NO-MASK][NO-DCP] Fecha última carga' , @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = 'column', @level2name = '" + fecar + "'");
-                        file.WriteLine("GO\n\r");
-                        
-                        //si se ha quedado alguna columna sin MS_Description, le asigno el valor de otra propiedad que contenga los caracteres []
-                        foreach (DataRow dr in datosColumnas.Rows)
-                        {
-                            file.WriteLine("IF NOT EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + nombretab + "', 'column', '" + dr.ItemArray[0].ToString().ToLower() + "'))");
-                            file.WriteLine("BEGIN");
-                            file.WriteLine("\tDECLARE @valueVarchar varchar(200)");
-                            file.WriteLine("\tSET @valueVarchar = COALESCE((SELECT TOP 1 CAST(value AS varchar(200)) FROM dbn1_stg_dhyf.sys.fn_listextendedproperty(null, 'schema', 'dbo', 'table', '" + nombretab + "', 'column', '" + dr.ItemArray[0].ToString().ToLower() + "') WHERE CAST(value AS varchar(200)) LIKE '[[]%]%'),'[NO-MASK][NO-DCP] Columna " + dr.ItemArray[0].ToString().ToLower() + "')");
-                            file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = @valueVarchar, @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = 'column', @level2name = '" + dr.ItemArray[0].ToString().ToLower() + "'");
-                            file.WriteLine("END");
-                            file.WriteLine("GO\n\r");
-                        }
-
-                        //Propiedades extendidas de la PK
-                        file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + nombretab + "', 'constraint', '" + nombretab + "_PK'))");
-                        file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = 'constraint', @level2name = '" + nombretab + "_PK'");
-                        file.WriteLine("GO");
-                        file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = '[CLUSTER][UNICO]', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombretab + "', @level2type = 'constraint', @level2name = '" + nombretab + "_PK'");
-                        file.WriteLine("GO\n\r");
-
-                        file.WriteLine("");
+                        sc.AnaydirPropiedadesExtendidas(file, nombretab, datosColumnas, fecar, datosExtended);
 
                         //Activar CT
                         file.WriteLine("--Activar CT");
@@ -461,7 +384,7 @@ namespace ScriptsCreator
                     file.WriteLine("");
 
                     sc.regTablas(file, "dbn1_stg_dhyf", "extracciones_tmp", nombretab + "_tmp", "", campos, camposPK, valorescsv, false, "extraccion");
-                    
+
                     file.Close();
                 }
                 catch //(Exception ex)

@@ -12,7 +12,7 @@ namespace ScriptsCreator
 {
     class Acciones
     {
-        public string version = "1.2.5";
+        public string version = "1.2.6";
 
         public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {

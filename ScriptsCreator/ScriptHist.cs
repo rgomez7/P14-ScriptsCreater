@@ -414,6 +414,7 @@ namespace ScriptsCreator
             DataTable dtCT = a.conexion(a.cadenad(bbdd), c.ChangeTrackingActivo(tab));
             DataTable dtTLActivado = a.conexion(a.cadenad("dbn1_hist_dhyf"), c.ComprobarTL(tab));
             DataTable datosTabla = a.conexion(a.cadenad(bbdd), c.ComentarioTabla(tab));
+            DataTable datosExtended = a.conexion(a.cadenad(bbdd), c.PropiedadesExtendidas(schema + "", tab));
             string comentarioTabla = datosTabla.Rows[0].ItemArray[0].ToString();
 
             //Agregamos los campos PK a
@@ -652,7 +653,7 @@ namespace ScriptsCreator
                     }
 
                     sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo + "_tracelog", comentarioTabla);
-                    file.WriteLine("GO");
+
                     file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
                     file.WriteLine("--------------------------------------*/");
 
@@ -790,6 +791,13 @@ namespace ScriptsCreator
 
                     file.WriteLine("GO");
                     file.WriteLine("");
+
+                    //Propiedades extendidas del SP
+                    file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM dbn1_hist_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema_sp + "', 'procedure', 'spn1_cargar_tracelog_" + nombreSP + "', null, null))");
+                    file.WriteLine("\tEXEC dbn1_hist_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema_sp + "', @level1type = 'procedure', @level1name = 'spn1_cargar_tracelog_" + nombreSP + "', @level2type = null, @level2name = null");
+                    file.WriteLine("GO");
+                    file.WriteLine("EXEC dbn1_hist_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = 'Procedimiento de carga de la tabla dbn1_hist_dhyf." + schema + "." + tab + "_tracelog', @level0type = 'schema', @level0name = '" + schema_sp + "', @level1type = 'procedure', @level1name = 'spn1_cargar_tracelog_" + nombreSP + "'");
+                    file.WriteLine("GO\n");
 
                     #endregion "Stored Procedure"
 
