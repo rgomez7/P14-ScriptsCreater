@@ -972,54 +972,56 @@ namespace ScriptsCreator
             #endregion Añadimos PK
 
             #region Añadimos Index
-            //Añadimos Index
-            if (tiposcript == "dm")
-            {
-                file.WriteLine("--Create indexes if not exist");
-                i = 0;
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (!j[0].Contains("#") && j[2].Length > 0)
-                    {
-                        i++;
-                        file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_" + i + "') ");
-                        file.WriteLine("    CREATE NONCLUSTERED INDEX IX_" + tab + "_" + i + " ON " + bd + "." + schema + "." + tab + "(" + j[0].ToString() + ")");
-                        file.WriteLine("");
-                    }
-                }
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_unique') ");
-                file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campospk.Replace("'", "").Replace("xxx_", "t_") + ") INCLUDE (" + clave + ")");
-                file.WriteLine("");
-            }
-            else if (tiposcript == "extraccion")
-            { 
-                //No se genera index
-            }
-            else if (tiposcript == "historificacion") //para cumplir la normativa de nomencaltura y poder ir por vía oficial
+            if (tiposcript == "historificacion") //para cumplir la normativa de nomencaltura y poder ir por vía oficial
             {
                 file.WriteLine("--Create indexes if not exist");
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'I1N1_hist_dhyf_" + tab_sin_prefijo + "') ");
-                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX I1N1_hist_dhyf_" + tab_sin_prefijo + " ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
+                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX I1N1_hist_dhyf_" + tab_sin_prefijo + " ON " + bd + "." + schema + "." + tab + " (" + clave + ") WITH (DATA_COMPRESSION = PAGE)");
                 //Propiedades extendidas
-                file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM " + bd  + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema  + "', 'table', '" + tab + "', 'index', 'I1N1_hist_dhyf_" + tab_sin_prefijo + "'))");
+                file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', 'index', 'I1N1_hist_dhyf_" + tab_sin_prefijo + "'))");
                 file.WriteLine("\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'index', @level2name = 'I1N1_hist_dhyf_" + tab_sin_prefijo + "'");
                 file.WriteLine("GO");
                 file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = '[CLUSTER][UNICO]', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'index', @level2name = 'I1N1_hist_dhyf_" + tab_sin_prefijo + "'");
-				file.WriteLine("GO\n");
+                file.WriteLine("GO\n");
             }
-            else
-            {
-                file.WriteLine("--Create indexes if not exist");
-                file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_cluster') ");
-                file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_" + tab + "_cluster ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
-            }
-            file.WriteLine("");
-            if (tiposcript == "ds")
-            { 
-                file.WriteLine("--Add FKs if necessary");
-                file.WriteLine("");
-            }
+
+            //else if (tiposcript == "extraccion")
+            //{ 
+            //    //No se genera index
+            //}
+            
+            //else if (tiposcript == "dm")
+            //{
+            //    file.WriteLine("--Create indexes if not exist");
+            //    i = 0;
+            //    foreach (string d in csv)
+            //    {
+            //        string[] j = d.Split(new Char[] { ';' });
+            //        if (!j[0].Contains("#") && j[2].Length > 0)
+            //        {
+            //            i++;
+            //            file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_" + i + "') ");
+            //            file.WriteLine("    CREATE NONCLUSTERED INDEX IX_" + tab + "_" + i + " ON " + bd + "." + schema + "." + tab + "(" + j[0].ToString() + ")");
+            //            file.WriteLine("");
+            //        }
+            //    }
+            //    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_unique') ");
+            //    file.WriteLine("    CREATE UNIQUE NONCLUSTERED INDEX IX_" + tab + "_unique ON " + bd + "." + schema + "." + tab + "(" + campospk.Replace("'", "").Replace("xxx_", "t_") + ") INCLUDE (" + clave + ")");
+            //    file.WriteLine("");
+            //}
+
+            //else
+            //{
+            //    file.WriteLine("--Create indexes if not exist");
+            //    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".sys.INDEXES WHERE name = 'IX_" + tab + "_cluster') ");
+            //    file.WriteLine("    CREATE UNIQUE CLUSTERED INDEX IX_" + tab + "_cluster ON " + bd + "." + schema + "." + tab + " (" + clave + ")");
+            //}
+
+            //if (tiposcript == "ds")
+            //{ 
+            //    file.WriteLine("--Add FKs if necessary");
+            //    file.WriteLine("");
+            //}
             #endregion Añadimos Index
 
             return "OK";
