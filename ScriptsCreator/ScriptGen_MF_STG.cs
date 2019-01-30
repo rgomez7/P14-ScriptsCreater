@@ -293,7 +293,10 @@ namespace ScriptsCreator
                             valorcampo = dr.ItemArray[2].ToString().ToLower() + "";
                         }
 
-                        if (camposPK.Contains(dr.ItemArray[0].ToString().ToLower()))
+                        //Contains puede encontrar campos cuyo nombre sea un substring de otro campo que sí sea PK
+                        //Para eviar errores, buscar también por el separador ",". Para ello, crear un nuevo string con otra "," al final
+                        string camposPkConComaAlFinal = camposPK + ",";
+                        if (camposPkConComaAlFinal.Contains(dr.ItemArray[0].ToString().ToLower() + ","))
                         {
                             csvRow = string.Format("{0};{1};{2};{3}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "#", dr.ItemArray[7].ToString());
                             file.WriteLine(csvRow);
