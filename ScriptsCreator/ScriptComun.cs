@@ -392,6 +392,10 @@ namespace ScriptsCreator
             string coma = "";
             string ValorDato = "";
 
+            //Contains puede encontrar campos cuyo nombre sea un substring de otro campo que sí sea PK
+            //Para eviar errores, buscar también por el separador ",". Para ello, crear un nuevo string con otra "," al final
+            string camposPkConComaAlFinal = campospk + ",";
+
             file.WriteLine("--Crear la tabla");
             file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "')");
             #region Create Table
@@ -479,14 +483,7 @@ namespace ScriptsCreator
 
                         if (tiposcript == "extraccion")
                         {
-                            if (campospk.Contains(j[0].ToString()))
-                            {
-                                tipodato = " NOT NULL";
-                            }
-                            else
-                            {
-                                tipodato = "";
-                            }
+                            tipodato = campospk.Contains(j[0].ToString() + ",") ? " NOT NULL" : "";
                         }
                         else
                         {
@@ -690,7 +687,7 @@ namespace ScriptsCreator
                     }
                     else if (tiposcript == "extraccion")
                     {
-                        if (campospk.Contains(j[0].ToString()))
+                        if (camposPkConComaAlFinal.Contains(j[0].ToString() + ","))
                         {
                             file.WriteLine("\tALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato);
                         }
@@ -872,7 +869,7 @@ namespace ScriptsCreator
                             {
                                 tipoDato = j[1].ToString().Trim();
                             }
-                            if (campospk.Contains(j[0].ToString()))
+                            if (camposPkConComaAlFinal.Contains(j[0].ToString() + ","))
                             {
                                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "' AND DATA_TYPE='" + tipoDato + "' AND IS_NULLABLE='NO')");
                                 file.WriteLine("\tALTER TABLE " + bd + "." + schema + "." + tab + " ALTER COLUMN " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL");
