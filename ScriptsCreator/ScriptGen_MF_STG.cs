@@ -475,17 +475,19 @@ namespace ScriptsCreator
                     file.WriteLine("CREATE PROCEDURE " + schema + ".spn1_cargar_" + nombretab + " AS");
                     file.WriteLine("BEGIN");
                     file.WriteLine("");
-                    file.WriteLine("SET NOCOUNT ON");
+                    file.WriteLine("\tSET NOCOUNT ON");
+                    file.WriteLine("");
+                    file.WriteLine("\tBEGIN TRY");
                     file.WriteLine("");
 
-                    file.WriteLine("\t--ACTUALIZACIONES");
-                    file.WriteLine("\t;WITH actualizaciones AS");
-                    file.WriteLine("\t(");
-                    file.WriteLine("\t\tSELECT\t" + campos);
-                    file.WriteLine("\t\tFROM\t" + schema + "." + nombretab + "_tmp");
-                    file.WriteLine("\t\tWHERE\tsys_change_operation IN ('U','X')");
-                    file.WriteLine("\t)");
-                    file.WriteLine("\tUPDATE\tdestino");
+                    file.WriteLine("\t\t--ACTUALIZACIONES");
+                    file.WriteLine("\t\t;WITH actualizaciones AS");
+                    file.WriteLine("\t\t(");
+                    file.WriteLine("\t\t\tSELECT\t" + campos);
+                    file.WriteLine("\t\t\tFROM\t" + schema + "." + nombretab + "_tmp");
+                    file.WriteLine("\t\t\tWHERE\tsys_change_operation IN ('U','X')");
+                    file.WriteLine("\t\t)");
+                    file.WriteLine("\t\tUPDATE\tdestino");
                     i = 0;
                     int escribirSet = 1;
                     foreach (string c in campos2)
@@ -496,22 +498,22 @@ namespace ScriptsCreator
 
                             if (escribirSet == 1)
                             {
-                                file.WriteLine("\tSET\t\tdestino." + c + " = actu." + c + ",");
+                                file.WriteLine("\t\tSET\t\tdestino." + c + " = actu." + c + ",");
                                 escribirSet = 0;
                             }
                             else if (campos2.Length == i)
                         {
-                                file.WriteLine("\t\t\tdestino." + c + " = actu." + c);
+                                file.WriteLine("\t\t\t\tdestino." + c + " = actu." + c);
                         }
                         else
                         {
-                                file.WriteLine("\t\t\tdestino." + c + " = actu." + c + ",");
+                                file.WriteLine("\t\t\t\tdestino." + c + " = actu." + c + ",");
                         }
                     }
 
                     }
-                    file.WriteLine("\tFROM\tdbo." + nombretab + " destino");
-                    file.WriteLine("\t\t\tINNER JOIN  actualizaciones actu");
+                    file.WriteLine("\t\tFROM\tdbo." + nombretab + " destino");
+                    file.WriteLine("\t\t\t\tINNER JOIN  actualizaciones actu");
                     i = 0;
                     foreach (string c in camposPK2)
                     {
@@ -519,26 +521,26 @@ namespace ScriptsCreator
                         //if (camposPK2.Length == i)
                         if (i == 1)
                         {
-                            file.WriteLine("\t\t\t\t\tON  destino." + c + " = actu." + c);
+                            file.WriteLine("\t\t\t\t\t\tON  destino." + c + " = actu." + c);
                         }
                         else
                         {
-                            file.WriteLine("\t\t\t\t\tAND destino." + c + " = actu." + c);
+                            file.WriteLine("\t\t\t\t\t\tAND destino." + c + " = actu." + c);
                         }
                     }
                     file.WriteLine("");
 
 
-                    file.WriteLine("\t--BORRADOS");
-                    file.WriteLine("\t;WITH borrados AS");
-                    file.WriteLine("\t(");
-                    file.WriteLine("\t\tSELECT\t" + camposPK);
-                    file.WriteLine("\t\tFROM\t" + schema +   "." + nombretab + "_tmp");
-                    file.WriteLine("\t\tWHERE\tsys_change_operation = 'D'");
-                    file.WriteLine("\t)");
-                    file.WriteLine("\tDELETE\tdestino");
-                    file.WriteLine("\tFROM\tdbo." + nombretab + " destino");
-                    file.WriteLine("\t\t\tINNER JOIN  borrados borr");
+                    file.WriteLine("\t\t--BORRADOS");
+                    file.WriteLine("\t\t;WITH borrados AS");
+                    file.WriteLine("\t\t(");
+                    file.WriteLine("\t\t\tSELECT\t" + camposPK);
+                    file.WriteLine("\t\t\tFROM\t" + schema +   "." + nombretab + "_tmp");
+                    file.WriteLine("\t\t\tWHERE\tsys_change_operation = 'D'");
+                    file.WriteLine("\t\t)");
+                    file.WriteLine("\t\tDELETE\tdestino");
+                    file.WriteLine("\t\tFROM\tdbo." + nombretab + " destino");
+                    file.WriteLine("\t\t\t\tINNER JOIN  borrados borr");
                     i = 0;
                     foreach (string c in camposPK2)
                     {
@@ -546,48 +548,48 @@ namespace ScriptsCreator
                         //if (camposPK2.Length == i)
                         if (i == 1)
                         {
-                            file.WriteLine("\t\t\t\t\tON  destino." + c + " = borr." + c);
+                            file.WriteLine("\t\t\t\t\t\tON  destino." + c + " = borr." + c);
                         }
                         else
                         {
-                            file.WriteLine("\t\t\t\t\tAND destino." + c + " = borr." + c);
+                            file.WriteLine("\t\t\t\t\t\tAND destino." + c + " = borr." + c);
                         }
                     }
                     file.WriteLine("");
 
-                    file.WriteLine("\t--INSERCIONES");
-                    file.WriteLine("\t;WITH inserciones AS");
-                    file.WriteLine("\t(");
-                    file.WriteLine("\t\tSELECT\t" + camposPK);
-                    file.WriteLine("\t\tFROM\t" + schema + "." + nombretab + "_tmp");
-                    file.WriteLine("\t\tWHERE\tsys_change_operation IN ('I','X')");
-                    file.WriteLine("\t\tEXCEPT");
-                    file.WriteLine("\t\tSELECT\t" + camposPK);
-                    file.WriteLine("\t\tFROM\tdbo." + nombretab);
-                    file.WriteLine("\t)");
-                    file.WriteLine("\tINSERT INTO dbo." + nombretab);
-                    file.WriteLine("\t(");
-                    file.WriteLine("\t\t" + campos);
-                    file.WriteLine("\t)");
+                    file.WriteLine("\t\t--INSERCIONES");
+                    file.WriteLine("\t\t;WITH inserciones AS");
+                    file.WriteLine("\t\t(");
+                    file.WriteLine("\t\t\tSELECT\t" + camposPK);
+                    file.WriteLine("\t\t\tFROM\t" + schema + "." + nombretab + "_tmp");
+                    file.WriteLine("\t\t\tWHERE\tsys_change_operation IN ('I','X')");
+                    file.WriteLine("\t\t\tEXCEPT");
+                    file.WriteLine("\t\t\tSELECT\t" + camposPK);
+                    file.WriteLine("\t\t\tFROM\tdbo." + nombretab);
+                    file.WriteLine("\t\t)");
+                    file.WriteLine("\t\tINSERT INTO dbo." + nombretab);
+                    file.WriteLine("\t\t(");
+                    file.WriteLine("\t\t\t" + campos);
+                    file.WriteLine("\t\t)");
                     i = 0;
                     foreach (string c in campos2)
                     {
                         i++;
                         if (i == 1)
                         {
-                            file.WriteLine("\tSELECT\ttmp." + c + ",");
+                            file.WriteLine("\t\tSELECT\ttmp." + c + ",");
                         }
                         else if (campos2.Length == i)
                         {
-                            file.WriteLine("\t\t\ttmp." + c);
+                            file.WriteLine("\t\t\t\ttmp." + c);
                         }
                         else
                         {
-                            file.WriteLine("\t\t\ttmp." + c + ",");
+                            file.WriteLine("\t\t\t\ttmp." + c + ",");
                         }
                     }
-                    file.WriteLine("\tFROM\tinserciones ins");
-                    file.WriteLine("\t\t\tINNER JOIN  " + schema + "." + nombretab + "_tmp tmp");
+                    file.WriteLine("\t\tFROM\tinserciones ins");
+                    file.WriteLine("\t\t\t\tINNER JOIN  " + schema + "." + nombretab + "_tmp tmp");
                     i = 0;
                     foreach (string c in camposPK2)
                     {
@@ -595,16 +597,23 @@ namespace ScriptsCreator
                         if (i == 1)
                         //if (camposPK2.Length == i)
                         {
-                            file.WriteLine("\t\t\t\t\tON  ins." + c + " = tmp." + c);
+                            file.WriteLine("\t\t\t\t\t\tON  ins." + c + " = tmp." + c);
                         }
                         else
                         {
-                            file.WriteLine("\t\t\t\t\tAND ins." + c + " = tmp." + c);
+                            file.WriteLine("\t\t\t\t\t\tAND ins." + c + " = tmp." + c);
                         }
                     }
-                    file.WriteLine("\tWHERE\tsys_change_operation IN ('I','X')");
+                    file.WriteLine("\t\tWHERE\tsys_change_operation IN ('I','X')");
                     file.WriteLine("");
 
+                    file.WriteLine("\tEND TRY");
+
+                    file.WriteLine("");
+                    file.WriteLine("\tBEGIN CATCH");
+                    file.WriteLine("\t\tSELECT 'ERROR EN LA EXTRACCIÓN'");
+                    file.WriteLine("\tEND CATCH");
+                    file.WriteLine("");
                     file.WriteLine("END");
                     file.WriteLine("GO");
 

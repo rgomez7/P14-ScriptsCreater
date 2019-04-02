@@ -126,7 +126,7 @@ namespace ScriptsCreator
             file.WriteLine("                    @p_descripcion_warning = @descripcion_warning_precondiciones,");
             file.WriteLine("                    @p_out_id = @id_warning_precondiones OUT");
             file.WriteLine("");
-            file.WriteLine("    PRINT 'Warning en ' + @objeto + ': ' + @descripcion_warning_precondiciones");
+            file.WriteLine("            PRINT 'Warning en ' + @objeto + ': ' + @descripcion_warning_precondiciones");
             file.WriteLine("");
             file.WriteLine("        END");
             file.WriteLine("");
@@ -135,6 +135,13 @@ namespace ScriptsCreator
             file.WriteLine("                @p_id = @id,");
             file.WriteLine("                @p_num_registros = @rc");
             file.WriteLine("");
+            if (tipo == "historificacion")
+            {
+                file.WriteLine("        --Borrar tablas temporales");
+                file.WriteLine("        IF OBJECT_ID('tempdb..#CT_TMP') IS NOT NULL");
+                file.WriteLine("            DROP TABLE #CT_TMP");
+                file.WriteLine("");
+            }
             file.WriteLine("    END TRY");
             file.WriteLine("");
             file.WriteLine("    BEGIN CATCH");
@@ -161,14 +168,20 @@ namespace ScriptsCreator
             file.WriteLine("                @p_linea_error = @linea_error,");
             file.WriteLine("                @p_objeto_error = @objeto_error,");
             file.WriteLine("                @p_descripcion_error = @descripcion_error");
+            file.WriteLine("");
+            if (tipo == "historificacion")
+            {
+                file.WriteLine("        --Borrar tablas temporales");
+                file.WriteLine("        IF OBJECT_ID('tempdb..#CT_TMP') IS NOT NULL");
+                file.WriteLine("            DROP TABLE #CT_TMP");
+                file.WriteLine("");
+            }
             if (tipo == "dm")
             {
-
-                file.WriteLine("");
                 file.WriteLine("        --elevar el error al padre para que vaya directamente al catch");
                 file.WriteLine("        ;THROW");
+                file.WriteLine("");
             }
-            file.WriteLine("");
             file.WriteLine("    PRINT 'Error en ' + @objeto_error + ': (Linea ' + Convert(nvarchar(10), @linea_error) + ') ' + @descripcion_error");
             file.WriteLine("");
             file.WriteLine("    END CATCH");
