@@ -308,6 +308,11 @@ namespace ScriptsCreator
             return "OK";
         }
 
+        public string comprobacionMaskDCP()
+        {
+            return "'%MASK%DCP%'";
+        }
+
         public string AnaydirPropiedadesExtendidas(StreamWriter file, string nombreTabla, DataTable datosColumnas, string fecar, DataTable datosExtendidos)
         {
 
@@ -513,26 +518,26 @@ namespace ScriptsCreator
             file.WriteLine("");
 
             //propiedades extendidas
-            file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', null, null))");
-            file.WriteLine("\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = null, @level2name = null");
-            file.WriteLine("GO");
             file.WriteLine("DECLARE @valor varchar(200) = ''");
             if (tiposcript == "extraccion")
             {
                 string tablaOrigen = tab.Replace("_tmp", "");
                 file.WriteLine("SELECT @valor = CAST(value AS varchar(200)) FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + tablaOrigen + "', null, null)");
-                file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = @valor, @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = null, @level2name = null");
-                file.WriteLine("GO\n\r");
             }
             else if (tiposcript == "historificacion")
             {
                 string bdOriginal = "dbn1_" + schema + "_dhyf";
                 string tablaOriginal = tab.Replace("_tracelog", "");
                 file.WriteLine("SELECT @valor = CAST(value AS varchar(200)) FROM " + bdOriginal + ".sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + tablaOriginal + "', null, null)");
-                file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = @valor, @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = null, @level2name = null");
-                file.WriteLine("GO\n\r");
             }
-
+            file.WriteLine("IF @valor LIKE " + comprobacionMaskDCP());
+            file.WriteLine("BEGIN");
+            file.WriteLine("\tIF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', null, null))");
+            file.WriteLine("\t\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = null, @level2name = null");
+            file.WriteLine("\tIF @valor LIKE " + comprobacionMaskDCP());
+            file.WriteLine("\t\tEXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = @valor, @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = null, @level2name = null");
+            file.WriteLine("END");
+            file.WriteLine("GO\n\r");
             file.WriteLine("");
             #endregion Create Table
 
@@ -685,7 +690,7 @@ namespace ScriptsCreator
                 if (!j[0].Contains("#"))
                 {
                     ValorDato = "";
-                    file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + j[0].ToString() + "')");
+                    file.WriteLine("IF NOT EXISTS (SELECT TOP 1 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = '" + tab + "' AND COLUMN_NAME = '" + j[0].ToString() + "')");
                     if (tiposcript == "maestro")
                     {
                         file.WriteLine("\tALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + j[0].ToString() + " " + j[1].ToString() + " NOT NULL" + ValorDato);
@@ -716,66 +721,68 @@ namespace ScriptsCreator
                     file.WriteLine("GO\n");
 
                     //propiedades extendidas
-                    file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', 'column', '" + j[0].ToString() + "'))");
-                    file.WriteLine("\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + j[0].ToString() + "'");
-                    file.WriteLine("GO");
                     file.WriteLine("DECLARE @valor varchar(200) = ''");
                     if (tiposcript == "extraccion")
                     {
                         string tablaOrigen = tab.Replace("_tmp", "");
                         file.WriteLine("SELECT @valor = CAST(value AS varchar(200)) FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + tablaOrigen + "', 'column', '" + j[0].ToString() + "')");
-                        file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = @valor, @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + j[0].ToString() + "'");
-                        file.WriteLine("GO\n\r");
                     }
                     else if (tiposcript == "historificacion")
                     {
                         string bdOriginal = "dbn1_" + schema + "_dhyf";
                         string tablaOriginal = tab.Replace("_tracelog", "");
                         file.WriteLine("SELECT @valor = CAST(value AS varchar(200)) FROM " + bdOriginal + ".sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + tablaOriginal + "', 'column', '" + j[0].ToString() + "')");
-                        file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = @valor, @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + j[0].ToString() + "'");
-                        file.WriteLine("GO\n\r");
                     }
-
+                    file.WriteLine("IF @valor LIKE " + comprobacionMaskDCP());
+                    file.WriteLine("BEGIN");
+                    file.WriteLine("\tIF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', 'column', '" + j[0].ToString() + "'))");
+                    file.WriteLine("\t\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + j[0].ToString() + "'");
+                    file.WriteLine("\tEXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = @valor, @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + j[0].ToString() + "'");
+                    file.WriteLine("END");
+                    file.WriteLine("GO\n\r");
                 }
             }
-            if (tiposcript == "historificacion")
+            if (tiposcript == "historificacion") //campos propios de historificación
             {
-                //ValorDato = " DEFAULT('')";
                 ValorDato = "";
+
+                //Idnt de la tabla para historificaión desde csv
                 if (claveAuto == true)
                 {
                     file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='" + clave.Replace("_tracelog", "") + "')");
                     file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD " + clave.Replace("_tracelog", "") + " int " + ValorDato);
                     file.WriteLine("GO\n");
-                    //propiedades extendidas
+                    //Idnt de la tabla - propiedades extendidas
                     file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', 'column', '" + clave.Replace("_tracelog", "") + "'))");
                     file.WriteLine("\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + clave.Replace("_tracelog", "") + "'");
                     file.WriteLine("GO");
-                    file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = '[NO-MASK][NO-DCP] Identificativo' , @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + clave.Replace("_tracelog", "") + "'");
+                    file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = '[NO-MASK][NO-DCP] Identificador del registro' , @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + clave.Replace("_tracelog", "") + "'");
                     file.WriteLine("GO\n\r");
                 }
 
-                //propiedades extendidas
+                //Idnt de la tabla para el resto de casos - propiedades extendidas
                 file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', 'column', '" + clave + "'))");
                 file.WriteLine("\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + clave + "'");
                 file.WriteLine("GO");
                 file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = '[NO-MASK][NO-DCP] Identificador del registro' , @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = '" + clave + "'");
                 file.WriteLine("GO\n\r");
 
+                //ctct_fec_procesado
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_fec_procesado')");
                 file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_fec_procesado datetime NOT NULL" + ValorDato);
                 file.WriteLine("GO\n");
-                //propiedades extendidas
+                //ctct_fec_procesado - propiedades extendidas
                 file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', 'column', 'ctct_fec_procesado'))");
                 file.WriteLine("\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = 'ctct_fec_procesado'");
                 file.WriteLine("GO");
                 file.WriteLine("EXEC " + bd + ".sys.sp_addextendedproperty @name = 'MS_Description', @value = '[NO-MASK][NO-DCP] Fecha de proceso' , @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = 'ctct_fec_procesado'");
                 file.WriteLine("GO\n\r");
 
+                //ctct_tipo_operacion
                 file.WriteLine("IF NOT EXISTS (SELECT 1 FROM " + bd + ".INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" + schema + "' AND TABLE_NAME='" + tab + "' AND COLUMN_NAME='ctct_tipo_operacion')");
                 file.WriteLine("ALTER TABLE " + bd + "." + schema + "." + tab + " ADD ctct_tipo_operacion varchar(15) NOT NULL" + ValorDato);
                 file.WriteLine("GO\n");
-                //propiedades extendidas
+                //ctct_tipo_operacion - propiedades extendidas
                 file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM " + bd + ".sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'table', '" + tab + "', 'column', 'ctct_tipo_operacion'))");
                 file.WriteLine("\tEXEC " + bd + ".sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'table', @level1name = '" + tab + "', @level2type = 'column', @level2name = 'ctct_tipo_operacion'");
                 file.WriteLine("GO");
