@@ -336,63 +336,63 @@ namespace ScriptsCreator
                     }
 
                     //Opción Historificación desde CSV
-                    else if (rbHistCsv.Checked)
-                    {
-                        string fichero = "";
-                        string linegen = "OK";
-                        DataTable dtSP = new DataTable("Object_SP");
-                        dtSP.Columns.Add("SP", typeof(String));
-                        dtSP.Columns.Add("SP_TL", typeof(String));
-                        dtSP.Columns.Add("CT", typeof(String));
-                        dtSP.Columns.Add("TL_gen", typeof(String));
-
-                        //Para un archivo
-                        if (txFile.Text.EndsWith(".csv") == true)
-                        {
-                            csv = cr.leerCSV(archivo, rutaorigen);
-                            if (csv.Length == 0)
-                            {
-                                txFile.Text = "";
-                                txSalida.Text = "";
-                                MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                            }
-                            else
-                            {
-                                linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-                                fichero = fichero + "\n\r" + arcScript;
-                            }
-                        }
-
-                        //Para todos los archivos de la Carpeta
-                        //else if (txFile.Text.EndsWith("\\") == true)
-                        //{
-                        //    txFile.Text = "*.csv";
-                        //    string[] dirs = Directory.GetFiles(rutaorigen, "*.csv");
-                        //    foreach (string dir in dirs)
-                        //    {
-                        //        csv = null;
-                        //        csv = cr.leerCSV(archivo, rutaorigen);
-                        //
-                        //        archivo = dir.Replace(rutaorigen, "");
-                        //
-                        //        linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
-                        //        fichero = fichero + "\n\r" + arcScript;
-                        //    }
-                        //}
-                        
-                        //Si no se proporciona ninguna opción correcta
-                        else
-                        {
-                            MessageBox.Show("Solo se admiten ficheros con extensión .csv", "Formato de fichero incorrecto", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                            linegen = "Formato de fichero de entrada incorrecto";
-                        }
-
-                        //Si todo es correcto
-                        if (linegen == "OK")
-                        {
-                            MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                    }
+                    //else if (rbHistCsv.Checked)
+                    //{
+                    //    string fichero = "";
+                    //    string linegen = "OK";
+                    //    DataTable dtSP = new DataTable("Object_SP");
+                    //    dtSP.Columns.Add("SP", typeof(String));
+                    //    dtSP.Columns.Add("SP_TL", typeof(String));
+                    //    dtSP.Columns.Add("CT", typeof(String));
+                    //    dtSP.Columns.Add("TL_gen", typeof(String));
+                    //
+                    //    //Para un archivo
+                    //    if (txFile.Text.EndsWith(".csv") == true)
+                    //    {
+                    //        csv = cr.leerCSV(archivo, rutaorigen);
+                    //        if (csv.Length == 0)
+                    //        {
+                    //            txFile.Text = "";
+                    //            txSalida.Text = "";
+                    //            MessageBox.Show("Debe seleccionar un CSV para generar el fichero", "Selección CSV", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    //        }
+                    //        else
+                    //        {
+                    //            linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                    //            fichero = fichero + "\n\r" + arcScript;
+                    //        }
+                    //    }
+                    //
+                    //    //Para todos los archivos de la Carpeta
+                    //    //else if (txFile.Text.EndsWith("\\") == true)
+                    //    //{
+                    //    //    txFile.Text = "*.csv";
+                    //    //    string[] dirs = Directory.GetFiles(rutaorigen, "*.csv");
+                    //    //    foreach (string dir in dirs)
+                    //    //    {
+                    //    //        csv = null;
+                    //    //        csv = cr.leerCSV(archivo, rutaorigen);
+                    //    //
+                    //    //        archivo = dir.Replace(rutaorigen, "");
+                    //    //
+                    //    //        linegen = sh.hist(archivo, csv, ruta, ref arcScript, cb_ClaveAuto.Checked, cb_CreateTable.Checked, cb_ChangeTrack.Checked);
+                    //    //        fichero = fichero + "\n\r" + arcScript;
+                    //    //    }
+                    //    //}
+                    //    
+                    //    //Si no se proporciona ninguna opción correcta
+                    //    else
+                    //    {
+                    //        MessageBox.Show("Solo se admiten ficheros con extensión .csv", "Formato de fichero incorrecto", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    //        linegen = "Formato de fichero de entrada incorrecto";
+                    //    }
+                    //
+                    //    //Si todo es correcto
+                    //    if (linegen == "OK")
+                    //    {
+                    //        MessageBox.Show("Ficheros generados en " + ruta + fichero, "Ficheros generados", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    //    }
+                    //}
 
 
 

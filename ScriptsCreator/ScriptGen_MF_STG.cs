@@ -63,8 +63,7 @@ namespace ScriptsCreator
 
                 //MONTAR SCRIPTS
                 //table.Substring(2, table.Length - 2)
-                string nombretab = "tbn1" + table.Substring(4, table.Length - 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
-                //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
+                string nombretab = "TBN1" + table.Substring(4, table.Length - 4) + "_" + table.Substring(2, 2);
                 string fecar = componer_fecar(table, datosColumnas);
                 nombrearchivo = "nnn. " + nombretab + ".sql";
                 string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
@@ -118,7 +117,7 @@ namespace ScriptsCreator
                                 valorcampo = " " + dr.ItemArray[2].ToString().ToLower() + " not null";
                             }
 
-                        file.WriteLine("\t" + dr.ItemArray[0].ToString().ToLower() + valorcampo + ",");
+                        file.WriteLine("\t" + dr.ItemArray[0].ToString() + valorcampo + ",");
                         }
                         file.WriteLine("\t" + fecar + " date not null");
                         file.WriteLine(") ON [PRIMARY]");
@@ -136,24 +135,24 @@ namespace ScriptsCreator
                             //Si es primary Key
                             if (Convert.ToBoolean(dr.ItemArray[4]) == true)
                             {
-                                camposPK1 = camposPK1 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                                camposPK1 = camposPK1 + dr.ItemArray[9].ToString() + ", ";
                             }
                             //Si es cluster e index único
                             else if (Convert.ToBoolean(dr.ItemArray[3]) == true && dr.ItemArray[2].ToString().ToUpper() == "CLUSTERED")
                             {
-                                camposPK2 = camposPK2 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                                camposPK2 = camposPK2 + dr.ItemArray[9].ToString() + ", ";
                             }
                             //Si es index único
                             else if (Convert.ToBoolean(dr.ItemArray[3]) == true)
                             {
                                 if (valorpk == 0)
                                 {
-                                    camposPK3 = camposPK3 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                                    camposPK3 = camposPK3 + dr.ItemArray[9].ToString() + ", ";
                                     valorpk = Convert.ToInt32(dr.ItemArray[6]);
                                 }
                                 else if (valorpk == Convert.ToInt32(dr.ItemArray[6]))
                                 {
-                                    camposPK3 = camposPK3 + dr.ItemArray[9].ToString().ToLower() + ", ";
+                                    camposPK3 = camposPK3 + dr.ItemArray[9].ToString() + ", ";
                                 }
                             }
                         }
@@ -254,8 +253,7 @@ namespace ScriptsCreator
             string comentarioTabla = datosTabla.Rows[0].ItemArray[0].ToString();
 
             //MONTAR SCRIPTS
-            string nombretab = "tbn1" + table.Substring(4, table.Length - 4).ToLower() + "_" + table.Substring(2, 2).ToLower();
-            //string fecar = table.Substring(2, 6).ToLower() + "_fecar";
+            string nombretab = "TBN1" + table.Substring(4, table.Length - 4) + "_" + table.Substring(2, 2);
             string fecar = componer_fecar(table, datosColumnas);
             nombrearchivo = nombretab + ".csv";
             string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
@@ -296,14 +294,14 @@ namespace ScriptsCreator
                         //Contains puede encontrar campos cuyo nombre sea un substring de otro campo que sí sea PK
                         //Para eviar errores, buscar también por el separador ",". Para ello, crear un nuevo string con otra "," al final
                         string camposPkConComaAlFinal = camposPK + ",";
-                        if (camposPkConComaAlFinal.Contains(dr.ItemArray[0].ToString().ToLower() + ","))
+                        if (camposPkConComaAlFinal.Contains(dr.ItemArray[0].ToString() + ","))
                         {
-                            csvRow = string.Format("{0};{1};{2};{3}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "#", dr.ItemArray[7].ToString());
+                            csvRow = string.Format("{0};{1};{2};{3}", dr.ItemArray[0].ToString(), valorcampo, "#", dr.ItemArray[7].ToString());
                             file.WriteLine(csvRow);
                         }
                         else
                         {
-                            csvRow = string.Format("{0};{1};{2};{3}", dr.ItemArray[0].ToString().ToLower(), valorcampo, "", dr.ItemArray[7].ToString());
+                            csvRow = string.Format("{0};{1};{2};{3}", dr.ItemArray[0].ToString(), valorcampo, "", dr.ItemArray[7].ToString());
                             file.WriteLine(csvRow);
                         }
                     }
@@ -359,7 +357,7 @@ namespace ScriptsCreator
                 camposPK = camposPK.Substring(0, camposPK.Length - 2);
             }
 
-            nombrearchivo = "Script staging_" + nombretab + "_tablatmp.sql";
+            nombrearchivo = "Script " + nombretab + "_tmp.sql";
 
             //Si la ruta destino de los ficheros no viene informada, cogemos la misma que la ruta del csv origen
             if (rutaDestino == "")
@@ -439,7 +437,7 @@ namespace ScriptsCreator
             string[] campos2 = campos.Split(',');
             string[] camposPK2 = camposPK.Split(',');
 
-            nombrearchivo = "Script staging_" + nombretab + "_sptmp.sql";
+            nombrearchivo = "Script " + "SPN1Cargar" +  nombretab + ".sql";
 
             //Si la ruta destino de los ficheros no viene informada, cogemos la misma que la ruta del csv origen
             if (rutaDestino == "")
@@ -467,12 +465,12 @@ namespace ScriptsCreator
 
 
                     //Cambiamos a otra BBDD y empezamos la nueva tarea
-                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_stg_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA='" + schema + "' AND ROUTINE_NAME='spn1_cargar_" + nombretab + "' AND ROUTINE_TYPE='PROCEDURE')");
-                    file.WriteLine("\tDROP PROCEDURE " + schema + ".spn1_cargar_" + nombretab);
+                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_stg_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA='" + schema + "' AND ROUTINE_NAME='SPN1Cargar" + nombretab + "' AND ROUTINE_TYPE='PROCEDURE')");
+                    file.WriteLine("\tDROP PROCEDURE " + schema + ".SPN1Cargar" + nombretab);
                     file.WriteLine("GO");
                     file.WriteLine("");
                     //Generamos el SP
-                    file.WriteLine("CREATE PROCEDURE " + schema + ".spn1_cargar_" + nombretab + " AS");
+                    file.WriteLine("CREATE PROCEDURE " + schema + ".SPN1Cargar" + nombretab + " AS");
                     file.WriteLine("BEGIN");
                     file.WriteLine("");
                     file.WriteLine("\tSET NOCOUNT ON");
@@ -485,7 +483,7 @@ namespace ScriptsCreator
                     file.WriteLine("\t\t(");
                     file.WriteLine("\t\t\tSELECT\t" + campos);
                     file.WriteLine("\t\t\tFROM\t" + schema + "." + nombretab + "_tmp");
-                    file.WriteLine("\t\t\tWHERE\tsys_change_operation IN ('U','X')");
+                    file.WriteLine("\t\t\tWHERE\tSYS_CHANGE_OPERATION IN ('U','X')");
                     file.WriteLine("\t\t)");
                     file.WriteLine("\t\tUPDATE\tdestino");
                     i = 0;
@@ -536,7 +534,7 @@ namespace ScriptsCreator
                     file.WriteLine("\t\t(");
                     file.WriteLine("\t\t\tSELECT\t" + camposPK);
                     file.WriteLine("\t\t\tFROM\t" + schema +   "." + nombretab + "_tmp");
-                    file.WriteLine("\t\t\tWHERE\tsys_change_operation = 'D'");
+                    file.WriteLine("\t\t\tWHERE\tSYS_CHANGE_OPERATION = 'D'");
                     file.WriteLine("\t\t)");
                     file.WriteLine("\t\tDELETE\tdestino");
                     file.WriteLine("\t\tFROM\tdbo." + nombretab + " destino");
@@ -562,7 +560,7 @@ namespace ScriptsCreator
                     file.WriteLine("\t\t(");
                     file.WriteLine("\t\t\tSELECT\t" + camposPK);
                     file.WriteLine("\t\t\tFROM\t" + schema + "." + nombretab + "_tmp");
-                    file.WriteLine("\t\t\tWHERE\tsys_change_operation IN ('I','X')");
+                    file.WriteLine("\t\t\tWHERE\tSYS_CHANGE_OPERATION IN ('I','X')");
                     file.WriteLine("\t\t\tEXCEPT");
                     file.WriteLine("\t\t\tSELECT\t" + camposPK);
                     file.WriteLine("\t\t\tFROM\tdbo." + nombretab);
@@ -604,7 +602,7 @@ namespace ScriptsCreator
                             file.WriteLine("\t\t\t\t\t\tAND ins." + c + " = tmp." + c);
                         }
                     }
-                    file.WriteLine("\t\tWHERE\tsys_change_operation IN ('I','X')");
+                    file.WriteLine("\t\tWHERE\tSYS_CHANGE_OPERATION IN ('I','X')");
                     file.WriteLine("");
 
                     file.WriteLine("\tEND TRY");
@@ -621,10 +619,10 @@ namespace ScriptsCreator
 
                     //Propiedades extendidas del SP
                     file.WriteLine("--Propiedades extendidas del SP");
-                    file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'procedure', 'spn1_cargar_" + nombretab + "', null, null))");
-                    file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'procedure', @level1name = 'spn1_cargar_" + nombretab + "', @level2type = null, @level2name = null");
+                    file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema + "', 'procedure', 'SPN1Cargar" + nombretab + "', null, null))");
+                    file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'procedure', @level1name = 'SPN1Cargar" + nombretab + "', @level2type = null, @level2name = null");
                     file.WriteLine("GO");
-                    file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = 'Procedimiento de carga de la tabla " + nombretab + "', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'procedure', @level1name = 'spn1_cargar_" + nombretab + "'");
+                    file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = 'Procedimiento de carga de la tabla " + nombretab + "', @level0type = 'schema', @level0name = '" + schema + "', @level1type = 'procedure', @level1name = 'SPN1Cargar" + nombretab + "'");
                     file.WriteLine("GO");
 
                     file.Close();
@@ -643,99 +641,6 @@ namespace ScriptsCreator
                 return "NO";
             }
         }
-
-        //Obsoleto. Ya no se usa el CT, sino el CDC
-        //public string createSnippet_ext(string csv, string ruta, ref string nombrearchivo)
-        //{
-        //    string[] lineas = new string[0];
-        //    string nombretab = "";
-        //    string bd = "";
-        //    string[] valorescsv = a.leerCSV(csv, ruta);
-        //    int i = 0;
-        //    valorescsv = a.ordenarCSV(valorescsv,"extraccion");
-
-        //    foreach (string v in valorescsv)
-        //    {
-        //        if (v.ToLower().Contains("#nombre"))
-        //        {
-        //            string[] datos = v.Split(new Char[] { ';' });
-        //            nombretab = "tbn1" + datos[1];
-        //            bd = datos[2];
-        //        }
-        //    }
-
-        //    nombrearchivo = "From_CT_" + nombretab + ".txt";
-        //    string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
-
-        //    if (a.comprobarDir(ruta) == "OK")
-        //    {
-        //        try
-        //        {
-        //            StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.Create), Encoding.UTF8);
-
-        //            file.WriteLine(Convert.ToChar(34) + ", CAST(t.SYS_CHANGE_OPERATION AS CHAR(1)) AS SYS_CHANGE_OPERATION");
-        //            file.WriteLine("     FROM  (SELECT ct.SYS_CHANGE_OPERATION");
-        //            i = 0;
-        //            foreach (string v in valorescsv)
-        //            {
-        //                string[] datos = v.Split(new Char[] { ';' });
-        //                if (!datos[0].Contains("#"))
-        //                {                            
-        //                    if (datos[4].Contains("#"))
-        //                    {
-        //                        file.WriteLine("               ,ct." + datos[0].ToUpper());
-        //                    }
-        //                    else
-        //                    {
-        //                        if (datos[0].ToLower().Contains("fecar"))
-        //                        { }
-        //                        else
-        //                        { 
-        //                        file.WriteLine("               ,origen." + datos[0].ToUpper());
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            file.WriteLine("            FROM    CHANGETABLE(CHANGES " + Convert.ToChar(34) + " + @[User::TablaConEsquema] + " + Convert.ToChar(34) + "," + Convert.ToChar(34) + " + (DT_STR, 20, 1252) @[User::punto_inicial_ct_extracciones] +" + Convert.ToChar(34) + ") AS ct");
-        //            file.WriteLine("                    LEFT JOIN " + Convert.ToChar(34) + " + @[User::TablaConEsquema] + " + Convert.ToChar(34) + " origen ON");
-
-        //            foreach (string v in valorescsv)
-        //            {
-        //                string[] datos = v.Split(new Char[] { ';' });
-        //                if (!datos[0].Contains("#"))
-        //                {
-        //                    if (datos[4].Contains("#"))
-        //                    {
-        //                        if (i == 0)
-        //                        { 
-        //                        file.WriteLine("                 ct." + datos[0].ToUpper() + " = origen." + datos[0].ToUpper());
-        //                        }
-        //                        else
-        //                        {
-        //                            file.WriteLine("                 AND ct." + datos[0].ToUpper() + " = origen." + datos[0].ToUpper());
-        //                        }
-        //                        i++;
-        //                    }
-        //                }
-        //            }
-        //            file.WriteLine("            ) t" + Convert.ToChar(34));
-
-        //            file.Close();
-        //        }
-        //        catch //(Exception ex)
-        //        {
-        //            MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-        //            return "NO";
-        //        }
-
-        //        return "OK";
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-        //        return "NO";
-        //    }
-        //}
 
 
         public string crearVariableConsulta(string csv, string ruta, ref string nombrearchivo, string bdOrigen)
@@ -975,116 +880,11 @@ namespace ScriptsCreator
         }
 
 
-        //Obsoleto. Ya no se usa el CT, sino el CDC
-        //public string activarCT_microfocus(string table, string schema, string ruta, ref string nombrearchivo, string camposPK, string bd, string tipogen)
-        //{
-        //    string nombreBD = "";
-        //    if (bd == "")
-        //    {
-        //        nombreBD = table.Substring(2, 2);
-        //    }
-        //    else
-        //    {
-        //        nombreBD = bd.Substring(2, 2);
-        //    }
-
-        //    string[] lineas = new string[0];
-        //    string nombretab = table.Substring(4, 4);
-
-        //    nombrearchivo = "Script preparacion_activar_ct_microfocus_" + nombreBD + "_" + nombretab + "_" + tipogen + ".sql";
-        //    string dev = a.comprobarficheros(ref lineas, ruta + nombrearchivo, 1);
-
-        //    if (a.comprobarDir(ruta) == "OK")
-        //    {
-        //        try
-        //        {
-        //            StreamWriter file = new StreamWriter(new FileStream(ruta + nombrearchivo, FileMode.CreateNew), Encoding.UTF8);
-
-        //            file.WriteLine("Declare @bbdd nvarchar(10) = '" + nombreBD + "'");
-        //            file.WriteLine("Declare @tabla nvarchar(50) = '" + nombretab + "'");
-        //            //Esto es para PRE
-        //            if (tipogen.ToLower() == "pre")
-        //            {
-        //                file.WriteLine("Declare @esquema nvarchar(50) = 'DB2DESA'");
-        //                file.WriteLine("Declare @grantview nvarchar(50) = 'WDN1JDB0'");
-        //            }
-        //            //Esto es para PROD
-        //            else if(tipogen.ToLower()=="pro")
-        //            {
-        //                file.WriteLine("Declare @esquema nvarchar(50) = '" + schema + "'");
-        //                file.WriteLine("Declare @grantview nvarchar(50) = 'WEN1JDB0'");
-        //            }
-
-        //            file.WriteLine("Declare @campos nvarchar(200) = '" +camposPK + "'");
-        //            file.WriteLine("Declare @sql nvarchar(2000)");
-        //            file.WriteLine("");
-
-        //            file.WriteLine("PRINT '" + nombrearchivo + "'");
-        //            file.WriteLine("");
-
-        //            file.WriteLine("--Activamos CT en las 3 BB.DD. en caso de que no esté activado ");
-        //            file.WriteLine("IF NOT EXISTS(select 1 FROM sys.change_tracking_databases WHERE database_id = DB_ID('DB' + UPPER(@bbdd))) ");
-        //            file.WriteLine("SET @sql = 'ALTER DATABASE DB' + UPPER(@bbdd) + ' SET CHANGE_TRACKING = ON (CHANGE_RETENTION = 30 DAYS, AUTO_CLEANUP = ON)' ");
-        //            file.WriteLine("exec(@sql)");
-        //            file.WriteLine("");
-
-        //            file.WriteLine("--Creamos la PK a partir del índice único existente en la tabla");
-        //            file.WriteLine("SET @sql = 'IF NOT EXISTS (SELECT 1 FROM (");
-        //            file.WriteLine("    SELECT TABLE_SCHEMA, TABLE_NAME, CONSTRAINT_NAME,CONSTRAINT_TYPE from DB' + UPPER(@bbdd) + '.INFORMATION_SCHEMA.TABLE_CONSTRAINTS ");
-        //            file.WriteLine("    UNION SELECT schemas.name TABLE_SCHEMA,  tables.name TABLE_NAME, default_constraints.name,' + char(39) + 'DEFAULT' + char(39) + ' ");
-        //            file.WriteLine("    FROM DB' + UPPER(@bbdd) + '.sys.default_constraints ");
-        //            file.WriteLine("    INNER JOIN DB' + UPPER(@bbdd) + '.sys.all_columns ON all_columns.default_object_id = default_constraints.object_id ");
-        //            file.WriteLine("    INNER JOIN DB' + UPPER(@bbdd) + '.sys.tables ON all_columns.object_id = tables.object_id ");
-        //            file.WriteLine("    INNER JOIN DB' + UPPER(@bbdd) + '.sys.schemas ON tables.schema_id = schemas.schema_id ");
-        //            file.WriteLine(") all_constraints WHERE TABLE_SCHEMA=' + char(39) + UPPER(@esquema) + char(39) + ' AND TABLE_NAME=' + char(39) + 'TB' + UPPER(@bbdd) + UPPER(@tabla) + char(39) + ' AND CONSTRAINT_NAME='  + char(39) + 'PK_tb' + LOWER(@bbdd) + LOWER(@tabla) + char(39) + ') ");
-        //            file.WriteLine("ALTER TABLE DB' + UPPER(@bbdd) + '.'+ UPPER(@esquema) +'.TB' + UPPER(@bbdd) + UPPER(@tabla) + ' ADD CONSTRAINT PK_tb' + LOWER(@bbdd) + LOWER(@tabla) + ' PRIMARY KEY ('+@campos+')'");
-        //            file.WriteLine("exec(@sql)");
-        //            file.WriteLine("");
-
-        //            file.WriteLine("--Añadimos la propiedad extendida del índice creado por la PK ");
-        //            file.WriteLine("SET @sql = 'IF NOT EXISTS ( ");
-        //            file.WriteLine("SELECT 1 FROM DB' + UPPER(@bbdd) + '.sys.fn_listextendedproperty(' + char(39) + 'MS_Description' + char(39) + ', ' + char(39) + 'SCHEMA' + char(39) + ', ' + char(39) + UPPER(@esquema) + char(39) + ', ' + char(39) + 'TABLE' + char(39) + ', ' + char(39) + 'TB'+ UPPER(@bbdd) + UPPER(@tabla) + char(39) + ', ' + char(39) + 'CONSTRAINT' + char(39) + ', ' + char(39) + 'PK_tb'+ lower(@bbdd) + lower(@tabla)  + char(39) + ')) " );
-        //            file.WriteLine("EXEC DB' + UPPER(@bbdd) + '.sys.sp_addextendedproperty @name = N' + char(39) + 'MS_Description' + char(39) + ', @value = N' + char(39) + '[CLUSTER][UNICO]' + char(39) + ', @level0type=N' + char(39) + 'SCHEMA' + char(39) + ',@level0name=N' + char(39) + UPPER(@esquema) + char(39) + ',@level1type=N' + char(39) + 'TABLE' + char(39) + ',@level1name=N' + char(39) + 'TB'+ UPPER(@bbdd) + UPPER(@tabla) + char(39) + ',@level2type=N' + char(39) + 'CONSTRAINT' + char(39) + ', @level2name=N' + char(39) + 'PK_tb'+ lower(@bbdd) + lower(@tabla) + char(39) + ';'");
-        //            file.WriteLine("exec(@sql)");
-        //            file.WriteLine("");
-
-        //            file.WriteLine("--Activamos CT en cada una de las tablas en caso de que no esté activado... ");
-        //            file.WriteLine("SET @sql = 'IF NOT EXISTS ( select 1 ");
-        //            file.WriteLine("    FROM DB' + UPPER(@bbdd) +'.sys.change_tracking_tables tt " );
-        //            file.WriteLine("    INNER JOIN DB' + UPPER(@bbdd) + '.sys.objects obj on obj.object_id = tt.object_id ");
-        //            file.WriteLine("    WHERE obj.name = ' + char(39) + 'TB' + UPPER(@bbdd) + UPPER(@tabla) + char(39) + ') ");
-        //            file.WriteLine("ALTER TABLE DB' + UPPER(@bbdd) +'.' + UPPER(@esquema) +'.TB' + UPPER(@bbdd) + UPPER(@tabla) + '  ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)'");
-        //            file.WriteLine("exec(@sql)");
-        //            file.WriteLine("");
-
-        //            file.WriteLine("SET @sql = 'USE[DB' + UPPER(@bbdd) +'] GRANT VIEW CHANGE TRACKING ON ' + UPPER(@esquema) + '.TB' + UPPER(@bbdd) + UPPER(@tabla) + ' TO ' + UPPER(@grantview)");
-        //            file.WriteLine("exec(@sql)");
-        //            file.WriteLine("");
-
-        //            file.WriteLine("GO");
-        //            file.WriteLine("");
-
-        //            file.Close();
-        //        }
-        //        catch //(Exception ex)
-        //        {
-        //            MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-        //            return "NO";
-        //        }
-
-        //        return "OK";
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-        //        return "NO";
-        //    }
-
-        //}
-
         private string componer_fecar(string table, DataTable campos)
         {
-            string prefijo = table.Substring(2, 6).ToLower() + "_";
+            return "Fecha_Carga";
+            /*
+            string prefijo = table.Substring(2, 6) + "_";
             
             foreach (DataRow dr in campos.Rows)
             {
@@ -1096,7 +896,7 @@ namespace ScriptsCreator
                         string[] valor = valorCampo.Split('_');
                         prefijo = valor[0] + "_";
                     }
-                    //Otras opción de generar el prefijo
+                    //Otras opciones para generar el prefijo
                     else if (valorCampo.IndexOf(table.Substring(2, 6).ToLower()) == 0)
                     {
                         prefijo = valorCampo.Substring(valorCampo.IndexOf(table.Substring(2, 6).ToLower()), 6);
@@ -1130,7 +930,8 @@ namespace ScriptsCreator
 
             }
 
-            return prefijo + "fecar";
+            return prefijo + "Fecha_Carga";
+            */
         }
     }
 }

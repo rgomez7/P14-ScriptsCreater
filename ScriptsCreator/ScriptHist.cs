@@ -15,376 +15,378 @@ namespace ScriptsCreator
         Consultas c = new Consultas();
         ScriptComun sc = new ScriptComun();
 
-        public string hist(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean claveAuto, Boolean CreateTable, Boolean ChangeTrack)
-        {
-            string nombrearchivoexec = "";
-            int i = 0;
-            string bbdd = "";
-            string tab = "";
-            string clave = "";
-            string campospk = "";
-            bool existe_pk = false;
-            string campos = "";
-            string tipobbdd = "";
-            string schema = "";
-            string schema_sp = "stg";
-            string cabtab = "";
-            string[] lineas = new string[0];
-            string dev = "";
-            string[] csv2 = new string[0];
+        //opción desde csv no utilizada
+        //public string hist(string archivo, string[] csv, string ruta, ref string nombrearchivo, Boolean claveAuto, Boolean CreateTable, Boolean ChangeTrack)
+        //{
+        //    string nombrearchivoexec = "";
+        //    int i = 0;
+        //    string bbdd = "";
+        //    string tab = "";
+        //    string clave = "";
+        //    string campospk = "";
+        //    bool existe_pk = false;
+        //    string campos = "";
+        //    string tipobbdd = "";
+        //    string schema = "";
+        //    string schema_sp = "stg";
+        //    string cabtab = "";
+        //    string[] lineas = new string[0];
+        //    string dev = "";
+        //    string[] csv2 = new string[0];
+        //
+        //    try
+        //    {
+        //        foreach (string d in csv)
+        //        {
+        //            string[] j = d.Split(new Char[] { ';' });
+        //            if (j[0].Contains("#nombre"))
+        //            {
+        //                bbdd = j[2];
+        //                tab = j[1];
+        //                clave = j[3];
+        //            }
+        //            else if (!j[0].Contains("#"))
+        //            {
+        //                campos = campos + "'" + j[0] + "',";
+        //                if (j[4] == "#")
+        //                {
+        //                    campospk = campospk + "xxx_" + j[0] + ",";
+        //                }
+        //                Array.Resize(ref csv2, csv2.Length + 1);
+        //                csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";";
+        //            }
+        //        }
+        //        campos = campos.Substring(0, campos.Length - 1);
+        //
+        //        existe_pk = (campospk.Length > 0);
+        //        if (existe_pk)
+        //        {
+        //            campospk = campospk.Substring(0, campospk.Length - 1);
+        //        }
+        //
+        //    }
+        //    catch //(Exception ex2)
+        //    {
+        //        MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error PK en archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+        //        return "NO";
+        //    }
+        //    //Si no tenemos valor clave, lo generamos
+        //    clave = "Idnt_" + tab;
+        //    if (claveAuto == true)
+        //    {
+        //        campos = campos + ",'" + clave + "'";
+        //    }
+        //
+        //    //Asignamos nombre al nombrearchivo
+        //    if (bbdd.Contains("dmr") || tab.Contains("_dm_"))
+        //    {
+        //        tipobbdd = "dimensional";
+        //        schema = "dmr";
+        //        if (bbdd == "")
+        //        {
+        //            bbdd = "dbn1_dmr_dhyf";
+        //        }
+        //    }
+        //    else if (bbdd.Contains("stg"))
+        //    {
+        //        tipobbdd = "staging";
+        //        schema = "stg";
+        //    }
+        //    else if (bbdd.Contains("norm") || tab.Contains("_ds_"))
+        //    {
+        //        tipobbdd = "normalizado";
+        //        schema = "norm";
+        //        if (bbdd == "")
+        //        {
+        //            bbdd = "dbn1_norm_dhyf";
+        //        }
+        //    }
+        //    else
+        //    {
+        //        tipobbdd = "";
+        //        schema = "";
+        //    }
+        //
+        //    //Comprobamos la cabecera de la tabla
+        //    if (archivo.Substring(0, 4).ToLower() != "tbn1")
+        //    {
+        //        cabtab = "tbn1_";
+        //    }
+        //    else if (archivo.Substring(4, 1) == "_")
+        //    {
+        //        cabtab = archivo.Substring(0, 5);
+        //    }
+        //    else
+        //    {
+        //        cabtab = archivo.Substring(0, 4);
+        //    }
+        //
+        //    //cgs quito tbn1_ porque sobra:    nombrearchivo = "Script TL " + tipoBD + "_tbn1_" + cabtab + tab + "_tracelog_TL.sql";
+        //    nombrearchivo = "Script TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
+        //    nombrearchivoexec = "Exec TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
+        //    //nombrearchivo = nombrearchivo.Replace("xxx", tipoBD);
+        //    string fichero = ruta + nombrearchivo;
+        //    dev = a.comprobarficheros(ref lineas, fichero, 1);
+        //
+        //    if (a.comprobarDir(ruta) == "OK")
+        //    {
+        //        //Escribimos en el fichero
+        //        try
+        //        {
+        //
+        //            StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
+        //            //StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
+        //
+        //            //file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
+        //            //file_exec.WriteLine("GO");
+        //            //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "SPN1CargarTraceLog" + tipoBD + "_" + tab, false, true);
+        //
+        //            file.WriteLine("PRINT '" + nombrearchivo + "'");
+        //            file.WriteLine("GO");
+        //            file.WriteLine("");
+        //            file.WriteLine("--Generado versión vb " + a.version);
+        //            file.WriteLine("");
+        //            file.WriteLine("SET QUOTED_IDENTIFIER ON");
+        //            file.WriteLine("GO");
+        //            file.WriteLine("");
+        //
+        //            //Activamos CT en la tabla origen
+        //            if (ChangeTrack == false)
+        //            {
+        //                file.WriteLine("--------------------------------------");
+        //            }
+        //            else
+        //            {
+        //                file.WriteLine("/*--------------------------------------");
+        //            }
+        //            if (existe_pk)
+        //            {
+        //                file.WriteLine("--Tabla origen -> " + cabtab + tab);
+        //                string ctp = sc.changetracking(file, cabtab + tab, bbdd, "dbo", "act");
+        //            }
+        //            if (ChangeTrack == false)
+        //            {
+        //                file.WriteLine("--------------------------------------");
+        //            }
+        //            else
+        //            {
+        //                file.WriteLine("--------------------------------------*/");
+        //            }
+        //            file.WriteLine("");
+        //
+        //            //Create Table
+        //            if (CreateTable == false)
+        //            {
+        //                file.WriteLine("--------------------------------------");
+        //            }
+        //            else
+        //            {
+        //                file.WriteLine("/*--------------------------------------");
+        //            }
+        //            file.WriteLine("--Begin table create/prepare -> " + cabtab + tab + "_tracelog");
+        //            file.WriteLine(""); 
+        //
+        //            string tab_sin_prefijo;
+        //            if (tab.ToLower().Contains("tbn1_"))
+        //            {
+        //                tab_sin_prefijo = tab.Replace("tbn1_", "").Replace("TBN1_","");
+        //            }
+        //            else if (tab.ToLower().Contains("tbn1"))
+        //            {
+        //                tab_sin_prefijo = tab.Replace("tbn1", "").Replace("TBN1", "");
+        //            }
+        //            else
+        //            {
+        //                tab_sin_prefijo = tab;
+        //            }
+        //            sc.regTablas(file, "dbn1_hist_dhyf", schema, cabtab + tab + "_tracelog", clave + "_tracelog", campos, campospk, csv2, claveAuto, "historificacion", tab_sin_prefijo);
+        //
+        //            file.WriteLine("--End table create/prepare -> " + cabtab + tab + "_tracelog");
+        //            if (CreateTable == false)
+        //            {
+        //                file.WriteLine("--------------------------------------");
+        //            }
+        //            else
+        //            {
+        //                file.WriteLine("--------------------------------------*/");
+        //            }
+        //            file.WriteLine("GO");
+        //
+        //            #region "Stored Procedure"
+        //            if (existe_pk)
+        //            {
+        //                //SP Creamos SP
+        //                file.WriteLine("");
+        //                file.WriteLine("--//Stored Procedure");
+        //                file.WriteLine("USE dbn1_hist_dhyf");
+        //                file.WriteLine("GO");
+        //                file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'SPN1CargarTraceLog" + tipobbdd + "_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
+        //                file.WriteLine("    DROP PROCEDURE " + schema_sp + ".SPN1CargarTraceLog" + tipobbdd + "_" + tab);
+        //                file.WriteLine("GO");
+        //                file.WriteLine("");
+        //                file.WriteLine("CREATE PROCEDURE " + schema_sp + ".SPN1CargarTraceLog" + tipobbdd + "_" + tab + "(@p_id_carga int) AS");
+        //                file.WriteLine("BEGIN");
+        //                file.WriteLine("");
+        //
+        //                //SP Cabecera
+        //                string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "SPN1CargarTraceLog" + tipobbdd + "_" + tab, true, true);
+        //
+        //                //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
+        //                string sp_inc = sc.regSP_Incremental(file);
+        //                ////////
+        //                file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
+        //                file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
+        //                file.WriteLine("            WHERE objeto = @objeto;");
+        //                file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
+        //                file.WriteLine("           SET @fec_procesado = getdate();");
+        //                file.WriteLine("");
+        //                //////
+        //                //SP Etiquetas            
+        //                file.WriteLine("---Inicio Bloque común para Incremental y Full");
+        //                file.WriteLine("");
+        //                file.WriteLine("            IF @es_carga_completa = 0");
+        //                file.WriteLine("            BEGIN");
+        //
+        //                //SP Carga Incremental
+        //                file.WriteLine("--- Inicio Bloque Carga Incremental");
+        //                file.WriteLine("");
+        //                file.WriteLine("            SELECT\t" + campospk.Replace("xxx_", "") + ", SYS_CHANGE_OPERATION");
+        //                file.WriteLine("            INTO\t#CT_TMP");
+        //                file.WriteLine("            FROM\tCHANGETABLE(CHANGES " + bbdd + ".dbo." + cabtab + tab + ",@ct_" + schema + "_inicial) ct");
+        //                file.WriteLine("");
+        //                file.WriteLine("            INSERT dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+        //                file.WriteLine("            SELECT");
+        //                foreach (string d in csv)
+        //                {
+        //                    string[] j = d.Split(new Char[] { ';' });
+        //                    i++;
+        //                    if (!j[0].Contains("#"))
+        //                    {
+        //                        if (j[4] == "#")
+        //                        {
+        //                            file.WriteLine("                ct." + j[0].ToString() + ", ");
+        //                        }
+        //                        else
+        //                        {
+        //                            file.WriteLine("                s." + j[0].ToString() + ", ");
+        //                        }
+        //                    }
+        //                }
+        //                if (claveAuto == true)
+        //                {
+        //                    file.WriteLine("                s." + clave + ", ");
+        //                }
+        //                file.WriteLine("                @fec_procesado,");
+        //                file.WriteLine("                CASE ct.SYS_CHANGE_OPERATION");
+        //                file.WriteLine("                    WHEN 'I' THEN 'INSERT'");
+        //                file.WriteLine("                    WHEN 'U' THEN 'UPDATE'");
+        //                file.WriteLine("                    WHEN 'D' THEN 'DELETE'");
+        //                file.WriteLine("                END AS ctct_tipo_operacion");
+        //                file.WriteLine("            FROM #CT_TMP ct");
+        //                file.WriteLine("            LEFT JOIN " + bbdd + ".dbo." + cabtab + tab + " s");
+        //                i = 0;
+        //                foreach (string d in csv)
+        //                {
+        //                    string[] j = d.Split(new Char[] { ';' });
+        //                    if (!j[0].Contains("#"))
+        //                    {
+        //                        if (j[4] == "#")
+        //                        {
+        //                            if (i == 0)
+        //                            {
+        //                                file.WriteLine("                ON ct." + j[0].ToString() + " =  s." + j[0].ToString());
+        //                            }
+        //                            else
+        //                            {
+        //                                file.WriteLine("                    AND ct." + j[0].ToString() + " =  s." + j[0].ToString());
+        //                            }
+        //                            i++;
+        //                        }
+        //                    }
+        //                }
+        //                file.WriteLine("");
+        //                file.WriteLine("            SET @rc=@@ROWCOUNT;");
+        //                file.WriteLine("");
+        //                file.WriteLine("        END");
+        //                file.WriteLine("");
+        //
+        //                //SP Carga Full
+        //                file.WriteLine("--Inicio Bloque Carga Full");
+        //                file.WriteLine("        ELSE");
+        //                file.WriteLine("        BEGIN");
+        //                file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
+        //                file.WriteLine("            BEGIN");
+        //                file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
+        //                file.WriteLine("                DECLARE @id_warning_1 int");
+        //                file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
+        //                file.WriteLine("            END");
+        //                file.WriteLine("            ELSE");
+        //                file.WriteLine("            BEGIN");
+        //                file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+        //                file.WriteLine("            SELECT");
+        //                foreach (string d in csv)
+        //                {
+        //                    string[] j = d.Split(new Char[] { ';' });
+        //                    i++;
+        //                    if (!j[0].Contains("#"))
+        //                    {
+        //                        file.WriteLine("                s." + j[0].ToString() + ", ");
+        //                    }
+        //                }
+        //                if (claveAuto == true)
+        //                {
+        //                    file.WriteLine("                s." + clave + ", ");
+        //                }
+        //                file.WriteLine("                @fec_procesado,");
+        //                file.WriteLine("                'INSERT'");
+        //                file.WriteLine("            FROM " + bbdd + ".dbo." + cabtab + tab + " s");
+        //                file.WriteLine("");
+        //                file.WriteLine("                SET @rc=@@ROWCOUNT;");
+        //                file.WriteLine("            END");
+        //                file.WriteLine("        END");
+        //                file.WriteLine("");
+        //
+        //                //SP incluimos los nuevos marcadores a la tabla de ct procesado
+        //                file.WriteLine("---Fin Bloque común para Incremental y Full");
+        //                file.WriteLine("");
+        //                file.WriteLine("        update dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
+        //                file.WriteLine("            set ct_stg  = @ct_stg_final,");
+        //                file.WriteLine("            ct_norm = @ct_norm_final,");
+        //                file.WriteLine("            ct_dmr  = @ct_dmr_final");
+        //                file.WriteLine("            where procedimiento = @objeto;");
+        //                file.WriteLine("");
+        //
+        //                //SP Pie
+        //                string pie = sc.pieLogSP(file, "historificacion");
+        //
+        //                file.WriteLine("GO");
+        //                file.WriteLine("");
+        //            }
+        //            else
+        //            {
+        //                file.WriteLine("--No hay PK en origen, no genero SP");
+        //            }
+        //            #endregion "Stored Procedure"
+        //
+        //            file.Close();
+        //            //file_exec.Close();
+        //        }
+        //        catch //(Exception ex)
+        //        {
+        //            MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+        //            return "NO";
+        //        }
+        //
+        //        return "OK";
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+        //        return "NO";
+        //    }
+        //}
+        //opción desde csv no utilizada
 
-            try
-            {
-                foreach (string d in csv)
-                {
-                    string[] j = d.Split(new Char[] { ';' });
-                    if (j[0].Contains("#nombre"))
-                    {
-                        bbdd = j[2];
-                        tab = j[1];
-                        clave = j[3];
-                    }
-                    else if (!j[0].Contains("#"))
-                    {
-                        campos = campos + "'" + j[0] + "',";
-                        if (j[4] == "#")
-                        {
-                            campospk = campospk + "xxx_" + j[0] + ",";
-                        }
-                        Array.Resize(ref csv2, csv2.Length + 1);
-                        csv2[csv2.Length - 1] = j[0].ToString() + ";" + j[1].ToString() + ";" + j[4].ToString() + ";";
-                    }
-                }
-                campos = campos.Substring(0, campos.Length - 1);
-
-                existe_pk = (campospk.Length > 0);
-                if (existe_pk)
-                {
-                    campospk = campospk.Substring(0, campospk.Length - 1);
-                }
-
-            }
-            catch //(Exception ex2)
-            {
-                MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error PK en archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-                return "NO";
-            }
-            //Si no tenemos valor clave, lo generamos
-            clave = "Idnt_" + tab;
-            if (claveAuto == true)
-            {
-                campos = campos + ",'" + clave + "'";
-            }
-
-            //Asignamos nombre al nombrearchivo
-            if (bbdd.Contains("dmr") || tab.Contains("_dm_"))
-            {
-                tipobbdd = "dimensional";
-                schema = "dmr";
-                if (bbdd == "")
-                {
-                    bbdd = "dbn1_dmr_dhyf";
-                }
-            }
-            else if (bbdd.Contains("stg"))
-            {
-                tipobbdd = "staging";
-                schema = "stg";
-            }
-            else if (bbdd.Contains("norm") || tab.Contains("_ds_"))
-            {
-                tipobbdd = "normalizado";
-                schema = "norm";
-                if (bbdd == "")
-                {
-                    bbdd = "dbn1_norm_dhyf";
-                }
-            }
-            else
-            {
-                tipobbdd = "";
-                schema = "";
-            }
-
-            //Comprobamos la cabecera de la tabla
-            if (archivo.Substring(0, 4) != "tbn1")
-            {
-                cabtab = "tbn1_";
-            }
-            else if (archivo.Substring(4, 1) == "_")
-            {
-                cabtab = archivo.Substring(0, 5);
-            }
-            else
-            {
-                cabtab = archivo.Substring(0, 4);
-            }
-
-            //cgs quito tbn1_ porque sobra:    nombrearchivo = "Script TL " + tipoBD + "_tbn1_" + cabtab + tab + "_tracelog_TL.sql";
-            nombrearchivo = "Script TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
-            nombrearchivoexec = "Exec TL " + tipobbdd + "_" + cabtab + tab + "_tracelog_TL.sql";
-            //nombrearchivo = nombrearchivo.Replace("xxx", tipoBD);
-            string fichero = ruta + nombrearchivo;
-            dev = a.comprobarficheros(ref lineas, fichero, 1);
-
-            if (a.comprobarDir(ruta) == "OK")
-            {
-                //Escribimos en el fichero
-                try
-                {
-
-                    StreamWriter file = new StreamWriter(new FileStream(fichero, FileMode.CreateNew), Encoding.UTF8);
-                    //StreamWriter file_exec = new StreamWriter(new FileStream(ruta + nombrearchivoexec, FileMode.Create), Encoding.UTF8);
-
-                    //file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
-                    //file_exec.WriteLine("GO");
-                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipoBD + "_" + tab, false, true);
-
-                    file.WriteLine("PRINT '" + nombrearchivo + "'");
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-                    file.WriteLine("--Generado versión vb " + a.version);
-                    file.WriteLine("");
-                    file.WriteLine("SET QUOTED_IDENTIFIER ON;");
-                    file.WriteLine("GO");
-                    file.WriteLine("");
-
-                    //Activamos CT
-                    if (ChangeTrack == false)
-                    {
-                        file.WriteLine("--------------------------------------");
-                    }
-                    else
-                    {
-                        file.WriteLine("/*--------------------------------------");
-                    }
-                    if (existe_pk)
-                    {
-                        file.WriteLine("--Begin Add Change Tracking -> " + cabtab + tab);
-                        string ctp = sc.changetracking(file, cabtab + tab, bbdd, "dbo", "act");
-                        file.WriteLine("--------------------------------------*/");
-                    }
-                    if (ChangeTrack == false)
-                    {
-                        file.WriteLine("--------------------------------------");
-                    }
-                    else
-                    {
-                        file.WriteLine("--------------------------------------*/");
-                    }
-                    file.WriteLine("");
-
-                    //Create Table
-                    if (CreateTable == false)
-                    {
-                        file.WriteLine("--------------------------------------");
-                    }
-                    else
-                    {
-                        file.WriteLine("/*--------------------------------------");
-                    }
-                    file.WriteLine("--Begin table create/prepare -> " + cabtab + tab + "_tracelog");
-                    file.WriteLine("");
-
-                    string tab_sin_prefijo;
-                    if (tab.Contains("tbn1_"))
-                    {
-                        tab_sin_prefijo = tab.Replace("tbn1_", "");
-                    }
-                    else if (tab.Contains("tbn1"))
-                    {
-                        tab_sin_prefijo = tab.Replace("tbn1", "");
-                    }
-                    else
-                    {
-                        tab_sin_prefijo = tab;
-                    }
-                    sc.regTablas(file, "dbn1_hist_dhyf", schema, cabtab + tab + "_tracelog", clave + "_tracelog", campos, campospk, csv2, claveAuto, "historificacion", tab_sin_prefijo);
-
-                    file.WriteLine("--End table create/prepare -> " + cabtab + tab + "_tracelog");
-                    if (CreateTable == false)
-                    {
-                        file.WriteLine("--------------------------------------");
-                    }
-                    else
-                    {
-                        file.WriteLine("--------------------------------------*/");
-                    }
-                    file.WriteLine("GO");
-
-                    #region "Stored Procedure"
-                    if (existe_pk)
-                    {
-                        //SP Creamos SP
-                        file.WriteLine("");
-                        file.WriteLine("--//Stored Procedure");
-                        file.WriteLine("USE dbn1_hist_dhyf");
-                        file.WriteLine("GO");
-                        file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                        file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab);
-                        file.WriteLine("GO");
-                        file.WriteLine("");
-                        file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + tipobbdd + "_" + tab + "(@p_id_carga int) AS");
-                        file.WriteLine("BEGIN");
-                        file.WriteLine("");
-
-                        //SP Cabecera
-                        string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + tipobbdd + "_" + tab, true, true);
-
-                        //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
-                        string sp_inc = sc.regSP_Incremental(file);
-                        ////////
-                        file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
-                        file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
-                        file.WriteLine("            WHERE objeto = @objeto;");
-                        file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
-                        file.WriteLine("           SET @fec_procesado = getdate();");
-                        file.WriteLine("");
-                        //////
-                        //SP Etiquetas            
-                        file.WriteLine("---Inicio Bloque común para Incremental y Full");
-                        file.WriteLine("");
-                        file.WriteLine("            IF @es_carga_completa = 0");
-                        file.WriteLine("            BEGIN");
-
-                        //SP Carga Incremental
-                        file.WriteLine("--- Inicio Bloque Carga Incremental");
-                        file.WriteLine("");
-                        file.WriteLine("            SELECT " + campospk.Replace("xxx_", "") + ", sys_change_operation");
-                        file.WriteLine("            INTO #CT_TMP");
-                        file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + cabtab + tab + ",@ct_" + schema + "_inicial) as CT");
-                        file.WriteLine("");
-                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                        file.WriteLine("            SELECT");
-                        foreach (string d in csv)
-                        {
-                            string[] j = d.Split(new Char[] { ';' });
-                            i++;
-                            if (!j[0].Contains("#"))
-                            {
-                                if (j[4] == "#")
-                                {
-                                    file.WriteLine("                ct." + j[0].ToString() + ", ");
-                                }
-                                else
-                                {
-                                    file.WriteLine("                s." + j[0].ToString() + ", ");
-                                }
-                            }
-                        }
-                        if (claveAuto == true)
-                        {
-                            file.WriteLine("                s." + clave + ", ");
-                        }
-                        file.WriteLine("                @fec_procesado,");
-                        file.WriteLine("                CASE ct.sys_change_operation");
-                        file.WriteLine("                    WHEN 'I' then 'INSERT'");
-                        file.WriteLine("                    WHEN 'U' then 'UPDATE'");
-                        file.WriteLine("                    WHEN 'D' then 'DELETE'");
-                        file.WriteLine("                END AS ctct_tipo_operacion");
-                        file.WriteLine("            FROM #CT_TMP ct");
-                        file.WriteLine("            LEFT JOIN " + bbdd + ".dbo." + cabtab + tab + " s");
-                        i = 0;
-                        foreach (string d in csv)
-                        {
-                            string[] j = d.Split(new Char[] { ';' });
-                            if (!j[0].Contains("#"))
-                            {
-                                if (j[4] == "#")
-                                {
-                                    if (i == 0)
-                                    {
-                                        file.WriteLine("                ON ct." + j[0].ToString() + " =  s." + j[0].ToString());
-                                    }
-                                    else
-                                    {
-                                        file.WriteLine("                    AND ct." + j[0].ToString() + " =  s." + j[0].ToString());
-                                    }
-                                    i++;
-                                }
-                            }
-                        }
-                        file.WriteLine("");
-                        file.WriteLine("            SET @rc=@@ROWCOUNT;");
-                        file.WriteLine("");
-                        file.WriteLine("        END");
-                        file.WriteLine("");
-
-                        //SP Carga Full
-                        file.WriteLine("--Inicio Bloque Carga Full");
-                        file.WriteLine("        ELSE");
-                        file.WriteLine("        BEGIN");
-                        file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog) a WHERE num_registros=0)");
-                        file.WriteLine("            BEGIN");
-                        file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
-                        file.WriteLine("                DECLARE @id_warning_1 int");
-                        file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bbdd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
-                        file.WriteLine("            END");
-                        file.WriteLine("            ELSE");
-                        file.WriteLine("            BEGIN");
-                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + cabtab + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                        file.WriteLine("            SELECT");
-                        foreach (string d in csv)
-                        {
-                            string[] j = d.Split(new Char[] { ';' });
-                            i++;
-                            if (!j[0].Contains("#"))
-                            {
-                                file.WriteLine("                s." + j[0].ToString() + ", ");
-                            }
-                        }
-                        if (claveAuto == true)
-                        {
-                            file.WriteLine("                s." + clave + ", ");
-                        }
-                        file.WriteLine("                @fec_procesado,");
-                        file.WriteLine("                'INSERT'");
-                        file.WriteLine("            FROM " + bbdd + ".dbo." + cabtab + tab + " s");
-                        file.WriteLine("");
-                        file.WriteLine("                SET @rc=@@ROWCOUNT;");
-                        file.WriteLine("            END");
-                        file.WriteLine("        END");
-                        file.WriteLine("");
-
-                        //SP incluimos los nuevos marcadores a la tabla de ct procesado
-                        file.WriteLine("---Fin Bloque común para Incremental y Full");
-                        file.WriteLine("");
-                        file.WriteLine("        update dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
-                        file.WriteLine("            set ct_stg  = @ct_stg_final,");
-                        file.WriteLine("            ct_norm = @ct_norm_final,");
-                        file.WriteLine("            ct_dmr  = @ct_dmr_final");
-                        file.WriteLine("            where procedimiento = @objeto;");
-                        file.WriteLine("");
-
-                        //SP Pie
-                        string pie = sc.pieLogSP(file, "historificacion");
-
-                        file.WriteLine("GO");
-                        file.WriteLine("");
-                    }
-                    else
-                    {
-                        file.WriteLine("--No hay PK en origen, no genero SP");
-                    }
-                    #endregion "Stored Procedure"
-
-                    file.Close();
-                    //file_exec.Close();
-                }
-                catch //(Exception ex)
-                {
-                    MessageBox.Show("Error al escribir en archivo " + nombrearchivo, "Error escritura archivo", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-                    return "NO";
-                }
-
-                return "OK";
-            }
-            else
-            {
-                MessageBox.Show("No se ha podido generar el fichero " + nombrearchivo + " porque no se encuentra la ruta", "Error ruta fichero", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-                return "NO";
-            }
-        }
 
         public string Hist_tabla(string tab, string bbdd, ref string nombrearchivo, ref DataTable dtSP, string ruta)
         {
@@ -490,13 +492,9 @@ namespace ScriptsCreator
             campos = campos.Substring(0, campos.Length - 2);
 
             //Componemos la clave de TL
-            if (tab.Contains("tbn1_"))
+            if (tab.ToLower().Contains("tbn1"))
             {
-                clave = "Idnt_" + tab.Replace("tbn1_", "");
-            }
-            else if (tab.Contains("tbn1"))
-            {
-                clave = "Idnt_" + tab.Replace("tbn1", "");
+                clave = "Idnt_" + tab.Replace("tbn1_", "").Replace("TBN1_", "").Replace("tbn1", "").Replace("TBN1", "");
             }
             else
             {
@@ -543,7 +541,7 @@ namespace ScriptsCreator
             //Comprobamos si existe SP
             nombreSP = tipoBD + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
             nombreScript = nombreSP;
-            string valorSP = "spn1_cargar_" + nombreSP;
+            string valorSP = "SPN1Cargar_" + nombreSP;
 
             DataTable dtComprobarSP = a.conexion(a.cadenad("dbn1_stg_dhyf"), c.ComprobarSP(valorSP));
 
@@ -555,7 +553,7 @@ namespace ScriptsCreator
             {
                 newSP["SP"] = "OJO!!! " + valorSP;
             }
-            newSP["SP_TL"] = "spn1_cargar_tracelog_" + tipoBD + "_" + tab.Replace(valorReplace, "").Replace("mae_", "");
+            newSP["SP_TL"] = "SPN1CargarTracelog" + tipoBD + "" + tab.Replace(valorReplace, "").Replace("mae_", "");
 
             //Comprobarmos si YA tiene TL generado
             if (dtTLActivado.Rows[0].ItemArray[0].ToString() == "1")
@@ -601,7 +599,7 @@ namespace ScriptsCreator
 
                     //file_exec.WriteLine("PRINT '" + nombrearchivoexec + "'");
                     //file_exec.WriteLine("GO");
-                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + tab + "_tracelog", "dbn1_hist_dhyf", schema, "spn1_cargar_tracelog_" + tipoBD + "_" + tab, false, true);
+                    //sc.generar_file_exec(file_exec, "dbn1_hist_dhyf." + schema + "." + tab + "_tracelog", "dbn1_hist_dhyf", schema, "SPN1CargarTraceLog" + tipoBD + "_" + tab, false, true);
 
                     file.WriteLine("PRINT '" + nombrearchivo + "'");
                     file.WriteLine("GO");
@@ -621,31 +619,23 @@ namespace ScriptsCreator
                     }
                     else
                     {
-                        //file.WriteLine("/*--------------------------------------");
                         newSP["CT"] = "";
                     }
                     if (existe_pk)
                     {
-                        file.WriteLine("--Begin Add Change Tracking -> " + tab);
+                        file.WriteLine("-- Tabla origen " + tab + " --");
                         string ctp = sc.changetracking(file, tab, bbdd, "dbo", "act");
-                        file.WriteLine("--------------------------------------*/");
                     }
                     file.WriteLine("");
 
                     //Create Table
-                    file.WriteLine("--------------------------------------");
-                   
-                    file.WriteLine("--Begin table create/prepare -> " + tab + "_tracelog");
+                    file.WriteLine("-- INICIO crear tabla -> " + tab + "_tracelog --");
                     file.WriteLine("");
 
                     string tab_sin_prefijo;
-                    if (tab.Contains("tbn1_"))
+                    if (tab.ToLower().Contains("tbn1"))
                     {
-                        tab_sin_prefijo = tab.Replace("tbn1_", "");
-                    }
-                    else if (tab.Contains("tbn1"))
-                    {
-                        tab_sin_prefijo = tab.Replace("tbn1", "");
+                        tab_sin_prefijo = tab.Replace("tbn1_", "").Replace("TBN1_", "").Replace("tbn1", "").Replace("TBN1", "");
                     }
                     else
                     {
@@ -654,76 +644,66 @@ namespace ScriptsCreator
 
                     sc.regTablas(file, "dbn1_hist_dhyf", schema, tab + "_tracelog", clave + "_tracelog", campos, campospk, csv, false, "historificacion", tab_sin_prefijo + "_tracelog", comentarioTabla);
 
-                    file.WriteLine("--End table create/prepare -> " + tab + "_tracelog");
-                    file.WriteLine("--------------------------------------*/");
-
+                    file.WriteLine("-- FIN crear tabla -> " + tab + "_tracelog --");
                     file.WriteLine("");
 
                     #region "Stored Procedure"
                     //SP Creamos SP
                     file.WriteLine("");
-                    file.WriteLine("--//Stored Procedure");
+                    file.WriteLine("--SP de carga");
                     file.WriteLine("USE dbn1_hist_dhyf");
                     file.WriteLine("GO");
-                    file.WriteLine("IF EXISTS (SELECT 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'spn1_cargar_tracelog_" + nombreSP + "' AND ROUTINE_TYPE = 'PROCEDURE')");
-                    file.WriteLine("    DROP PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP);
+                    file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM dbn1_hist_dhyf.INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = '" + schema_sp + "' AND ROUTINE_NAME = 'SPN1Cargar" + tab + "_tracelog' AND ROUTINE_TYPE = 'PROCEDURE')");
+                    file.WriteLine("\tDROP PROCEDURE " + schema_sp + ".SPN1Cargar" + tab + "_tracelog");
                     file.WriteLine("GO");
                     file.WriteLine("");
-                    file.WriteLine("CREATE PROCEDURE " + schema_sp + ".spn1_cargar_tracelog_" + nombreSP + "(@p_id_carga int) AS");
+                    file.WriteLine("CREATE PROCEDURE " + schema_sp + ".SPN1Cargar" + tab + "_tracelog(@p_id_carga int) AS");
                     file.WriteLine("BEGIN");
                     file.WriteLine("");
 
                     //SP Cabecera
-                    string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "spn1_cargar_tracelog_" + nombreSP, true, true);
+                    string cab2 = sc.cabeceraLogSP(file, "dbn1_hist_dhyf", schema_sp, "SPN1Cargar" + tab + "_tracelog", true, true);
 
                     if (existe_pk) //si no hay pk, de momento no cargo nada en el SP
                     {
                         //SP Registro del SP en tabla de control de cargas incrementales y obtención de datos en variables
                         string sp_inc = sc.regSP_Incremental(file);
-                        ////////
-                        file.WriteLine("            SELECT @es_carga_completa = es_carga_completa");
-                        file.WriteLine("            FROM dbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
-                        file.WriteLine("            WHERE objeto = @objeto;");
-                        file.WriteLine("            --Esta es la fecha que identifica el momento el que se carga en la BB.DD.de Trace Log los registros grababos por el CT desde la Ãºltima vez que corrio este Trace Log");
-                        file.WriteLine("           SET @fec_procesado = getdate();");
+
+                        file.WriteLine("\t\t\tSET @fec_procesado = GETDATE()");
                         file.WriteLine("");
-                        //////
-                        //SP Etiquetas            
-                        file.WriteLine("---Inicio Bloque común para Incremental y Full");
+
+                        file.WriteLine("\t\t\tSELECT\t@es_carga_completa = es_carga_completa");
+                        file.WriteLine("\t\t\tFROM\tdbn1_norm_dhyf.audit.tbn1_carga_dwh_maestro");
+                        file.WriteLine("\t\t\tWHERE\tobjeto = @objeto");
                         file.WriteLine("");
-                        file.WriteLine("            IF @es_carga_completa = 0");
-                        file.WriteLine("            BEGIN");
+
+                        file.WriteLine("\t\t\tIF @es_carga_completa = 0");
+                        file.WriteLine("\t\t\tBEGIN");
 
                         //SP Carga Incremental
-                        file.WriteLine("--- Inicio Bloque Carga Incremental");
+                        file.WriteLine("\t\t\t\tSELECT\t" + campospk + ", ct.SYS_CHANGE_OPERATION");
+                        file.WriteLine("\t\t\t\tINTO\t#cambiosCT");
+                        file.WriteLine("\t\t\t\tFROM\tCHANGETABLE(CHANGES " + bbdd + ".dbo." + tab + ",@ct_" + schema + "_inicial) ct");
                         file.WriteLine("");
-                        file.WriteLine("            SELECT " + campospk + ", sys_change_operation");
-                        file.WriteLine("            INTO #CT_TMP");
-                        file.WriteLine("            FROM changetable(changes " + bbdd + ".dbo." + tab + ",@ct_" + schema + "_inicial) as CT");
-                        file.WriteLine("");
-                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                        file.WriteLine("            SELECT");
+                        file.WriteLine("\t\t\t\tINSERT\tdbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                        file.WriteLine("\t\t\t\tSELECT\t--");
                         foreach (string d in csv)
                         {
                             string[] j = d.Split(new Char[] { ';' });
                             i++;
                             if (j[2] == "#")
                             {
-                                file.WriteLine("                ct." + j[0].ToString() + ", ");
+                                file.WriteLine("\t\t\t\t\t\tct." + j[0].ToString() + ", ");
                             }
                             else
                             {
-                                file.WriteLine("                s." + j[0].ToString() + ", ");
+                                file.WriteLine("\t\t\t\t\t\ttabl." + j[0].ToString() + ", ");
                             }
                         }
-                        file.WriteLine("                @fec_procesado,");
-                        file.WriteLine("                CASE ct.sys_change_operation");
-                        file.WriteLine("                    WHEN 'I' then 'INSERT'");
-                        file.WriteLine("                    WHEN 'U' then 'UPDATE'");
-                        file.WriteLine("                    WHEN 'D' then 'DELETE'");
-                        file.WriteLine("                END AS ctct_tipo_operacion");
-                        file.WriteLine("            FROM #CT_TMP ct");
-                        file.WriteLine("            LEFT JOIN " + bbdd + ".dbo." + tab + " s");
+                        file.WriteLine("\t\t\t\t\t\t@fec_procesado,");
+                        file.WriteLine("\t\t\t\t\t\tCASE ct.sys_change_operation WHEN 'I' THEN 'INSERT' WHEN 'U' THEN 'UPDATE' WHEN 'D' THEN 'DELETE' END AS ctct_tipo_operacion");
+                        file.WriteLine("\t\t\t\tFROM\t#cambiosCT ct");
+                        file.WriteLine("\t\t\t\t\t\tLEFT JOIN " + bbdd + ".dbo." + tab + " tabl");
                         i = 0;
                         foreach (string d in csv)
                         {
@@ -732,58 +712,52 @@ namespace ScriptsCreator
                             {
                                 if (i == 0)
                                 {
-                                    file.WriteLine("                ON ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                    file.WriteLine("\t\t\t\t\t\t\t\tON ct." + j[0].ToString() + " = tabl." + j[0].ToString());
                                 }
                                 else
                                 {
-                                    file.WriteLine("                    AND ct." + j[0].ToString() + " =  s." + j[0].ToString());
+                                    file.WriteLine("\t\t\t\t\t\t\t\tAND ct." + j[0].ToString() + " = tabl." + j[0].ToString());
                                 }
                                 i++;
                             }
                         }
                         file.WriteLine("");
-                        file.WriteLine("            SET @rc=@@ROWCOUNT;");
-                        file.WriteLine("");
-                        file.WriteLine("        END");
-                        file.WriteLine("");
+                        file.WriteLine("\t\t\t\tSET @rc = @@ROWCOUNT");
+                        file.WriteLine("\t\t\tEND");
 
                         //SP Carga Full
-                        file.WriteLine("--Inicio Bloque Carga Full");
-                        file.WriteLine("        ELSE");
-                        file.WriteLine("        BEGIN");
-                        file.WriteLine("            IF NOT EXISTS (SELECT 1 FROM (SELECT count(1) AS num_registros FROM dbn1_hist_dhyf." + schema + "." + tab + "_tracelog) a WHERE num_registros=0)");
-                        file.WriteLine("            BEGIN");
-                        file.WriteLine("                -- EXECUTE dbn1_stg_dhyf.dbo.spn1_apuntar_warning @log,'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!'");
-                        file.WriteLine("                DECLARE @id_warning_1 int");
-                        file.WriteLine("                EXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga= @p_id_carga,@p_bd= @bd,@p_esquema= @esquema,@p_objeto= @objeto,@p_fecha_inicio= @fecha_inicio,@p_descripcion_warning='No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía!!',@p_out_id= @id_warning_1 OUT");
-                        file.WriteLine("            END");
-                        file.WriteLine("            ELSE");
-                        file.WriteLine("            BEGIN");
-                        file.WriteLine("            INSERT INTO dbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
-                        file.WriteLine("            SELECT");
+                        file.WriteLine("\t\t\tELSE");
+                        file.WriteLine("\t\t\tBEGIN");
+                        file.WriteLine("\t\t\t\tIF EXISTS (SELECT TOP 1 1 FROM dbn1_hist_dhyf." + schema + "." + tab + "_tracelog)");
+                        file.WriteLine("\t\t\t\tBEGIN");
+                        file.WriteLine("\t\t\t\t\tDECLARE @id_warning_1 int");
+                        file.WriteLine("\t\t\t\t\tEXEC dbn1_norm_dhyf.audit.spn1_insertar_log @p_id_carga = @p_id_carga, @p_bd = @bd, @p_esquema = @esquema, @p_objeto = @objeto, @p_fecha_inicio = @fecha_inicio, @p_descripcion_warning = 'No se puede ejecutar la carga inicial de Trace Log porque la Tabla no está vacía', @p_out_id = @id_warning_1 OUT");
+                        file.WriteLine("\t\t\t\tEND");
+                        file.WriteLine("\t\t\t\tELSE");
+                        file.WriteLine("\t\t\t\tBEGIN");
+                        file.WriteLine("\t\t\t\t\tINSERT\tdbn1_hist_dhyf." + schema + "." + tab + "_tracelog(" + campos.Replace("'", "") + ", ctct_fec_procesado, ctct_tipo_operacion)");
+                        file.WriteLine("\t\t\t\t\tSELECT\t--");
                         foreach (string d in csv)
                         {
                             string[] j = d.Split(new Char[] { ';' });
                             i++;
-                            file.WriteLine("                s." + j[0].ToString() + ", ");
+                            file.WriteLine("\t\t\t\t\t\t\ttabl." + j[0].ToString() + ", ");
                         }
-                        file.WriteLine("                @fec_procesado,");
-                        file.WriteLine("                'INSERT'");
-                        file.WriteLine("            FROM " + bbdd + ".dbo." + tab + " s");
+                        file.WriteLine("\t\t\t\t\t\t\t@fec_procesado,");
+                        file.WriteLine("\t\t\t\t\t\t\t'INSERT'");
+                        file.WriteLine("\t\t\t\t\tFROM\t" + bbdd + ".dbo." + tab + " tabl");
                         file.WriteLine("");
-                        file.WriteLine("                SET @rc=@@ROWCOUNT;");
-                        file.WriteLine("            END");
-                        file.WriteLine("        END");
+                        file.WriteLine("\t\t\t\t\tSET @rc = @@ROWCOUNT");
+                        file.WriteLine("\t\t\t\tEND");
+                        file.WriteLine("\t\t\tEND");
                         file.WriteLine("");
 
                         //SP incluimos los nuevos marcadores a la tabla de ct procesado
-                        file.WriteLine("---Fin Bloque común para Incremental y Full");
-                        file.WriteLine("");
-                        file.WriteLine("        update dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
-                        file.WriteLine("            set ct_stg  = @ct_stg_final,");
-                        file.WriteLine("            ct_norm = @ct_norm_final,");
-                        file.WriteLine("            ct_dmr  = @ct_dmr_final");
-                        file.WriteLine("            where procedimiento = @objeto;");
+                        file.WriteLine("\t\t\tUPDATE\tdbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
+                        file.WriteLine("\t\t\tSET\t\tct_stg  = @ct_stg_final,");
+                        file.WriteLine("\t\t\t\t\tct_norm = @ct_norm_final,");
+                        file.WriteLine("\t\t\t\t\tct_dmr  = @ct_dmr_final");
+                        file.WriteLine("\t\t\tWHERE\tprocedimiento = @objeto");
                         file.WriteLine("");
                     }
                     //SP Pie
@@ -793,10 +767,10 @@ namespace ScriptsCreator
                     file.WriteLine("");
 
                     //Propiedades extendidas del SP
-                    file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM dbn1_hist_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema_sp + "', 'procedure', 'spn1_cargar_tracelog_" + nombreSP + "', null, null))");
-                    file.WriteLine("\tEXEC dbn1_hist_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema_sp + "', @level1type = 'procedure', @level1name = 'spn1_cargar_tracelog_" + nombreSP + "', @level2type = null, @level2name = null");
+                    file.WriteLine("IF EXISTS (SELECT TOP 1 1 FROM dbn1_hist_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', '" + schema_sp + "', 'procedure', 'SPN1Cargar" + tab + "_tracelog', null, null))");
+                    file.WriteLine("\tEXEC dbn1_hist_dhyf.sys.sp_dropextendedproperty @name = 'MS_Description', @level0type = 'schema', @level0name = '" + schema_sp + "', @level1type = 'procedure', @level1name = 'SPN1Cargar" + tab + "_tracelog', @level2type = null, @level2name = null");
                     file.WriteLine("GO");
-                    file.WriteLine("EXEC dbn1_hist_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = 'Procedimiento de carga de la tabla dbn1_hist_dhyf." + schema + "." + tab + "_tracelog', @level0type = 'schema', @level0name = '" + schema_sp + "', @level1type = 'procedure', @level1name = 'spn1_cargar_tracelog_" + nombreSP + "'");
+                    file.WriteLine("EXEC dbn1_hist_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = 'Procedimiento de carga de la tabla dbn1_hist_dhyf." + schema + "." + tab + "_tracelog', @level0type = 'schema', @level0name = '" + schema_sp + "', @level1type = 'procedure', @level1name = 'SPN1Cargar" + tab + "_tracelog'");
                     file.WriteLine("GO\n");
 
                     #endregion "Stored Procedure"

@@ -165,6 +165,7 @@
             this.rbHistCsv.Text = "Historificación (desde csv)";
             this.rbHistCsv.UseVisualStyleBackColor = true;
             this.rbHistCsv.CheckedChanged += new System.EventHandler(this.rbHistCsv_CheckedChanged);
+            this.rbHistCsv.Visible = false;
             // 
             // rb_CSV_MF_STG
             // 
@@ -178,6 +179,7 @@
             this.rb_CSV_MF_STG.Text = "Extracción (desde csv)";
             this.rb_CSV_MF_STG.UseVisualStyleBackColor = true;
             this.rb_CSV_MF_STG.CheckedChanged += new System.EventHandler(this.rb_CSV_MF_STG_CheckedChanged);
+            this.rb_CSV_MF_STG.Visible = false;
             // 
             // rb_tabMF_STG
             // 

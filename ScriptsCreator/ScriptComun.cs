@@ -18,7 +18,7 @@ namespace ScriptsCreator
             file.WriteLine("    BEGIN TRY");
             file.WriteLine("");
             file.WriteLine("        --declaración de variables");
-            file.WriteLine("        DECLARE    @bd varchar(50) = '" + bd + "',");
+            file.WriteLine("        DECLARE @bd varchar(50) = '" + bd + "',");
             file.WriteLine("                @esquema varchar(50) = '" + sch + "',");
             file.WriteLine("                @objeto varchar(200) = '" + tab + "',");
             file.WriteLine("                @fecha_inicio datetime = GETDATE(),");
@@ -137,9 +137,9 @@ namespace ScriptsCreator
             file.WriteLine("");
             if (tipo == "historificacion")
             {
-                file.WriteLine("        --Borrar tablas temporales");
-                file.WriteLine("        IF OBJECT_ID('tempdb..#CT_TMP') IS NOT NULL");
-                file.WriteLine("            DROP TABLE #CT_TMP");
+                file.WriteLine("\t\t--Borrar tablas temporales");
+                file.WriteLine("\t\tIF OBJECT_ID('tempdb..#cambiosCT') IS NOT NULL");
+                file.WriteLine("\t\t\tDROP TABLE #cambiosCT");
                 file.WriteLine("");
             }
             file.WriteLine("    END TRY");
@@ -202,23 +202,15 @@ namespace ScriptsCreator
             if (act_des == "des")
             {
                 file.WriteLine("--Drop CT");
-                file.WriteLine("-- CUIDADO!!! Descomentar el DROP CT solo en caso estrictamente necesario (en caso de que se necesite cambiar PK) ");
-                file.WriteLine("-- dado que sino se pierden las trazas utilizadas por otros procedimientos incrementales que puedan leer de esta tabla.");
-                file.WriteLine("");
-                file.WriteLine("--IF EXISTS (");
-                file.WriteLine("--    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
-                file.WriteLine("--    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
-                file.WriteLine("--    WHERE obj.name = '" + tab + "' )");
-                file.WriteLine("--ALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
+                file.WriteLine("-- CUIDADO!!! Descomentar el DROP CT solo en caso estrictamente necesario (cambiar PK), ya que se perderán las trazas de cambios");
+                file.WriteLine("--IF EXISTS (SELECT TOP 1 1 FROM " + bd + ".sys.change_tracking_tables tabl INNER JOIN " + bd + ".sys.objects obje ON tabl.object_id = obje.object_id AND obje.name = '" + tab + "' ");
+                file.WriteLine("--\tALTER TABLE " + bd + "." + sch + "." + tab + " DISABLE CHANGE_TRACKING");
             }
             else
             {
                 file.WriteLine("--Add CT");
-                file.WriteLine("IF NOT EXISTS (");
-                file.WriteLine("    SELECT 1 FROM " + bd + ".sys.change_tracking_tables tt");
-                file.WriteLine("    INNER JOIN " + bd + ".sys.objects obj ON obj.object_id = tt.object_id");
-                file.WriteLine("    WHERE obj.name = '" + tab + "' )");
-                file.WriteLine("ALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
+                file.WriteLine("IF NOT EXISTS (SELECT TOP 1 1 FROM " + bd + ".sys.change_tracking_tables tabl INNER JOIN " + bd + ".sys.objects obje ON tabl.object_id = obje.object_id AND obje.name = '" + tab + "')");
+                file.WriteLine("\tALTER TABLE " + bd + "." + sch + "." + tab + " ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)");
             }
                
             file.WriteLine("");
@@ -231,32 +223,33 @@ namespace ScriptsCreator
             file.WriteLine("            --Si el procedimiento no está registrado en la tabla de control de cargas incrementales, lo metemos inicializando la version inicial procesada a 0 en todos los casos");
             file.WriteLine("            IF NOT EXISTS (SELECT 1 AS expr1 from dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado where procedimiento = @objeto)");
             file.WriteLine("            BEGIN");
-            file.WriteLine("                set @ct_stg_inicial = 0;");
-            file.WriteLine("                set @ct_norm_inicial = 0;");
-            file.WriteLine("                set @ct_dmr_inicial = 0;");
-            file.WriteLine("                INSERT INTO dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado (procedimiento, ct_stg, ct_norm, ct_dmr)");
-            file.WriteLine("                    values (@objeto,@ct_stg_inicial, @ct_norm_inicial, @ct_dmr_inicial);");
+            file.WriteLine("                SELECT\t@ct_stg_inicial  = 0,");
+            file.WriteLine("                      \t@ct_norm_inicial = 0,");
+            file.WriteLine("                      \t@ct_dmr_inicial  = 0");
+            file.WriteLine("                INSERT dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado (procedimiento, ct_stg, ct_norm, ct_dmr) VALUES (@objeto,@ct_stg_inicial, @ct_norm_inicial, @ct_dmr_inicial)");
             file.WriteLine("            END");
             file.WriteLine("            ELSE");
             file.WriteLine("            BEGIN");
-            file.WriteLine("             --Recuperamos la última version de cada BB.DD. procesada por la última ejecución de este procedimiento");
-            file.WriteLine("                set @ct_stg_inicial = (select ct_stg from dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado where procedimiento = @objeto)");
-            file.WriteLine("                set @ct_norm_inicial = (select ct_norm from dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado where procedimiento = @objeto)");
-            file.WriteLine("                set @ct_dmr_inicial = (select ct_dmr from dbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado where procedimiento = @objeto)");
+            file.WriteLine("                --Recuperamos la última version de cada BD procesada por la última ejecución de este procedimiento");
+            file.WriteLine("                SELECT\t@ct_stg_inicial  = ct_stg,");
+            file.WriteLine("                      \t@ct_norm_inicial = ct_norm,");
+            file.WriteLine("                      \t@ct_dmr_inicial  = ct_dmr");
+            file.WriteLine("                FROM\tdbn1_norm_dhyf.audit.tbn1_procedimientos_ct_procesado");
+            file.WriteLine("                WHERE\tprocedimiento = @objeto");
             file.WriteLine("            END");
             file.WriteLine("");
-            file.WriteLine("            --Recuperamos las versiones ACTUALES de las 3 instancias de BB.DD. de las que podemos leer");
+            file.WriteLine("            --Recuperamos las versiones actuales de las 3 instancias de BD de las que podemos leer");
             file.WriteLine("            SET @definicionParametro = '@version_ct bigint OUTPUT'");
-            file.WriteLine("            SET @texto = 'use dbn1_stg_dhyf ' + CHAR(13) + 'select @version_ct = change_tracking_current_version()';");
+            file.WriteLine("            SET @texto = 'USE dbn1_stg_dhyf ' + CHAR(13) + 'SELECT @version_ct = CHANGE_TRACKING_CURRENT_VERSION()';");
             file.WriteLine("            EXEC sp_executesql @texto, @definicionParametro, @ct_stg_final OUTPUT");
-            file.WriteLine("            SET @texto = 'use dbn1_norm_dhyf ' + CHAR(13) + 'select @version_ct = change_tracking_current_version()';");
+            file.WriteLine("            SET @texto = 'USE dbn1_norm_dhyf ' + CHAR(13) + 'SELECT @version_ct = CHANGE_TRACKING_CURRENT_VERSION()';");
             file.WriteLine("            EXEC sp_executesql @texto, @definicionParametro, @ct_norm_final OUTPUT");
-            file.WriteLine("            SET @texto = 'use dbn1_dmr_dhyf ' + CHAR(13) + 'select @version_ct = change_tracking_current_version()';");
+            file.WriteLine("            SET @texto = 'USE dbn1_dmr_dhyf ' + CHAR(13) + 'SELECT @version_ct = CHANGE_TRACKING_CURRENT_VERSION()';");
             file.WriteLine("            EXEC sp_executesql @texto, @definicionParametro, @ct_dmr_final OUTPUT");
             file.WriteLine("");
-            file.WriteLine("            set @ct_stg_final = isnull(@ct_stg_final,0)");
-            file.WriteLine("            set @ct_norm_final = isnull(@ct_norm_final,0)");
-            file.WriteLine("            set @ct_dmr_final = isnull(@ct_dmr_final,0)");
+            file.WriteLine("            SELECT\t@ct_stg_final  = ISNULL(@ct_stg_final,  0),");
+            file.WriteLine("                  \t@ct_norm_final = ISNULL(@ct_norm_final, 0),");
+            file.WriteLine("                  \t@ct_dmr_final  = ISNULL(@ct_dmr_final,  0)");
             file.WriteLine("");
 
             return "OK";
@@ -361,10 +354,10 @@ namespace ScriptsCreator
                     //propiedades extendidas de las columnas
                     else if (dr.ItemArray[0].ToString().ToUpper() == "COLUMN")
                     {
-                        file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('" + dr.ItemArray[2].ToString() + "', 'schema', 'dbo', 'table', '" + nombreTabla + "', 'column', '" + dr.ItemArray[1].ToString().ToLower() + "'))");
-                        file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombreTabla + "', @level2type = 'column', @level2name = '" + dr.ItemArray[1].ToString().ToLower() + "'");
+                        file.WriteLine("IF EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('" + dr.ItemArray[2].ToString() + "', 'schema', 'dbo', 'table', '" + nombreTabla + "', 'column', '" + dr.ItemArray[1].ToString() + "'))");
+                        file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_dropextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombreTabla + "', @level2type = 'column', @level2name = '" + dr.ItemArray[1].ToString() + "'");
                         file.WriteLine("GO");
-                        file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @value = '" + dr.ItemArray[3].ToString() + "' , @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombreTabla + "', @level2type = 'column', @level2name = '" + dr.ItemArray[1].ToString().ToLower() + "'");
+                        file.WriteLine("EXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = '" + dr.ItemArray[2].ToString() + "', @value = '" + dr.ItemArray[3].ToString() + "' , @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombreTabla + "', @level2type = 'column', @level2name = '" + dr.ItemArray[1].ToString() + "'");
                         file.WriteLine("GO\n\r");
                     }
                 }
@@ -379,11 +372,11 @@ namespace ScriptsCreator
                 //si se ha quedado alguna columna sin MS_Description, le asigno el valor de otra propiedad que contenga los caracteres []
                 foreach (DataRow dr in datosColumnas.Rows)
                 {
-                    file.WriteLine("IF NOT EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + nombreTabla + "', 'column', '" + dr.ItemArray[0].ToString().ToLower() + "'))");
+                    file.WriteLine("IF NOT EXISTS(SELECT TOP 1 1 FROM dbn1_stg_dhyf.sys.fn_listextendedproperty('MS_Description', 'schema', 'dbo', 'table', '" + nombreTabla + "', 'column', '" + dr.ItemArray[0].ToString() + "'))");
                     file.WriteLine("BEGIN");
                     file.WriteLine("\tDECLARE @valueVarchar varchar(200)");
-                    file.WriteLine("\tSET @valueVarchar = COALESCE((SELECT TOP 1 CAST(value AS varchar(200)) FROM dbn1_stg_dhyf.sys.fn_listextendedproperty(null, 'schema', 'dbo', 'table', '" + nombreTabla + "', 'column', '" + dr.ItemArray[0].ToString().ToLower() + "') WHERE CAST(value AS varchar(200)) LIKE '[[]%]%'),'[NO-MASK][NO-DCP] Columna " + dr.ItemArray[0].ToString().ToLower() + "')");
-                    file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = @valueVarchar, @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombreTabla + "', @level2type = 'column', @level2name = '" + dr.ItemArray[0].ToString().ToLower() + "'");
+                    file.WriteLine("\tSET @valueVarchar = COALESCE((SELECT TOP 1 CAST(value AS varchar(200)) FROM dbn1_stg_dhyf.sys.fn_listextendedproperty(null, 'schema', 'dbo', 'table', '" + nombreTabla + "', 'column', '" + dr.ItemArray[0].ToString() + "') WHERE CAST(value AS varchar(200)) LIKE '[[]%]%'),'[NO-MASK][NO-DCP] Columna " + dr.ItemArray[0].ToString() + "')");
+                    file.WriteLine("\tEXEC dbn1_stg_dhyf.sys.sp_addextendedproperty @name = 'MS_Description', @value = @valueVarchar, @level0type = 'schema', @level0name = 'dbo', @level1type = 'table', @level1name = '" + nombreTabla + "', @level2type = 'column', @level2name = '" + dr.ItemArray[0].ToString() + "'");
                     file.WriteLine("END");
                     file.WriteLine("GO\n\r");
                 }

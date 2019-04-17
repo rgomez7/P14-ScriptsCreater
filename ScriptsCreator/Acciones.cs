@@ -12,7 +12,7 @@ namespace ScriptsCreator
 {
     class Acciones
     {
-        public string version = "1.2.8";
+        public string version = "1.2.9";
 
         public string comprobarficheros(ref string[] lineds, string nombrefic, int accion)
         {
@@ -100,7 +100,7 @@ namespace ScriptsCreator
             if (csvData.Length > 0)
             {
                 headings = csvData[lineaCabecera - 1].Split(separator);
-                //Se la primera linea contiene o no las columnas
+                //Si la primera linea contiene o no las columnas
                 if (isRowOneHeader)
                 {
                     intRowIndex = lineaCabecera - 1;
@@ -110,7 +110,7 @@ namespace ScriptsCreator
                         nombrecolumna = headings[i].ToString();
                         if (filtradoColumn == true)
                         {
-                            nombrecolumna = nombrecolumna.ToLower().Replace(" ", "").Replace("?", "").Replace("#", "");
+                            nombrecolumna = nombrecolumna.Replace(" ", "").Replace("?", "").Replace("#", "");
                         }
                         //Se añade el nombre columnas a la tabla
                         csvDataTable.Columns.Add(nombrecolumna);
